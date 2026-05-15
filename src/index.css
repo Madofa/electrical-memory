@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background-color: #0a0f1e;
+  color: #e2e8f0;
+  font-family: 'Barlow', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image:
+    linear-gradient(rgba(251,191,36,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(251,191,36,0.035) 1px, transparent 1px),
+    linear-gradient(rgba(251,191,36,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(251,191,36,0.015) 1px, transparent 1px);
+  background-size: 64px 64px, 64px 64px, 16px 16px, 16px 16px;
+}
+
+#root { min-height: 100vh; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0a0f1e; }
+::-webkit-scrollbar-thumb { background: #1e2d47; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2a3d5c; }
+
+::selection { background: rgba(251,191,36,0.25); color: #fbbf24; }
+
+@layer components {
+  .card {
+    @apply bg-[#0f1729] border border-[#1e2d47] rounded-xl p-6;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .card-hover {
+    @apply card transition-all duration-300 cursor-pointer;
+  }
+  .card-hover:hover {
+    border-color: rgba(251,191,36,0.25);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 20px rgba(251,191,36,0.08);
+    transform: translateY(-1px);
+  }
+
+  .input-field {
+    @apply w-full bg-transparent border-0 border-b-2 border-[#2a3d5c] text-slate-100
+           px-0 py-3 font-body text-[15px] placeholder-[#2a3d5c]
+           focus:outline-none focus:border-amber-500
+           transition-colors duration-200;
+  }
+
+  .input-box {
+    @apply w-full bg-[#162034] border border-[#1e2d47] rounded-lg text-slate-100
+           px-4 py-3 font-body text-[15px] placeholder-[#2a3d5c]
+           focus:outline-none focus:border-amber-500/60
+           transition-colors duration-200;
+  }
+
+  .field-label {
+    @apply block text-[11px] font-display font-semibold tracking-widest uppercase
+           text-amber-500/70 mb-1.5;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-lg font-display font-bold
+           text-[14px] tracking-widest uppercase bg-amber-500 text-[#0a0f1e]
+           hover:bg-amber-400 active:scale-[0.98]
+           transition-all duration-200 cursor-pointer select-none;
+    box-shadow: 0 4px 16px rgba(251,191,36,0.3);
+  }
+  .btn-primary:hover { box-shadow: 0 6px 24px rgba(251,191,36,0.4); }
+  .btn-primary:disabled {
+    @apply opacity-40 cursor-not-allowed;
+    box-shadow: none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-lg font-display font-semibold
+           text-[14px] tracking-widest uppercase border border-[#2a3d5c] text-slate-300
+           hover:border-amber-500/40 hover:text-amber-400
+           active:scale-[0.98] transition-all duration-200 cursor-pointer select-none;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-body text-[14px]
+           text-slate-400 hover:text-amber-400 hover:bg-[#162034]
+           transition-all duration-200 cursor-pointer;
+  }
+
+  .badge-draft {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono
+           bg-[#162034] text-slate-400 border border-[#2a3d5c];
+  }
+  .badge-done {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono
+           bg-emerald-950/60 text-emerald-400 border border-emerald-800/50;
+  }
+
+  .field-error { @apply text-xs text-red-400 mt-1 font-mono; }
+  .divider { @apply border-t border-[#1e2d47]; }
+
+  .section-title {
+    @apply font-display font-bold tracking-wide uppercase text-slate-100;
+  }
+  .section-sub {
+    @apply font-display font-semibold text-[11px] tracking-widest uppercase text-amber-500/60;
+  }
+}
+
+/* Delay helpers */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+.fade-up {
+  opacity: 0;
+  animation: fadeUp 0.5s ease forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* PDF reset */
+@media print {
+  body { background: white !important; background-image: none !important; color: black !important; }
+}
