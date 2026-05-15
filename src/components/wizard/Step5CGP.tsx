@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useWizardStore } from '../../stores/wizardStore'
 import { FormTextarea, FormInput } from '../ui/FormField'
 import { PhotoUpload } from '../ui/PhotoUpload'
@@ -20,7 +20,6 @@ export function Step5CGP({ onNext: _onNext }: Props) {
   const { data, setElementoFrontera, addFoto, updateFoto, removeFoto } = useWizardStore()
   const ef = { ...data.elementoFrontera, fotos: data.elementoFrontera.fotos ?? [] }
   const [analyzing, setAnalyzing] = useState<Set<string>>(new Set())
-  const addFotoInputRef = useRef<HTMLInputElement>(null)
 
   const readBase64 = (file: File): Promise<string> =>
     new Promise((resolve) => {
@@ -54,14 +53,13 @@ export function Step5CGP({ onNext: _onNext }: Props) {
 
     await Promise.all(arr.map(async (file) => {
       const raw = await readBase64(file)
-      const base64 = await compressImage(raw) // comprime antes de guardar
+      const base64 = await compressImage(raw)
       const id = crypto.randomUUID()
       addFoto({ id, titulo: '', base64 })
       analizarYRellenar(id, base64)
     }))
 
     if (arr.length > 1) toast.success(`${arr.length} fotos añadidas`, { id: 'upload' })
-    if (addFotoInputRef.current) addFotoInputRef.current.value = ''
   }
 
   return (
@@ -165,23 +163,18 @@ export function Step5CGP({ onNext: _onNext }: Props) {
           ))}
         </AnimatePresence>
 
-        <button
-          type="button"
-          onClick={() => addFotoInputRef.current?.click()}
-          className="btn-secondary w-full justify-center"
-        >
+        <label className="btn-secondary w-full justify-center cursor-pointer">
           <Plus className="w-4 h-4" />
           Añadir fotos
-          <span className="text-[10px] text-slate-500 font-mono ml-1">(puedes seleccionar varias)</span>
-        </button>
-        <input
-          ref={addFotoInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={(e) => { if (e.target.files?.length) handleFiles(e.target.files) }}
-        />
+          <span className="text-[10px] text-slate-500 font-mono ml-1">(selecciona varias a la vez)</span>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="sr-only"
+            onChange={(e) => { if (e.target.files?.length) handleFiles(e.target.files) }}
+          />
+        </label>
       </div>
     </div>
   )

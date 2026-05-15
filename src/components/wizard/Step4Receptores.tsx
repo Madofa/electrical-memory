@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Trash2, Zap, AlertCircle, ChevronDown, ChevronUp, Sparkles, Loader2, Camera } from 'lucide-react'
 import { useWizardStore } from '../../stores/wizardStore'
-import type { Receptor, GradoElectrificacion } from '../../types'
+import type { Receptor, GradoElectrificacion, UsoFinca } from '../../types'
 import { FormInput, FormSelect } from '../ui/FormField'
 import { analizarFotoReceptores } from '../../lib/gemini'
 import { compressImage } from '../../lib/imageUtils'
@@ -10,22 +10,34 @@ import toast from 'react-hot-toast'
 
 interface Props { onNext: () => void }
 
-const PRESETS: { label: string; concepto: string; grado: GradoElectrificacion; tension: string; potencia_kw: number; hint?: string }[] = [
-  { label: 'Vivienda básica',      concepto: 'Vivienda',            grado: 'basica',   tension: '230 V',        potencia_kw: 5.75, hint: 'Grado básico (mín. 5,75 kW)' },
-  { label: 'Vivienda elevada',     concepto: 'Vivienda',            grado: 'elevada',  tension: '230 V',        potencia_kw: 9.20, hint: 'Grado elevado (mín. 9,20 kW)' },
-  { label: '2,3 kW — 10A mono',    concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 2.30 },
-  { label: '3,45 kW — 15A mono',   concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 3.45 },
-  { label: '4,6 kW — 20A mono',    concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 4.60 },
-  { label: '6,9 kW — 30A mono',    concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 6.90 },
-  { label: 'Local comercial',      concepto: 'Local comercial',     grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
-  { label: 'Oficina',              concepto: 'Oficina',             grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
-  { label: 'Garaje / Parking',     concepto: 'Garaje',              grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
-  { label: 'Trastero',             concepto: 'Trastero',            grado: '',         tension: '230 V',        potencia_kw: 0 },
-  { label: 'Ascensor',             concepto: 'Ascensor',            grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
-  { label: 'Zonas comunes',        concepto: 'Zonas comunes',       grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
-  { label: 'Uso industrial',       concepto: 'Uso industrial',      grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
-  { label: 'Otro (vacío)',         concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 0 },
+type Preset = { label: string; concepto: string; grado: GradoElectrificacion; tension: string; potencia_kw: number; hint?: string }
+
+const ALL_PRESETS: Preset[] = [
+  { label: 'Vivienda básica',   concepto: 'Vivienda',        grado: 'basica',  tension: '230 V',       potencia_kw: 5.75, hint: 'Grado básico (mín. 5,75 kW)' },
+  { label: 'Vivienda elevada',  concepto: 'Vivienda',        grado: 'elevada', tension: '230 V',       potencia_kw: 9.20, hint: 'Grado elevado (mín. 9,20 kW)' },
+  { label: 'Trastero',          concepto: 'Trastero',        grado: '',        tension: '230 V',       potencia_kw: 0 },
+  { label: 'Garaje / Parking',  concepto: 'Garaje',          grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
+  { label: 'Zonas comunes',     concepto: 'Zonas comunes',   grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
+  { label: 'Ascensor',          concepto: 'Ascensor',        grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
+  { label: 'Local comercial',   concepto: 'Local comercial', grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
+  { label: 'Oficina',           concepto: 'Oficina',         grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
+  { label: 'Uso industrial',    concepto: 'Uso industrial',  grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
+  { label: 'Otro',              concepto: '',                grado: '',        tension: '230 V',       potencia_kw: 0 },
 ]
+
+const PRESETS_BY_USO: Record<UsoFinca | 'default', string[]> = {
+  vivienda:        ['Vivienda básica', 'Vivienda elevada', 'Trastero', 'Garaje / Parking', 'Zonas comunes', 'Ascensor', 'Otro'],
+  local_comercial: ['Local comercial', 'Oficina', 'Zonas comunes', 'Otro'],
+  garaje:          ['Garaje / Parking', 'Zonas comunes', 'Ascensor', 'Otro'],
+  industrial:      ['Uso industrial', 'Oficina', 'Otro'],
+  otro:            ['Local comercial', 'Uso industrial', 'Garaje / Parking', 'Zonas comunes', 'Otro'],
+  default:         ALL_PRESETS.map(p => p.label),
+}
+
+function getPresets(uso: string | null): Preset[] {
+  const keys = (uso && PRESETS_BY_USO[uso as UsoFinca]) ?? PRESETS_BY_USO.default
+  return keys.map(k => ALL_PRESETS.find(p => p.label === k)!).filter(Boolean)
+}
 
 const GRADO_OPTIONS: { value: GradoElectrificacion; label: string }[] = [
   { value: 'basica',   label: 'Básica — 5,75 kW (ITC-BT-10)' },
@@ -54,7 +66,8 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
   const [expanded, setExpanded] = useState<string | null>(null)
   const [showPresets, setShowPresets] = useState(data.receptores.length === 0)
   const [analyzingIA, setAnalyzingIA] = useState(false)
-  const iaInputRef = useRef<HTMLInputElement>(null)
+
+  const presets = getPresets(data.ubicacion.uso_finca)
 
   const potenciaTotal = getPotenciaTotal()
   const needsTrifasico = potenciaTotal > 15
@@ -109,7 +122,6 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
       toast.error('Error al analizar la imagen')
     }
     setAnalyzingIA(false)
-    if (iaInputRef.current) iaInputRef.current.value = ''
   }
 
   return (
@@ -142,30 +154,28 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
       )}
 
       {/* Botón Analizar con IA */}
-      <button
-        type="button"
-        onClick={() => iaInputRef.current?.click()}
-        disabled={analyzingIA}
-        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl
-                   border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10
-                   text-amber-400 text-[12px] font-body font-semibold
-                   transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {analyzingIA
-          ? <><Loader2 className="w-4 h-4 animate-spin" /> Analizando imagen...</>
-          : <><Camera className="w-4 h-4" /><Sparkles className="w-3.5 h-3.5" /> Subir plano / esquema → IA extrae receptores</>
-        }
-      </button>
-      <input
-        ref={iaInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) handleAnalyzeIA(file)
-        }}
-      />
+      {analyzingIA ? (
+        <div className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl
+                        border border-amber-500/30 bg-amber-500/5 text-amber-400 text-[12px] font-body font-semibold opacity-50">
+          <Loader2 className="w-4 h-4 animate-spin" /> Analizando imagen...
+        </div>
+      ) : (
+        <label className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl
+                          border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10
+                          text-amber-400 text-[12px] font-body font-semibold
+                          transition-all duration-200 cursor-pointer">
+          <Camera className="w-4 h-4" /><Sparkles className="w-3.5 h-3.5" /> Subir plano / esquema → IA extrae receptores
+          <input
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) handleAnalyzeIA(file)
+            }}
+          />
+        </label>
+      )}
 
       {/* Lista */}
       <AnimatePresence>
@@ -276,7 +286,7 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
             className="overflow-hidden"
           >
             <div className="grid grid-cols-2 gap-2 pt-1">
-              {PRESETS.map((p) => (
+              {presets.map((p) => (
                 <button
                   key={p.label}
                   type="button"
