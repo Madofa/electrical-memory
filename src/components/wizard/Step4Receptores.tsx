@@ -1,24 +1,21 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, Zap, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Trash2, Zap, AlertCircle, ChevronDown, ChevronUp, Sparkles, Loader2, Camera } from 'lucide-react'
 import { useWizardStore } from '../../stores/wizardStore'
 import type { Receptor, GradoElectrificacion } from '../../types'
 import { FormInput, FormSelect } from '../ui/FormField'
+import { analizarFotoReceptores } from '../../lib/gemini'
+import toast from 'react-hot-toast'
 
 interface Props { onNext: () => void }
 
-// Presets: concepto + grado + potencia estándar de contratación en España
-// La potencia indicada es orientativa y siempre editable
 const PRESETS: { label: string; concepto: string; grado: GradoElectrificacion; tension: string; potencia_kw: number; hint?: string }[] = [
-  // Viviendas — grado según ITC-BT-10, potencia solicitada editable
   { label: 'Vivienda básica',      concepto: 'Vivienda',            grado: 'basica',   tension: '230 V',        potencia_kw: 5.75, hint: 'Grado básico (mín. 5,75 kW)' },
   { label: 'Vivienda elevada',     concepto: 'Vivienda',            grado: 'elevada',  tension: '230 V',        potencia_kw: 9.20, hint: 'Grado elevado (mín. 9,20 kW)' },
-  // Potencias estándar de contratación (monofásico)
   { label: '2,3 kW — 10A mono',    concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 2.30 },
   { label: '3,45 kW — 15A mono',   concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 3.45 },
   { label: '4,6 kW — 20A mono',    concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 4.60 },
   { label: '6,9 kW — 30A mono',    concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 6.90 },
-  // Otros espacios
   { label: 'Local comercial',      concepto: 'Local comercial',     grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
   { label: 'Oficina',              concepto: 'Oficina',             grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
   { label: 'Garaje / Parking',     concepto: 'Garaje',              grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
@@ -55,6 +52,8 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
   const { data, addReceptor, updateReceptor, removeReceptor, getPotenciaTotal } = useWizardStore()
   const [expanded, setExpanded] = useState<string | null>(null)
   const [showPresets, setShowPresets] = useState(data.receptores.length === 0)
+  const [analyzingIA, setAnalyzingIA] = useState(false)
+  const iaInputRef = useRef<HTMLInputElement>(null)
 
   const potenciaTotal = getPotenciaTotal()
   const needsTrifasico = potenciaTotal > 15
@@ -75,6 +74,41 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
 
   const esVivienda = (concepto: string) =>
     concepto.toLowerCase().includes('vivienda')
+
+  const handleAnalyzeIA = async (file: File) => {
+    setAnalyzingIA(true)
+    try {
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.readAsDataURL(file)
+      })
+
+      const result = await analizarFotoReceptores(base64)
+      const receptores = result.receptores ?? []
+
+      if (receptores.length === 0) {
+        toast('No he podido identificar receptores en la imagen — añádelos manualmente', { icon: '🤷' })
+      } else {
+        receptores.forEach((r) => {
+          addReceptor({
+            id: crypto.randomUUID(),
+            concepto: r.concepto ?? '',
+            aclarador: '',
+            potencia_kw: r.potencia_kw ?? 0,
+            tension: r.tension ?? '230 V',
+            grado: (r.grado ?? '') as GradoElectrificacion,
+          })
+        })
+        setShowPresets(false)
+        toast.success(`IA añadió ${receptores.length} receptor${receptores.length > 1 ? 'es' : ''} detectados`)
+      }
+    } catch {
+      toast.error('Error al analizar la imagen')
+    }
+    setAnalyzingIA(false)
+    if (iaInputRef.current) iaInputRef.current.value = ''
+  }
 
   return (
     <div className="space-y-4">
@@ -104,6 +138,32 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
           Potencia &gt;15 kW → suministro trifásico obligatorio (ITC-BT-10)
         </div>
       )}
+
+      {/* Botón Analizar con IA */}
+      <button
+        type="button"
+        onClick={() => iaInputRef.current?.click()}
+        disabled={analyzingIA}
+        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl
+                   border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10
+                   text-amber-400 text-[12px] font-body font-semibold
+                   transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {analyzingIA
+          ? <><Loader2 className="w-4 h-4 animate-spin" /> Analizando imagen...</>
+          : <><Camera className="w-4 h-4" /><Sparkles className="w-3.5 h-3.5" /> Subir plano / esquema → IA extrae receptores</>
+        }
+      </button>
+      <input
+        ref={iaInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file) handleAnalyzeIA(file)
+        }}
+      />
 
       {/* Lista */}
       <AnimatePresence>

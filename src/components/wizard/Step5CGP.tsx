@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { useWizardStore } from '../../stores/wizardStore'
 import { FormTextarea, FormInput } from '../ui/FormField'
 import { PhotoUpload } from '../ui/PhotoUpload'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Sparkles, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { analizarFotoCGP } from '../../lib/gemini'
+import toast from 'react-hot-toast'
 
 interface Props { onNext: () => void }
 
@@ -15,9 +18,38 @@ const TIPOS_CGP = [
 export function Step5CGP({ onNext: _onNext }: Props) {
   const { data, setElementoFrontera, addFoto, updateFoto, removeFoto } = useWizardStore()
   const ef = { ...data.elementoFrontera, fotos: data.elementoFrontera.fotos ?? [] }
+  const [analyzing, setAnalyzing] = useState<string | null>(null)
 
   const handleAddFoto = () => {
     addFoto({ id: crypto.randomUUID(), titulo: '', base64: '' })
+  }
+
+  const handleAnalizar = async (fotoId: string, base64: string) => {
+    setAnalyzing(fotoId)
+    try {
+      const result = await analizarFotoCGP(base64)
+
+      const updates: Record<string, string> = {}
+      if (result.tipo_elemento) updates.tipo_elemento = result.tipo_elemento
+      if (result.descripcion) updates.descripcion = result.descripcion
+
+      if (Object.keys(updates).length > 0) {
+        setElementoFrontera(updates)
+        toast.success('IA ha rellenado los campos detectados')
+      } else {
+        toast('No he podido identificar el elemento — rellena manualmente', { icon: '🤷' })
+      }
+
+      if (result.notas) {
+        const fotoActual = ef.fotos.find((f) => f.id === fotoId)
+        if (fotoActual && !fotoActual.titulo) {
+          updateFoto(fotoId, { titulo: result.notas })
+        }
+      }
+    } catch {
+      toast.error('Error al analizar la imagen')
+    }
+    setAnalyzing(null)
   }
 
   return (
@@ -64,6 +96,16 @@ export function Step5CGP({ onNext: _onNext }: Props) {
           <span className="text-[11px] text-slate-500 font-mono">{ef.fotos.length} adjuntos</span>
         </div>
 
+        {/* Hint IA */}
+        {ef.fotos.length === 0 && (
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-950/20 border border-amber-800/30">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500/70 flex-shrink-0 mt-0.5" />
+            <p className="text-[11px] text-amber-500/70 font-body leading-relaxed">
+              Sube una foto y la IA detectará automáticamente el tipo de elemento y su ubicación.
+            </p>
+          </div>
+        )}
+
         <AnimatePresence>
           {ef.fotos.map((foto) => (
             <motion.div
@@ -90,12 +132,36 @@ export function Step5CGP({ onNext: _onNext }: Props) {
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
+
               <PhotoUpload
                 label=""
                 value={foto.base64}
                 onChange={(b64) => updateFoto(foto.id, { base64: b64 })}
                 onClear={() => updateFoto(foto.id, { base64: '' })}
               />
+
+              {/* Botón Analizar con IA — visible solo cuando hay imagen */}
+              <AnimatePresence>
+                {foto.base64 && (
+                  <motion.button
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    type="button"
+                    onClick={() => handleAnalizar(foto.id, foto.base64)}
+                    disabled={analyzing === foto.id}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
+                               border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10
+                               text-amber-400 text-[12px] font-body font-semibold
+                               transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {analyzing === foto.id
+                      ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Analizando con IA...</>
+                      : <><Sparkles className="w-3.5 h-3.5" /> Analizar con IA → rellenar campos</>
+                    }
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </motion.div>
           ))}
         </AnimatePresence>
