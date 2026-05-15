@@ -23,7 +23,7 @@ const S = {
   signatureBox: { border: '1px solid #000', height: '60px', width: '220px', marginTop: '6px' } as React.CSSProperties,
   photo: { maxWidth: '100%', maxHeight: '260px', width: 'auto', height: 'auto', border: '1px solid #ccc', display: 'inline-block' } as React.CSSProperties,
   photoGrid: { display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '6px', justifyContent: 'flex-start' } as React.CSSProperties,
-  photoCell: { width: 'calc(50% - 6px)', boxSizing: 'border-box', textAlign: 'center' } as React.CSSProperties,
+  photoCell: { width: 'calc(50% - 6px)', boxSizing: 'border-box', textAlign: 'center', pageBreakInside: 'avoid', breakInside: 'avoid' } as React.CSSProperties,
 }
 
 function Row({ label, value, blank }: { label: string; value?: string | null; blank?: boolean }) {
