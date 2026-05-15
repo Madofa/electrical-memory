@@ -153,22 +153,13 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
                     className="overflow-hidden"
                   >
                     <div className="pt-5 mt-4 border-t border-[#1e2d47] space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormInput
-                          label="Tipo de espacio"
-                          value={r.concepto}
-                          onChange={upd(r.id)('concepto')}
-                          placeholder="Vivienda, Local, Garaje..."
-                          required
-                        />
-                        <FormInput
-                          label="Aclarador (opcional)"
-                          value={r.aclarador}
-                          onChange={upd(r.id)('aclarador')}
-                          placeholder="1º 1ª, Planta -1..."
-                          hint="Si hay varios del mismo tipo"
-                        />
-                      </div>
+                      <FormInput
+                        label="Tipo de espacio"
+                        value={r.concepto}
+                        onChange={upd(r.id)('concepto')}
+                        placeholder="Vivienda, Almacén 1, Local..."
+                        required
+                      />
                       <div className="grid grid-cols-2 gap-4">
                         <FormInput
                           label="Potencia solicitada (kW)"
