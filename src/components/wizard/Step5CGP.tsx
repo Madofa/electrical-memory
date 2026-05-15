@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useWizardStore } from '../../stores/wizardStore'
 import { FormTextarea, FormInput } from '../ui/FormField'
 import { PhotoUpload } from '../ui/PhotoUpload'
@@ -19,9 +19,19 @@ export function Step5CGP({ onNext: _onNext }: Props) {
   const { data, setElementoFrontera, addFoto, updateFoto, removeFoto } = useWizardStore()
   const ef = { ...data.elementoFrontera, fotos: data.elementoFrontera.fotos ?? [] }
   const [analyzing, setAnalyzing] = useState<string | null>(null)
+  const addFotoInputRef = useRef<HTMLInputElement>(null)
 
   const handleAddFoto = () => {
-    addFoto({ id: crypto.randomUUID(), titulo: '', base64: '' })
+    addFotoInputRef.current?.click()
+  }
+
+  const handleAddFotoFile = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      addFoto({ id: crypto.randomUUID(), titulo: '', base64: reader.result as string })
+    }
+    reader.readAsDataURL(file)
+    if (addFotoInputRef.current) addFotoInputRef.current.value = ''
   }
 
   const handleAnalizar = async (fotoId: string, base64: string) => {
@@ -170,6 +180,13 @@ export function Step5CGP({ onNext: _onNext }: Props) {
           <Plus className="w-4 h-4" />
           Añadir foto o croquis
         </button>
+        <input
+          ref={addFotoInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAddFotoFile(f) }}
+        />
       </div>
     </div>
   )
