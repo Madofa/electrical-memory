@@ -26,13 +26,16 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: npm run build
 
-      - name: Deploy to server via rsync
-        uses: easingthemes/ssh-deploy@main
-        with:
+      - name: Deploy via SSH + tar
+        env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-rlgoDzvc --delete"
-          SOURCE: "dist/"
-          REMOTE_HOST: sinilos.com
-          REMOTE_PORT: 1020
-          REMOTE_USER: r307889
-          TARGET: /home/r307889/memoria.sinilos.com/
+        run: |
+          echo "$SSH_PRIVATE_KEY" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          tar czf /tmp/dist.tar.gz -C dist .
+          scp -P 1020 -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+            /tmp/dist.tar.gz r307889@sinilos.com:/tmp/dist.tar.gz
+          ssh -p 1020 -i /tmp/deploy_key -o StrictHostKeyChecking=no \
+            r307889@sinilos.com \
+            'rm -rf ~/memoria.sinilos.com/* && tar xzf /tmp/dist.tar.gz -C ~/memoria.sinilos.com/ && rm /tmp/dist.tar.gz && echo OK'
+          rm /tmp/deploy_key /tmp/dist.tar.gz
