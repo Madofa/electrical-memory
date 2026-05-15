@@ -140,7 +140,7 @@ export function PDFTemplate({ data, instalador }: Props) {
         return (
           <div style={S.photoGrid}>
             {fotos.map((foto, i) => (
-              <div key={foto.id} style={S.photoCell}>
+              <div key={foto.id} className="pdf-photo-cell" style={S.photoCell}>
                 <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '3px', textAlign: 'left' }}>
                   {foto.titulo || `Fotografía ${i + 1}`}:
                 </div>

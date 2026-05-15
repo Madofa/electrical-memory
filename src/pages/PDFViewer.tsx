@@ -30,7 +30,7 @@ export function PDFViewer() {
     setGenerating(true)
     try {
       const html2pdf = (await import('html2pdf.js')).default
-      const ref = data.referencia_interna || 'memoria-tecnica'
+      const ref = memoria.wizard_data.referencia_interna || 'memoria-tecnica'
       await html2pdf()
         .set({
           margin: [15, 15, 15, 15],
@@ -38,6 +38,7 @@ export function PDFViewer() {
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true, letterRendering: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['css', 'legacy'], avoid: ['img', '.pdf-photo-cell', '.pdf-no-break'] },
         })
         .from(contentRef.current)
         .save()
@@ -97,13 +98,24 @@ export function PDFViewer() {
             className="w-full max-w-[794px]"
           >
             <div
-              className="bg-white rounded-xl shadow-2xl overflow-hidden"
-              style={{ boxShadow: '0 25px 60px rgba(0,0,0,0.6)' }}
+              className="relative bg-white rounded-xl shadow-2xl overflow-hidden"
+              style={{
+                boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
+                // Indicador visual de salto de página A4: línea roja punteada cada 1008px
+                // (alto útil A4 a 96dpi tras restar márgenes 15mm sup+inf de html2pdf).
+                backgroundImage:
+                  'repeating-linear-gradient(to bottom, transparent 0, transparent 1007px, rgba(239,68,68,0.55) 1007px, rgba(239,68,68,0.55) 1009px, transparent 1009px, transparent 1010px)',
+                backgroundSize: '100% 1010px',
+                backgroundRepeat: 'repeat-y',
+              }}
             >
               <div ref={contentRef} className="p-[30px]">
                 <PDFTemplate data={data} instalador={instalador} />
               </div>
             </div>
+            <p className="text-[10px] text-amber-500/60 font-mono text-center mt-3">
+              Las líneas rojas marcan el salto de página A4 al exportar
+            </p>
           </motion.div>
         </main>
 
