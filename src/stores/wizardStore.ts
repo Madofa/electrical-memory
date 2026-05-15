@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { WizardData, Receptor } from '../types'
+import type { WizardData, Receptor, FotoDoc } from '../types'
 import { defaultWizardData } from '../types'
 
 interface WizardStore {
@@ -16,6 +16,9 @@ interface WizardStore {
   updateReceptor: (id: string, r: Partial<Receptor>) => void
   removeReceptor: (id: string) => void
   setElementoFrontera: (e: Partial<WizardData['elementoFrontera']>) => void
+  addFoto: (f: FotoDoc) => void
+  updateFoto: (id: string, partial: Partial<FotoDoc>) => void
+  removeFoto: (id: string) => void
   setIncluirCalculos: (v: boolean) => void
   setCalculos: (c: Partial<WizardData['calculos']>) => void
   setFirma: (lugar: string, fecha: string) => void
@@ -78,9 +81,44 @@ export const useWizardStore = create<WizardStore>()(
 
       setElementoFrontera: (partial) =>
         set((s) => ({
+          data: { ...s.data, elementoFrontera: { ...s.data.elementoFrontera, ...partial } },
+          isDirty: true,
+        })),
+
+      addFoto: (f) =>
+        set((s) => ({
           data: {
             ...s.data,
-            elementoFrontera: { ...s.data.elementoFrontera, ...partial },
+            elementoFrontera: {
+              ...s.data.elementoFrontera,
+              fotos: [...s.data.elementoFrontera.fotos, f],
+            },
+          },
+          isDirty: true,
+        })),
+
+      updateFoto: (id, partial) =>
+        set((s) => ({
+          data: {
+            ...s.data,
+            elementoFrontera: {
+              ...s.data.elementoFrontera,
+              fotos: s.data.elementoFrontera.fotos.map((f) =>
+                f.id === id ? { ...f, ...partial } : f
+              ),
+            },
+          },
+          isDirty: true,
+        })),
+
+      removeFoto: (id) =>
+        set((s) => ({
+          data: {
+            ...s.data,
+            elementoFrontera: {
+              ...s.data.elementoFrontera,
+              fotos: s.data.elementoFrontera.fotos.filter((f) => f.id !== id),
+            },
           },
           isDirty: true,
         })),

@@ -1,6 +1,8 @@
 import { useWizardStore } from '../../stores/wizardStore'
-import { FormTextarea } from '../ui/FormField'
+import { FormTextarea, FormInput } from '../ui/FormField'
 import { PhotoUpload } from '../ui/PhotoUpload'
+import { Plus, Trash2 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface Props { onNext: () => void }
 
@@ -11,10 +13,12 @@ const TIPOS_CGP = [
 ]
 
 export function Step5CGP({ onNext: _onNext }: Props) {
-  const { data, setElementoFrontera } = useWizardStore()
+  const { data, setElementoFrontera, addFoto, updateFoto, removeFoto } = useWizardStore()
   const ef = data.elementoFrontera
-  const set = (field: keyof typeof ef) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-    setElementoFrontera({ [field]: e.target.value })
+
+  const handleAddFoto = () => {
+    addFoto({ id: crypto.randomUUID(), titulo: '', base64: '' })
+  }
 
   return (
     <div className="space-y-5">
@@ -47,43 +51,59 @@ export function Step5CGP({ onNext: _onNext }: Props) {
         <FormTextarea
           label="Descripción de la ubicación propuesta"
           value={ef.descripcion}
-          onChange={set('descripcion')}
+          onChange={(e) => setElementoFrontera({ descripcion: e.target.value })}
           placeholder="Describe dónde se propone instalar el elemento frontera: fachada, portal, local técnico..."
-          hint="Texto libre que aparecerá en la sección 5 del documento"
         />
       </div>
 
-      <div className="card space-y-5">
-        <h3 className="font-display font-semibold text-xs tracking-widest uppercase text-amber-500/70">
-          Fotografías y croquis
-        </h3>
-        <p className="text-[12px] text-slate-500 font-body -mt-2">
-          Obligatorias para la presentación ante e-distribución.
-        </p>
+      <div className="card space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-display font-semibold text-xs tracking-widest uppercase text-amber-500/70">
+            Fotografías y croquis
+          </h3>
+          <span className="text-[11px] text-slate-500 font-mono">{ef.fotos.length} adjuntos</span>
+        </div>
 
-        <PhotoUpload
-          label="Fotografía — punto de entrega de energía"
-          value={ef.foto_punto_entrega_base64}
-          onChange={(b64) => setElementoFrontera({ foto_punto_entrega_base64: b64 })}
-          onClear={() => setElementoFrontera({ foto_punto_entrega_base64: '' })}
-          hint="Estado actual de la fachada o punto de acometida"
-        />
+        <AnimatePresence>
+          {ef.fotos.map((foto) => (
+            <motion.div
+              key={foto.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="border border-ink-500 rounded-xl p-4 space-y-3"
+            >
+              <div className="flex items-center gap-2">
+                <FormInput
+                  label="Título / descripción"
+                  value={foto.titulo}
+                  onChange={(e) => updateFoto(foto.id, { titulo: e.target.value })}
+                  placeholder="Ej: Fachada actual, Propuesta CGP, Croquis planta..."
+                  className="flex-1"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeFoto(foto.id)}
+                  className="btn-ghost p-2 text-slate-600 hover:text-red-400 mt-5 flex-shrink-0"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+              <PhotoUpload
+                label=""
+                value={foto.base64}
+                onChange={(b64) => updateFoto(foto.id, { base64: b64 })}
+                onClear={() => updateFoto(foto.id, { base64: '' })}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
-        <PhotoUpload
-          label="Fotografía — propuesta de ubicación CGP"
-          value={ef.foto_propuesta_cgp_base64}
-          onChange={(b64) => setElementoFrontera({ foto_propuesta_cgp_base64: b64 })}
-          onClear={() => setElementoFrontera({ foto_propuesta_cgp_base64: '' })}
-          hint="Señala visualmente dónde irá el elemento frontera"
-        />
-
-        <PhotoUpload
-          label="Croquis"
-          value={ef.croquis_base64}
-          onChange={(b64) => setElementoFrontera({ croquis_base64: b64 })}
-          onClear={() => setElementoFrontera({ croquis_base64: '' })}
-          hint="Plano o croquis de planta / alzado (opcional)"
-        />
+        <button type="button" onClick={handleAddFoto} className="btn-secondary w-full justify-center">
+          <Plus className="w-4 h-4" />
+          Añadir foto o croquis
+        </button>
       </div>
     </div>
   )

@@ -74,12 +74,16 @@ export interface DatosUbicacion {
   cups: string
 }
 
+export interface FotoDoc {
+  id: string
+  titulo: string
+  base64: string
+}
+
 export interface ElementoFrontera {
   tipo_elemento: string
   descripcion: string
-  foto_punto_entrega_base64: string
-  foto_propuesta_cgp_base64: string
-  croquis_base64: string
+  fotos: FotoDoc[]
 }
 
 export interface Calculos {
@@ -181,8 +185,8 @@ export const defaultWizardData = (): WizardData => ({
   receptores: [],
   elementoFrontera: {
     tipo_elemento: 'Caja General de Protección (CGP)',
-    descripcion: '', foto_punto_entrega_base64: '',
-    foto_propuesta_cgp_base64: '', croquis_base64: '',
+    descripcion: '',
+    fotos: [],
   },
   incluir_calculos: false,
   calculos: {},

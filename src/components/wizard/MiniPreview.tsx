@@ -52,7 +52,7 @@ export function MiniPreview({ data, currentStep }: Props) {
   const hasSolicitante = !!(s.razon_social || s.cif_nif)
   const hasUbicacion = !!(u.municipio || u.direccion)
   const hasReceptores = receptores.length > 0
-  const hasCGP = !!(ef.descripcion || ef.foto_punto_entrega_base64)
+  const hasCGP = !!(ef.descripcion || ef.fotos?.length)
   const hasFirma = !!(data.lugarFirma && data.fechaFirma)
 
   const isEmpty = !hasRef && !hasSolicitante && !hasUbicacion && !hasReceptores
@@ -129,11 +129,11 @@ export function MiniPreview({ data, currentStep }: Props) {
 
           <PreviewSection title="§5 CGP" show={hasCGP}>
             <PreviewRow label="Elemento" value={ef.tipo_elemento} />
-            {ef.foto_punto_entrega_base64 && (
-              <div className="rounded-md overflow-hidden border border-ink-600/50 mt-1.5 mb-2">
-                <img src={ef.foto_punto_entrega_base64} className="w-full h-16 object-cover opacity-60" />
+            {ef.fotos?.filter((f) => f.base64).slice(0, 1).map((f) => (
+              <div key={f.id} className="rounded-md overflow-hidden border border-ink-600/50 mt-1.5 mb-2">
+                <img src={f.base64} className="w-full h-16 object-cover opacity-60" />
               </div>
-            )}
+            ))}
           </PreviewSection>
 
           <PreviewSection title="§7 Declaración" show={hasFirma}>

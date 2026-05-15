@@ -121,24 +121,14 @@ export function PDFTemplate({ data, instalador }: Props) {
       <div style={{ fontSize: '11px', marginTop: '2px', marginBottom: '8px' }}>
         {ef.descripcion || '—'}
       </div>
-      {ef.foto_punto_entrega_base64 && (
-        <div style={{ marginBottom: '10px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '3px' }}>Fotografía — punto de entrega de energía:</div>
-          <img src={ef.foto_punto_entrega_base64} style={S.photo} />
+      {ef.fotos?.filter((f) => f.base64).map((foto, i) => (
+        <div key={foto.id} style={{ marginBottom: '10px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '3px' }}>
+            {foto.titulo || `Fotografía ${i + 1}`}:
+          </div>
+          <img src={foto.base64} style={S.photo} />
         </div>
-      )}
-      {ef.foto_propuesta_cgp_base64 && (
-        <div style={{ marginBottom: '10px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '3px' }}>Fotografía — propuesta de ubicación CGP:</div>
-          <img src={ef.foto_propuesta_cgp_base64} style={S.photo} />
-        </div>
-      )}
-      {ef.croquis_base64 && (
-        <div style={{ marginBottom: '10px' }}>
-          <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '3px' }}>Croquis:</div>
-          <img src={ef.croquis_base64} style={S.photo} />
-        </div>
-      )}
+      ))}
       <div style={S.note}>
         * Las fotografías y el croquis adjuntos muestran la propuesta de ubicación de la CGP en el emplazamiento indicado.
       </div>
