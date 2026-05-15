@@ -219,7 +219,6 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
                         value={r.concepto}
                         onChange={upd(r.id)('concepto')}
                         placeholder="Vivienda, Almacén 1, Local..."
-                        required
                       />
                       <div className="grid grid-cols-2 gap-4">
                         <FormInput

@@ -40,14 +40,12 @@ export function Step7Declaracion({ onNext: _onNext }: Props) {
             value={data.lugarFirma}
             onChange={(e) => setFirma(e.target.value, data.fechaFirma)}
             placeholder="Barcelona"
-            required
           />
           <FormInput
             label="Fecha"
             value={data.fechaFirma}
             onChange={(e) => setFirma(data.lugarFirma, e.target.value)}
             type="date"
-            required
           />
         </div>
       </div>

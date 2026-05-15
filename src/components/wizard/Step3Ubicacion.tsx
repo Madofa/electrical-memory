@@ -105,12 +105,12 @@ export function Step3Ubicacion({ onNext: _onNext }: Props) {
           Dirección del suministro
         </h3>
         <div className="grid grid-cols-3 gap-4">
-          <FormInput label="Calle / Avenida" value={u.direccion} onChange={set('direccion')} className="col-span-2" required />
+          <FormInput label="Calle / Avenida" value={u.direccion} onChange={set('direccion')} className="col-span-2" />
           <FormInput label="Número" value={u.numero} onChange={set('numero')} />
         </div>
         <FormInput label="Piso / Puerta (opcional)" value={u.piso_puerta} onChange={set('piso_puerta')} />
         <div className="grid grid-cols-3 gap-4">
-          <FormInput label="Municipio" value={u.municipio} onChange={set('municipio')} className="col-span-2" required />
+          <FormInput label="Municipio" value={u.municipio} onChange={set('municipio')} className="col-span-2" />
           <FormInput label="C.P." value={u.cp} onChange={set('cp')} />
         </div>
         <FormSelect label="Provincia" value={u.provincia} onChange={set('provincia') as any} options={PROVINCIAS} placeholder="Selecciona..." />

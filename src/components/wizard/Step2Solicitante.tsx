@@ -14,12 +14,12 @@ export function Step2Solicitante({ onNext: _onNext }: Props) {
       <p className="text-[12px] text-amber-500/70 font-body bg-amber-500/5 border border-amber-500/15 rounded-lg px-3 py-2">
         Debe ser el <strong>propietario del inmueble</strong>. Si el solicitante es el inquilino, e-distribución exige adjuntar autorización del propietario.
       </p>
-      <FormInput label="Razón social / Nombre" value={s.razon_social} onChange={set('razon_social')} required />
-      <FormInput label="CIF / NIF" value={s.cif_nif} onChange={set('cif_nif')} required />
+      <FormInput label="Razón social / Nombre" value={s.razon_social} onChange={set('razon_social')} />
+      <FormInput label="CIF / NIF" value={s.cif_nif} onChange={set('cif_nif')} />
       <div className="divider my-1" />
-      <FormInput label="Dirección" value={s.direccion} onChange={set('direccion')} required />
+      <FormInput label="Dirección" value={s.direccion} onChange={set('direccion')} />
       <div className="grid grid-cols-2 gap-4">
-        <FormInput label="Municipio" value={s.municipio} onChange={set('municipio')} required />
+        <FormInput label="Municipio" value={s.municipio} onChange={set('municipio')} />
         <FormInput label="Código postal" value={s.cp} onChange={set('cp')} />
       </div>
       <div className="divider my-1" />
