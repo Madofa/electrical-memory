@@ -42,6 +42,19 @@ export function Wizard() {
 
   useEffect(() => { setPasoActual(step) }, [step])
 
+  // Guardar al salir del wizard (back del navegador, cierre de tab...)
+  useEffect(() => {
+    return () => {
+      const store = useWizardStore.getState()
+      if (store.isDirty && user) {
+        saveMemoria(user.id, store.data, 'borrador', store.memoriaId ?? undefined)
+          .then((id) => store.loadMemoria(id, store.data))
+          .catch(console.error)
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Autoguardado silencioso 2s tras el último cambio
   useEffect(() => {
     if (!isDirty || !user) return
@@ -52,13 +65,25 @@ export function Wizard() {
         const store = useWizardStore.getState()
         const id = await saveMemoria(user.id, store.data, 'borrador', store.memoriaId ?? undefined)
         store.loadMemoria(id, store.data)
-      } catch (e) {
-        console.error('Autoguardado fallido:', e)
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : JSON.stringify(e)
+        toast.error(`Error guardando: ${msg}`, { duration: 8000 })
       }
       setAutoSaving(false)
-    }, 2000)
+    }, 1000)
     return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
   }, [data, isDirty, user])
+
+  const handleBack = async () => {
+    if (isDirty && user) {
+      try {
+        const store = useWizardStore.getState()
+        const id = await saveMemoria(user.id, store.data, 'borrador', store.memoriaId ?? undefined)
+        store.loadMemoria(id, store.data)
+      } catch { /* ignore */ }
+    }
+    navigate('/')
+  }
 
   const goNext = () => {
     setCompletedSteps((prev) => new Set([...prev, step]))
@@ -100,7 +125,7 @@ export function Wizard() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="border-b border-[#1e2d47] px-6 py-4 flex items-center gap-4 bg-[#0a0f1e]/90 backdrop-blur sticky top-0 z-50">
-        <button onClick={() => navigate('/')} className="btn-ghost p-2 flex-shrink-0">
+        <button onClick={handleBack} className="btn-ghost p-2 flex-shrink-0">
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="flex items-center gap-3 flex-shrink-0">
