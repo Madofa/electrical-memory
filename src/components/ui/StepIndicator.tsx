@@ -4,7 +4,7 @@ import { Check } from 'lucide-react'
 export const WIZARD_STEPS = [
   { label: 'Solicitante', short: '01' },
   { label: 'Ubicación', short: '02' },
-  { label: 'Cargas', short: '03' },
+  { label: 'Receptores', short: '03' },
   { label: 'CGP', short: '04' },
   { label: 'Cálculos', short: '05' },
   { label: 'Declaración', short: '06' },

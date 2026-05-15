@@ -1,5 +1,5 @@
 import type { WizardData, Instalador } from '../../types'
-import { LABELS_TIPO_SOLICITUD, LABELS_USO_FINCA } from '../../types'
+import { LABELS_TIPO_SOLICITUD, LABELS_USO_FINCA, LABELS_TIPO_INSTALADOR } from '../../types'
 import { formatDate } from '../../lib/supabase'
 
 interface Props {
@@ -24,11 +24,11 @@ const S = {
   photo: { maxWidth: '100%', maxHeight: '200px', border: '1px solid #ccc', marginTop: '4px' } as React.CSSProperties,
 }
 
-function Row({ label, value }: { label: string; value?: string | null }) {
+function Row({ label, value, blank }: { label: string; value?: string | null; blank?: boolean }) {
   return (
     <div style={S.row}>
       <div style={S.label}>{label}:</div>
-      <div style={S.value}>{value || '—'}</div>
+      <div style={S.value}>{value || (blank ? '____________________________________________' : '—')}</div>
     </div>
   )
 }
@@ -186,12 +186,12 @@ export function PDFTemplate({ data, instalador }: Props) {
       <SectionTitle>8. Datos del redactor</SectionTitle>
       <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
         <div style={{ flex: 1 }}>
-          <Row label="Nombre y apellidos" value={instalador.nombre_completo} />
-          <Row label="DNI / NIE" value={instalador.dni_nie} />
-          <Row label="Tipo" value={instalador.tipo} />
-          <Row label="Nº de instalador" value={instalador.numero_carnet} />
-          {instalador.numero_colegiado && <Row label="Nº de colegiado" value={instalador.numero_colegiado} />}
-          {instalador.empresa_nombre && <Row label="Empresa" value={instalador.empresa_nombre} />}
+          <Row label="Nombre y apellidos" value={instalador.nombre_completo} blank />
+          <Row label="DNI / NIE" value={instalador.dni_nie} blank />
+          <Row label="Tipo / Categoría" value={instalador.tipo ? LABELS_TIPO_INSTALADOR[instalador.tipo] : null} blank />
+          <Row label="Nº de instalador" value={instalador.numero_carnet} blank />
+          {instalador.numero_colegiado && <Row label="Nº de colegiado" value={instalador.numero_colegiado} blank />}
+          <Row label="Empresa" value={instalador.empresa_nombre} blank />
           {instalador.empresa_cif && <Row label="CIF empresa" value={instalador.empresa_cif} />}
           {instalador.empresa_direccion && <Row label="Dirección" value={instalador.empresa_direccion} />}
           {instalador.empresa_telefono && <Row label="Teléfono" value={instalador.empresa_telefono} />}

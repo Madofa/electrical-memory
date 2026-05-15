@@ -7,18 +7,26 @@ import { FormInput, FormSelect } from '../ui/FormField'
 
 interface Props { onNext: () => void }
 
-// Presets según REBT ITC-BT-10
-const PRESETS: { label: string; concepto: string; grado: GradoElectrificacion; tension: string; potencia_kw: number }[] = [
-  { label: 'Vivienda básica',    concepto: 'Vivienda',           grado: 'basica',   tension: '230 V',        potencia_kw: 5.75 },
-  { label: 'Vivienda elevada',   concepto: 'Vivienda',           grado: 'elevada',  tension: '230 V',        potencia_kw: 9.20 },
-  { label: 'Local comercial',    concepto: 'Local comercial',    grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
-  { label: 'Oficina',            concepto: 'Oficina',            grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
-  { label: 'Garaje',             concepto: 'Garaje',             grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
-  { label: 'Trastero',           concepto: 'Trastero',           grado: '',         tension: '230 V',        potencia_kw: 0 },
-  { label: 'Ascensor',           concepto: 'Ascensor',           grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
-  { label: 'Zonas comunes',      concepto: 'Zonas comunes',      grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
-  { label: 'Uso industrial',     concepto: 'Uso industrial',     grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
-  { label: 'Otro',               concepto: '',                   grado: '',         tension: '230 V',        potencia_kw: 0 },
+// Presets: concepto + grado + potencia estándar de contratación en España
+// La potencia indicada es orientativa y siempre editable
+const PRESETS: { label: string; concepto: string; grado: GradoElectrificacion; tension: string; potencia_kw: number; hint?: string }[] = [
+  // Viviendas — grado según ITC-BT-10, potencia solicitada editable
+  { label: 'Vivienda básica',      concepto: 'Vivienda',            grado: 'basica',   tension: '230 V',        potencia_kw: 5.75, hint: 'Grado básico (mín. 5,75 kW)' },
+  { label: 'Vivienda elevada',     concepto: 'Vivienda',            grado: 'elevada',  tension: '230 V',        potencia_kw: 9.20, hint: 'Grado elevado (mín. 9,20 kW)' },
+  // Potencias estándar de contratación (monofásico)
+  { label: '2,3 kW — 10A mono',    concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 2.30 },
+  { label: '3,45 kW — 15A mono',   concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 3.45 },
+  { label: '4,6 kW — 20A mono',    concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 4.60 },
+  { label: '6,9 kW — 30A mono',    concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 6.90 },
+  // Otros espacios
+  { label: 'Local comercial',      concepto: 'Local comercial',     grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
+  { label: 'Oficina',              concepto: 'Oficina',             grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
+  { label: 'Garaje / Parking',     concepto: 'Garaje',              grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
+  { label: 'Trastero',             concepto: 'Trastero',            grado: '',         tension: '230 V',        potencia_kw: 0 },
+  { label: 'Ascensor',             concepto: 'Ascensor',            grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
+  { label: 'Zonas comunes',        concepto: 'Zonas comunes',       grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
+  { label: 'Uso industrial',       concepto: 'Uso industrial',      grado: '',         tension: '3×230/400 V',  potencia_kw: 0 },
+  { label: 'Otro (vacío)',         concepto: '',                    grado: '',         tension: '230 V',        potencia_kw: 0 },
 ]
 
 const GRADO_OPTIONS: { value: GradoElectrificacion; label: string }[] = [
@@ -163,13 +171,14 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <FormInput
-                          label="Potencia (kW)"
+                          label="Potencia solicitada (kW)"
                           value={r.potencia_kw || ''}
                           onChange={upd(r.id)('potencia_kw')}
                           type="number"
                           step="0.01"
                           min="0"
                           className="font-mono"
+                          hint="Editable — independiente del grado"
                         />
                         <FormSelect
                           label="Tensión"
@@ -224,9 +233,9 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
                   className="text-left px-3 py-2.5 rounded-xl border border-ink-500 bg-ink-800 hover:border-amber-500/40 hover:bg-amber-500/5 transition-all duration-200"
                 >
                   <div className="font-body font-semibold text-[12px] text-slate-300">{p.label}</div>
-                  {p.potencia_kw > 0 && (
-                    <div className="text-[10px] font-mono text-amber-500/50">{p.potencia_kw.toFixed(2)} kW</div>
-                  )}
+                  <div className="text-[10px] font-mono text-amber-500/50">
+                    {p.hint ?? (p.potencia_kw > 0 ? `${p.potencia_kw.toFixed(2)} kW` : 'Potencia a definir')}
+                  </div>
                 </button>
               ))}
             </div>
