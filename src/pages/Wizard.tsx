@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Save, FileDown, Zap } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Save, FileDown, Zap, Cloud } from 'lucide-react'
 import { useWizardStore } from '../stores/wizardStore'
 import { useAuthStore } from '../stores/authStore'
 import { saveMemoria } from '../lib/supabase'
@@ -37,8 +37,26 @@ export function Wizard() {
 
   const StepComponent = STEPS[step]
   const isLast = step === STEPS.length - 1
+  const [autoSaving, setAutoSaving] = useState(false)
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => { setPasoActual(step) }, [step])
+
+  // Autoguardado silencioso 2s tras el último cambio
+  useEffect(() => {
+    if (!isDirty || !user) return
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(async () => {
+      setAutoSaving(true)
+      try {
+        const store = useWizardStore.getState()
+        const id = await saveMemoria(user.id, store.data, 'borrador', store.memoriaId ?? undefined)
+        store.loadMemoria(id, store.data)
+      } catch { /* silencioso */ }
+      setAutoSaving(false)
+    }, 2000)
+    return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
+  }, [data, isDirty, user])
 
   const goNext = () => {
     setCompletedSteps((prev) => new Set([...prev, step]))
@@ -104,7 +122,17 @@ export function Wizard() {
           />
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          {isDirty && (
+          {autoSaving && (
+            <span className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
+              <Cloud className="w-3 h-3 animate-pulse" /> guardando...
+            </span>
+          )}
+          {!autoSaving && !isDirty && (
+            <span className="text-[11px] text-slate-600 font-mono flex items-center gap-1">
+              <Cloud className="w-3 h-3" /> guardado
+            </span>
+          )}
+          {isDirty && !autoSaving && (
             <button
               onClick={() => handleSave(false)}
               disabled={saving}

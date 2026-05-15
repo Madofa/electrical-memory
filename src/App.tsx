@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { supabase, getInstalador } from './lib/supabase'
+import { supabase, getInstalador, getMemorias } from './lib/supabase'
 import { useAuthStore } from './stores/authStore'
+import { useWizardStore } from './stores/wizardStore'
 import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
 import { ProfileSetup } from './pages/ProfileSetup'
@@ -21,20 +22,35 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return user ? <>{children}</> : <Navigate to="/login" replace />
 }
 
+async function loadDraftFromServer(userId: string) {
+  const { data: memorias } = await getMemorias(userId)
+  const draft = memorias?.find((m) => m.estado === 'borrador')
+  if (draft?.wizard_data) {
+    useWizardStore.getState().loadMemoria(draft.id, draft.wizard_data)
+  }
+}
+
 export default function App() {
   const { setUser, setInstalador, setLoading } = useAuthStore()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
-      if (session?.user) getInstalador(session.user.id).then(setInstalador)
+      if (session?.user) {
+        getInstalador(session.user.id).then(setInstalador)
+        loadDraftFromServer(session.user.id)
+      }
       setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
-      if (session?.user) getInstalador(session.user.id).then(setInstalador)
-      else setInstalador(null)
+      if (session?.user) {
+        getInstalador(session.user.id).then(setInstalador)
+        loadDraftFromServer(session.user.id)
+      } else {
+        setInstalador(null)
+      }
     })
 
     return () => subscription.unsubscribe()
