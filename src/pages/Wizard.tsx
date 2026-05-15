@@ -52,7 +52,9 @@ export function Wizard() {
         const store = useWizardStore.getState()
         const id = await saveMemoria(user.id, store.data, 'borrador', store.memoriaId ?? undefined)
         store.loadMemoria(id, store.data)
-      } catch { /* silencioso */ }
+      } catch (e) {
+        console.error('Autoguardado fallido:', e)
+      }
       setAutoSaving(false)
     }, 2000)
     return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }

@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { Camera, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { compressImage } from '../../lib/imageUtils'
 
 interface PhotoUploadProps {
   label: string
@@ -15,7 +16,10 @@ export function PhotoUpload({ label, value, onChange, onClear, hint }: PhotoUplo
 
   const handleFile = (file: File) => {
     const reader = new FileReader()
-    reader.onload = () => onChange(reader.result as string)
+    reader.onload = async () => {
+      const compressed = await compressImage(reader.result as string)
+      onChange(compressed)
+    }
     reader.readAsDataURL(file)
   }
 

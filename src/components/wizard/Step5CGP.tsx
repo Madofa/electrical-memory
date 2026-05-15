@@ -5,6 +5,7 @@ import { PhotoUpload } from '../ui/PhotoUpload'
 import { Plus, Trash2, Sparkles, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { analizarFotoCGP } from '../../lib/gemini'
+import { compressImage } from '../../lib/imageUtils'
 import toast from 'react-hot-toast'
 
 interface Props { onNext: () => void }
@@ -49,17 +50,17 @@ export function Step5CGP({ onNext: _onNext }: Props) {
 
   const handleFiles = async (files: FileList) => {
     const arr = Array.from(files)
-    const toastId = arr.length > 1 ? toast.loading(`Subiendo ${arr.length} fotos...`) : undefined
+    if (arr.length > 1) toast.loading(`Procesando ${arr.length} fotos...`, { id: 'upload' })
 
     await Promise.all(arr.map(async (file) => {
-      const base64 = await readBase64(file)
+      const raw = await readBase64(file)
+      const base64 = await compressImage(raw) // comprime antes de guardar
       const id = crypto.randomUUID()
       addFoto({ id, titulo: '', base64 })
-      analizarYRellenar(id, base64) // análisis en paralelo, sin bloquear
+      analizarYRellenar(id, base64)
     }))
 
-    if (toastId) toast.dismiss(toastId)
-    if (arr.length > 1) toast.success(`${arr.length} fotos añadidas — analizando con IA...`)
+    if (arr.length > 1) toast.success(`${arr.length} fotos añadidas`, { id: 'upload' })
     if (addFotoInputRef.current) addFotoInputRef.current.value = ''
   }
 

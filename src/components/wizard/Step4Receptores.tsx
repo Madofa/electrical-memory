@@ -5,6 +5,7 @@ import { useWizardStore } from '../../stores/wizardStore'
 import type { Receptor, GradoElectrificacion } from '../../types'
 import { FormInput, FormSelect } from '../ui/FormField'
 import { analizarFotoReceptores } from '../../lib/gemini'
+import { compressImage } from '../../lib/imageUtils'
 import toast from 'react-hot-toast'
 
 interface Props { onNext: () => void }
@@ -78,11 +79,12 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
   const handleAnalyzeIA = async (file: File) => {
     setAnalyzingIA(true)
     try {
-      const base64 = await new Promise<string>((resolve) => {
+      const raw = await new Promise<string>((resolve) => {
         const reader = new FileReader()
         reader.onload = () => resolve(reader.result as string)
         reader.readAsDataURL(file)
       })
+      const base64 = await compressImage(raw)
 
       const result = await analizarFotoReceptores(base64)
       const receptores = result.receptores ?? []

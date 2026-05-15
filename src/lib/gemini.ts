@@ -75,22 +75,31 @@ Sé específico con lo que ves. Si es un plano o croquis, indícalo.`
 
 export async function analizarFotoReceptores(base64: string, mimeType = 'image/jpeg'): Promise<GeminiReceptoresResult> {
   const prompt = `Eres un técnico electricista español experto en instalaciones en baja tensión (REBT, ITC-BT-10).
-Analiza esta imagen (puede ser un cuadro eléctrico, esquema, plano, o instalación) e identifica los receptores/suministros eléctricos.
+Analiza esta imagen. Puede ser: un cuadro de distribución/eléctrico, un croquis o esquema unifilar, un plano, o una foto de la instalación.
+
+Tu objetivo es identificar los SUMINISTROS (puntos de acometida) que hay en la instalación, NO los circuitos internos.
+Ejemplos de suministros: una vivienda, un local comercial, un garaje, un trastero, un ascensor, zonas comunes.
+
+REGLAS:
+- Si ves un cuadro eléctrico de una vivienda (con circuitos como enchufes, luces, cocina, AC...) → es UN SOLO suministro tipo "Vivienda"
+- La potencia del suministro se deduce del IGA/interruptor general: C25=5.75kW (básica), C40=9.2kW (elevada)
+- Si ves un croquis con varios contadores o varios suministros, lista cada uno
+- Si hay texto o etiquetas en la imagen, úsalos para identificar los elementos
 
 Devuelve ÚNICAMENTE un objeto JSON (sin markdown, sin explicaciones):
 {
   "receptores": [
     {
-      "concepto": "<tipo de espacio: Vivienda, Local comercial, Garaje, Trastero, Ascensor, Zonas comunes, etc.>",
-      "potencia_kw": <potencia en kW como número, 0 si no es visible>,
+      "concepto": "<Vivienda | Local comercial | Garaje | Trastero | Ascensor | Zonas comunes | Uso industrial>",
+      "potencia_kw": <número en kW, ej: 5.75>,
       "tension": "<'230 V' o '3×230/400 V'>",
-      "grado": "<'basica' | 'elevada' | '' — solo para viviendas según ITC-BT-10>"
+      "grado": "<'basica' si IGA<=25A, 'elevada' si IGA>25A, '' si no es vivienda>"
     }
   ],
-  "notas": "<observaciones técnicas adicionales o null>"
+  "notas": "<qué has visto en la imagen en una frase>"
 }
 
-Si no puedes identificar receptores eléctricos, devuelve "receptores": [].`
+Si no puedes identificar ningún suministro, devuelve "receptores": [].`
 
   const body = {
     contents: [{
