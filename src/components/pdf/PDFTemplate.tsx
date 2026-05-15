@@ -90,7 +90,6 @@ export function PDFTemplate({ data, instalador }: Props) {
         <thead>
           <tr>
             <th style={S.th}>Concepto</th>
-            <th style={S.th}>Aclarador</th>
             <th style={S.th}>Pot. (kW)</th>
             <th style={S.th}>Tensión (V)</th>
             <th style={S.th}>Grado electrif.</th>
@@ -100,7 +99,6 @@ export function PDFTemplate({ data, instalador }: Props) {
           {receptores.map((r) => (
             <tr key={r.id}>
               <td style={S.td}>{r.concepto}</td>
-              <td style={S.td}>{r.aclarador}</td>
               <td style={{ ...S.td, textAlign: 'right' }}>{r.potencia_kw.toFixed(2).replace('.', ',')}</td>
               <td style={S.td}>{r.tension}</td>
               <td style={S.td}>{r.grado === 'basica' ? 'Básica' : r.grado === 'elevada' ? 'Elevada' : '—'}</td>

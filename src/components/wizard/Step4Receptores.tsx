@@ -123,7 +123,6 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
                 <div className="flex-1 min-w-0">
                   <div className="font-body font-semibold text-slate-200 text-[13px] truncate">
                     {r.concepto || `Elemento ${i + 1}`}
-                    {r.aclarador && <span className="text-slate-500 ml-2 font-normal text-[12px]">{r.aclarador}</span>}
                   </div>
                   <div className="text-[11px] text-amber-500/60 font-mono">
                     {r.potencia_kw > 0
