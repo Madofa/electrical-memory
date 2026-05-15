@@ -36,6 +36,9 @@ export async function getInstalador(userId: string): Promise<Instalador | null> 
     .select('*')
     .eq('id', userId)
     .single()
+  if (!data) {
+    await supabase.from('instaladores').upsert({ id: userId }, { ignoreDuplicates: true })
+  }
   return data
 }
 
