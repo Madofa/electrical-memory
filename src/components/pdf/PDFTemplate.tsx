@@ -21,9 +21,9 @@ const S = {
   tdTotal: { border: '1px solid #000', padding: '4px 6px', fontWeight: 'bold', textAlign: 'right' } as React.CSSProperties,
   note: { fontSize: '9px', fontStyle: 'italic', color: '#555', marginTop: '4px' } as React.CSSProperties,
   signatureBox: { border: '1px solid #000', height: '60px', width: '220px', marginTop: '6px' } as React.CSSProperties,
-  photo: { width: '100%', height: 'auto', border: '1px solid #ccc', display: 'block' } as React.CSSProperties,
+  photo: { width: '100%', maxHeight: '280px', height: 'auto', objectFit: 'contain', border: '1px solid #ccc', display: 'block' } as React.CSSProperties,
   photoGrid: { display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '6px' } as React.CSSProperties,
-  photoCell: { width: 'calc(50% - 6px)', boxSizing: 'border-box', textAlign: 'center', pageBreakInside: 'avoid', breakInside: 'avoid' } as React.CSSProperties,
+  photoCell: { width: 'calc(50% - 6px)', boxSizing: 'border-box', textAlign: 'center' } as React.CSSProperties,
 }
 
 function Row({ label, value, blank }: { label: string; value?: string | null; blank?: boolean }) {
