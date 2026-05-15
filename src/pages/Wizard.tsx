@@ -38,41 +38,31 @@ export function Wizard() {
   const StepComponent = STEPS[step]
   const isLast = step === STEPS.length - 1
   const [autoSaving, setAutoSaving] = useState(false)
-  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const saveInProgress = useRef(false)
 
   useEffect(() => { setPasoActual(step) }, [step])
 
-  // Guardar al salir del wizard (back del navegador, cierre de tab...)
-  useEffect(() => {
-    return () => {
-      const store = useWizardStore.getState()
-      if (store.isDirty && user) {
-        saveMemoria(user.id, store.data, 'borrador', store.memoriaId ?? undefined)
-          .then((id) => store.loadMemoria(id, store.data))
-          .catch(console.error)
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // Autoguardado silencioso 2s tras el último cambio
+  // Autoguardado: dispara 1s después del último cambio
   useEffect(() => {
     if (!isDirty || !user) return
-    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
-    autoSaveTimer.current = setTimeout(async () => {
+    const timer = setTimeout(async () => {
+      if (saveInProgress.current) return
+      saveInProgress.current = true
       setAutoSaving(true)
       try {
         const store = useWizardStore.getState()
         const id = await saveMemoria(user.id, store.data, 'borrador', store.memoriaId ?? undefined)
-        store.loadMemoria(id, store.data)
+        store.setMemoriaId(id)
+        store.markClean()
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : JSON.stringify(e)
-        toast.error(`Error guardando: ${msg}`, { duration: 8000 })
+        toast.error(`Error guardando: ${msg}`, { duration: 10000 })
       }
       setAutoSaving(false)
+      saveInProgress.current = false
     }, 1000)
-    return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current) }
-  }, [data, isDirty, user])
+    return () => clearTimeout(timer)
+  }, [isDirty, user])
 
   const handleBack = async () => {
     if (isDirty && user) {

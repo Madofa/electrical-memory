@@ -26,6 +26,7 @@ interface WizardStore {
 
   // Helpers
   getPotenciaTotal: () => number
+  setMemoriaId: (id: string) => void
   loadMemoria: (id: string, data: WizardData) => void
   reset: () => void
   markClean: () => void
@@ -140,6 +141,8 @@ export const useWizardStore = create<WizardStore>()(
 
       setPasoActual: (paso) =>
         set((s) => ({ data: { ...s.data, paso_actual: paso } })),
+
+      setMemoriaId: (id) => set({ memoriaId: id }),
 
       getPotenciaTotal: () => {
         const receptores = get().data.receptores

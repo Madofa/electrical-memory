@@ -36,10 +36,16 @@ export async function getInstalador(userId: string): Promise<Instalador | null> 
     .select('*')
     .eq('id', userId)
     .single()
-  if (!data) {
-    await supabase.from('instaladores').upsert({ id: userId }, { ignoreDuplicates: true })
-  }
-  return data
+  if (data) return data
+
+  // Primera vez — crear fila vacía y devolver
+  await supabase.from('instaladores').insert({ id: userId })
+  const { data: fresh } = await supabase
+    .from('instaladores')
+    .select('*')
+    .eq('id', userId)
+    .single()
+  return fresh
 }
 
 export async function upsertInstalador(data: Partial<Instalador> & { id: string }) {
@@ -96,7 +102,8 @@ export async function saveMemoria(
   }
 
   if (id) {
-    await supabase.from('memorias').update(payload).eq('id', id)
+    const { error } = await supabase.from('memorias').update(payload).eq('id', id)
+    if (error) throw error
     return id
   }
 
@@ -104,10 +111,10 @@ export async function saveMemoria(
     .from('memorias')
     .insert({ ...payload, created_at: new Date().toISOString() })
     .select('id')
-    .single()
 
   if (error) throw error
-  return (data as Memoria).id
+  if (!data?.length) throw new Error('Insert sin respuesta — posible bloqueo RLS')
+  return (data[0] as Memoria).id
 }
 
 export async function deleteMemoria(id: string) {
