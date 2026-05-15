@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useWizardStore } from '../../stores/wizardStore'
 import { FormTextarea, FormInput } from '../ui/FormField'
 import { PhotoUpload } from '../ui/PhotoUpload'
-import { Plus, Trash2, Sparkles, Loader2 } from 'lucide-react'
+import { Trash2, Sparkles, Loader2, ImagePlus } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { analizarFotoCGP } from '../../lib/gemini'
 import { compressImage } from '../../lib/imageUtils'
@@ -20,6 +20,7 @@ export function Step5CGP({ onNext: _onNext }: Props) {
   const { data, setElementoFrontera, addFoto, updateFoto, removeFoto } = useWizardStore()
   const ef = { ...data.elementoFrontera, fotos: data.elementoFrontera.fotos ?? [] }
   const [analyzing, setAnalyzing] = useState<Set<string>>(new Set())
+  const [dragging, setDragging] = useState(false)
 
   const readBase64 = (file: File): Promise<string> =>
     new Promise((resolve) => {
@@ -163,10 +164,28 @@ export function Step5CGP({ onNext: _onNext }: Props) {
           ))}
         </AnimatePresence>
 
-        <label className="btn-secondary w-full justify-center cursor-pointer">
-          <Plus className="w-4 h-4" />
-          Añadir fotos
-          <span className="text-[10px] text-slate-500 font-mono ml-1">(selecciona varias a la vez)</span>
+        <label
+          className={`relative flex flex-col items-center justify-center gap-2 w-full py-8 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200
+            ${dragging
+              ? 'border-amber-400 bg-amber-500/10 scale-[1.01]'
+              : 'border-ink-500 bg-ink-800/40 hover:border-amber-500/40 hover:bg-amber-500/5'}`}
+          onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+          onDragEnter={(e) => { e.preventDefault(); setDragging(true) }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault()
+            setDragging(false)
+            const files = e.dataTransfer.files
+            if (files.length) handleFiles(files)
+          }}
+        >
+          <ImagePlus className={`w-6 h-6 transition-colors ${dragging ? 'text-amber-400' : 'text-slate-500'}`} />
+          <div className="text-center">
+            <p className={`text-[13px] font-body font-semibold transition-colors ${dragging ? 'text-amber-300' : 'text-slate-400'}`}>
+              {dragging ? 'Suelta las fotos aquí' : 'Arrastra fotos aquí'}
+            </p>
+            <p className="text-[11px] text-slate-600 mt-0.5">o haz clic para seleccionar</p>
+          </div>
           <input
             type="file"
             accept="image/*"
