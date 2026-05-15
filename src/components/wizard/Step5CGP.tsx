@@ -164,8 +164,8 @@ export function Step5CGP({ onNext: _onNext }: Props) {
           ))}
         </AnimatePresence>
 
-        <label
-          className={`relative flex flex-col items-center justify-center gap-2 w-full py-8 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200
+        <div
+          className={`relative flex flex-col items-center justify-center gap-2 w-full py-8 rounded-xl border-2 border-dashed transition-all duration-200
             ${dragging
               ? 'border-amber-400 bg-amber-500/10 scale-[1.01]'
               : 'border-ink-500 bg-ink-800/40 hover:border-amber-500/40 hover:bg-amber-500/5'}`}
@@ -175,12 +175,11 @@ export function Step5CGP({ onNext: _onNext }: Props) {
           onDrop={(e) => {
             e.preventDefault()
             setDragging(false)
-            const files = e.dataTransfer.files
-            if (files.length) handleFiles(files)
+            if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files)
           }}
         >
           <ImagePlus className={`w-6 h-6 transition-colors ${dragging ? 'text-amber-400' : 'text-slate-500'}`} />
-          <div className="text-center">
+          <div className="text-center pointer-events-none">
             <p className={`text-[13px] font-body font-semibold transition-colors ${dragging ? 'text-amber-300' : 'text-slate-400'}`}>
               {dragging ? 'Suelta las fotos aquí' : 'Arrastra fotos aquí'}
             </p>
@@ -190,10 +189,10 @@ export function Step5CGP({ onNext: _onNext }: Props) {
             type="file"
             accept="image/*"
             multiple
-            className="sr-only"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             onChange={(e) => { if (e.target.files?.length) handleFiles(e.target.files) }}
           />
-        </label>
+        </div>
       </div>
     </div>
   )

@@ -66,6 +66,7 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
   const [expanded, setExpanded] = useState<string | null>(null)
   const [showPresets, setShowPresets] = useState(data.receptores.length === 0)
   const [analyzingIA, setAnalyzingIA] = useState(false)
+  const [draggingIA, setDraggingIA] = useState(false)
 
   const presets = getPresets(data.ubicacion.uso_finca)
 
@@ -89,23 +90,19 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
   const esVivienda = (concepto: string) =>
     concepto.toLowerCase().includes('vivienda')
 
-  const handleAnalyzeIA = async (file: File) => {
+  const handleAnalyzeFiles = async (fileList: FileList) => {
     setAnalyzingIA(true)
+    let totalAdded = 0
     try {
-      const raw = await new Promise<string>((resolve) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result as string)
-        reader.readAsDataURL(file)
-      })
-      const base64 = await compressImage(raw)
-
-      const result = await analizarFotoReceptores(base64)
-      const receptores = result.receptores ?? []
-
-      if (receptores.length === 0) {
-        toast('No he podido identificar receptores en la imagen — añádelos manualmente', { icon: '🤷' })
-      } else {
-        receptores.forEach((r) => {
+      await Promise.all(Array.from(fileList).map(async (file) => {
+        const raw = await new Promise<string>((resolve) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.readAsDataURL(file)
+        })
+        const base64 = await compressImage(raw)
+        const result = await analizarFotoReceptores(base64)
+        ;(result.receptores ?? []).forEach((r) => {
           addReceptor({
             id: crypto.randomUUID(),
             concepto: r.concepto ?? '',
@@ -114,9 +111,14 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
             tension: r.tension ?? '230 V',
             grado: (r.grado ?? '') as GradoElectrificacion,
           })
+          totalAdded++
         })
+      }))
+      if (totalAdded === 0) {
+        toast('No he podido identificar receptores — añádelos manualmente', { icon: '🤷' })
+      } else {
         setShowPresets(false)
-        toast.success(`IA añadió ${receptores.length} receptor${receptores.length > 1 ? 'es' : ''} detectados`)
+        toast.success(`IA añadió ${totalAdded} receptor${totalAdded > 1 ? 'es' : ''}`)
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
@@ -154,28 +156,45 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
         </div>
       )}
 
-      {/* Botón Analizar con IA */}
+      {/* Zona drag-and-drop IA */}
       {analyzingIA ? (
-        <div className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl
-                        border border-amber-500/30 bg-amber-500/5 text-amber-400 text-[12px] font-body font-semibold opacity-50">
-          <Loader2 className="w-4 h-4 animate-spin" /> Analizando imagen...
+        <div className="w-full flex items-center justify-center gap-2 px-4 py-6 rounded-xl
+                        border-2 border-dashed border-amber-500/30 bg-amber-500/5 text-amber-400 text-[12px] font-body font-semibold opacity-70">
+          <Loader2 className="w-4 h-4 animate-spin" /> Analizando con IA...
         </div>
       ) : (
-        <label className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl
-                          border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10
-                          text-amber-400 text-[12px] font-body font-semibold
-                          transition-all duration-200 cursor-pointer">
-          <Camera className="w-4 h-4" /><Sparkles className="w-3.5 h-3.5" /> Subir plano / esquema → IA extrae receptores
+        <div
+          className={`relative flex flex-col items-center justify-center gap-2 w-full py-6 rounded-xl border-2 border-dashed transition-all duration-200
+            ${draggingIA
+              ? 'border-amber-400 bg-amber-500/15 scale-[1.01]'
+              : 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10'}`}
+          onDragOver={(e) => { e.preventDefault(); setDraggingIA(true) }}
+          onDragEnter={(e) => { e.preventDefault(); setDraggingIA(true) }}
+          onDragLeave={() => setDraggingIA(false)}
+          onDrop={(e) => {
+            e.preventDefault()
+            setDraggingIA(false)
+            if (e.dataTransfer.files.length) handleAnalyzeFiles(e.dataTransfer.files)
+          }}
+        >
+          <div className="flex items-center gap-2 pointer-events-none">
+            <Camera className="w-4 h-4 text-amber-400" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <p className={`text-[12px] font-body font-semibold ${draggingIA ? 'text-amber-300' : 'text-amber-400'}`}>
+              {draggingIA ? 'Suelta los planos aquí' : 'Subir plano / esquema → IA extrae receptores'}
+            </p>
+          </div>
+          <p className="text-[10px] text-amber-500/50 font-mono pointer-events-none">
+            Arrastra o haz clic · puedes soltar varios a la vez
+          </p>
           <input
             type="file"
             accept="image/*"
-            className="sr-only"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) handleAnalyzeIA(file)
-            }}
+            multiple
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onChange={(e) => { if (e.target.files?.length) handleAnalyzeFiles(e.target.files) }}
           />
-        </label>
+        </div>
       )}
 
       {/* Lista */}
