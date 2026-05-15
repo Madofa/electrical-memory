@@ -18,7 +18,9 @@ export function ProfileSetup() {
   const navigate = useNavigate()
   const { user, setInstalador } = useAuthStore()
   const sigPadRef = useRef<SignatureCanvas>(null)
+  const sigBoxRef = useRef<HTMLDivElement>(null)
   const logoInputRef = useRef<HTMLInputElement>(null)
+  const [canvasWidth, setCanvasWidth] = useState(600)
 
   const [form, setForm] = useState<Partial<Instalador>>({
     nombre_completo: '', dni_nie: '', tipo: 'IBTM', numero_carnet: '',
@@ -31,6 +33,18 @@ export function ProfileSetup() {
   const [saving, setSaving] = useState(false)
   const [hasFirma, setHasFirma] = useState(false)
   const [sigMode, setSigMode] = useState<'draw' | 'upload'>('draw')
+
+  useEffect(() => {
+    const el = sigBoxRef.current
+    if (!el) return
+    const obs = new ResizeObserver(() => {
+      const w = el.clientWidth
+      if (w > 0) setCanvasWidth(w)
+    })
+    obs.observe(el)
+    setCanvasWidth(el.clientWidth || 600)
+    return () => obs.disconnect()
+  }, [sigMode])
 
   useEffect(() => {
     if (!user) return
@@ -205,14 +219,17 @@ export function ProfileSetup() {
                 <div>
                   {firmaDataUrl && !firmaDataUrl.startsWith('data:') ? (
                     <div className="border border-amber-500/30 rounded-xl overflow-hidden mb-3">
-                      <img src={firmaDataUrl} className="w-full h-[120px] object-contain bg-white" />
+                      <img src={firmaDataUrl} className="w-full h-[160px] object-contain bg-white" />
+                      <div className="px-3 py-2 text-[11px] text-slate-500 font-mono bg-ink-800/50">
+                        Firma guardada — pulsa "Limpiar" para redibujar
+                      </div>
                     </div>
                   ) : (
-                    <div className="border-2 border-dashed border-ink-500 rounded-xl overflow-hidden mb-3 bg-white/5">
+                    <div ref={sigBoxRef} className="border-2 border-dashed border-ink-500 rounded-xl overflow-hidden mb-3 bg-white" style={{ touchAction: 'none' }}>
                       <SignatureCanvas
                         ref={sigPadRef}
-                        penColor="#fbbf24"
-                        canvasProps={{ height: 120, className: 'w-full' }}
+                        penColor="#0a0f1e"
+                        canvasProps={{ width: canvasWidth, height: 160, style: { display: 'block', touchAction: 'none' } }}
                         onEnd={() => setHasFirma(true)}
                       />
                     </div>
