@@ -23,8 +23,8 @@ export function Step1Referencia({ onNext: _onNext }: Props) {
               label="Referencia"
               value={data.referencia_interna}
               onChange={(e) => setReferencia(e.target.value)}
-              placeholder="MT-2025-001"
-              hint="Ejemplo: MT-2025-001 (Memoria Técnica, año, número)"
+              placeholder=""
+              hint=""
             />
           </div>
         </div>
