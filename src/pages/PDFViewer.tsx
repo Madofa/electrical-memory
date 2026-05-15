@@ -32,7 +32,7 @@ export function PDFViewer() {
       const html2pdf = (await import('html2pdf.js')).default
       const ref = memoria.wizard_data.referencia_interna || 'memoria-tecnica'
       const u = memoria.wizard_data.ubicacion
-      const partes = [u.direccion, u.numero, u.piso_puerta, u.municipio, u.cp].filter(Boolean).join(' ')
+      const partes = [u.direccion, u.numero, u.piso_puerta].filter(Boolean).join(' ')
       const slug = partes
         .normalize('NFD').replace(/[̀-ͯ]/g, '')
         .replace(/[^a-zA-Z0-9 ]+/g, ' ')
