@@ -52,10 +52,15 @@ Sé específico con lo que ves. Si es un plano o croquis, indícalo.`
     body: JSON.stringify(body),
   })
 
-  if (!res.ok) throw new Error(`Gemini error ${res.status}`)
+  if (!res.ok) {
+    const errBody = await res.text()
+    throw new Error(`Gemini error ${res.status}: ${errBody}`)
+  }
 
   const json = await res.json()
-  const text = json.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+  // gemini-2.5-flash devuelve thinking tokens en parts[0] con {thought:true} — coger el primero sin thought
+  const parts = json.candidates?.[0]?.content?.parts ?? []
+  const text: string = parts.find((p: {thought?: boolean; text?: string}) => !p.thought)?.text ?? ''
 
   try {
     const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
@@ -117,10 +122,14 @@ Si no puedes identificar ningún suministro, devuelve "receptores": [].`
     body: JSON.stringify(body),
   })
 
-  if (!res.ok) throw new Error(`Gemini error ${res.status}`)
+  if (!res.ok) {
+    const errBody = await res.text()
+    throw new Error(`Gemini error ${res.status}: ${errBody}`)
+  }
 
   const json = await res.json()
-  const text = json.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+  const parts = json.candidates?.[0]?.content?.parts ?? []
+  const text: string = parts.find((p: {thought?: boolean; text?: string}) => !p.thought)?.text ?? ''
 
   try {
     const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()

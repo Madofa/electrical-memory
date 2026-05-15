@@ -118,8 +118,9 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
         setShowPresets(false)
         toast.success(`IA añadió ${receptores.length} receptor${receptores.length > 1 ? 'es' : ''} detectados`)
       }
-    } catch {
-      toast.error('Error al analizar la imagen')
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      toast.error(`Error IA: ${msg}`, { duration: 8000 })
     }
     setAnalyzingIA(false)
   }
