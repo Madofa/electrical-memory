@@ -26,6 +26,10 @@ const STEPS = [
   Step8Redactor,
 ]
 
+// Índice del Step6 (cálculos) dentro de STEPS — se salta cuando la instalación
+// ya está legalizada (alta de suministro vía simplificada con RITSIC/CIE).
+const STEP_CALCULOS_IDX = 4
+
 export function Wizard() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
@@ -75,15 +79,25 @@ export function Wizard() {
     navigate('/')
   }
 
+  const skipCalculos = data.ubicacion.instalacion_legalizada
+
   const goNext = () => {
     setCompletedSteps((prev) => new Set([...prev, step]))
     setDirection(1)
-    setStep((s) => Math.min(s + 1, STEPS.length - 1))
+    setStep((s) => {
+      let next = Math.min(s + 1, STEPS.length - 1)
+      if (skipCalculos && next === STEP_CALCULOS_IDX) next = Math.min(next + 1, STEPS.length - 1)
+      return next
+    })
   }
 
   const goPrev = () => {
     setDirection(-1)
-    setStep((s) => Math.max(s - 1, 0))
+    setStep((s) => {
+      let prev = Math.max(s - 1, 0)
+      if (skipCalculos && prev === STEP_CALCULOS_IDX) prev = Math.max(prev - 1, 0)
+      return prev
+    })
   }
 
   const handleSave = async (finalizar = false) => {

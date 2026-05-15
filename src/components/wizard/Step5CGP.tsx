@@ -2,24 +2,39 @@ import { useState } from 'react'
 import { useWizardStore } from '../../stores/wizardStore'
 import { FormTextarea, FormInput } from '../ui/FormField'
 import { PhotoUpload } from '../ui/PhotoUpload'
-import { Trash2, Sparkles, Loader2, ImagePlus } from 'lucide-react'
+import { Trash2, Info, ImagePlus } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { analizarFotoCGP } from '../../lib/gemini'
 import { compressImage } from '../../lib/imageUtils'
 import toast from 'react-hot-toast'
 
 interface Props { onNext: () => void }
 
-const TIPOS_CGP = [
+const TIPOS_CGP_NUEVA = [
   'Caja General de Protección (CGP)',
   'Caja General de Protección y Medida (CGPM)',
   'Equipo de Medida en Fachada',
 ]
 
+const TIPOS_CENTRALIZACION = [
+  'Centralización de contadores en portería',
+  'Centralización de contadores en local técnico',
+  'Centralización en armario de fachada',
+]
+
 export function Step5CGP({ onNext: _onNext }: Props) {
   const { data, setElementoFrontera, addFoto, updateFoto, removeFoto } = useWizardStore()
   const ef = { ...data.elementoFrontera, fotos: data.elementoFrontera.fotos ?? [] }
-  const [analyzing, setAnalyzing] = useState<Set<string>>(new Set())
+  const centralizado = data.ubicacion.centralizacion_existente
+  const tipos = centralizado ? TIPOS_CENTRALIZACION : TIPOS_CGP_NUEVA
+  const tituloDesc = centralizado
+    ? 'Ubicación del módulo de contador asignado'
+    : 'Descripción de la ubicación propuesta'
+  const placeholderDesc = centralizado
+    ? 'Indica dónde está el armario de centralización y el módulo asignado a este suministro (planta, número de módulo, etiqueta...).'
+    : 'Describe dónde se propone instalar el elemento frontera: fachada, portal, local técnico...'
+  const ayudaFotos = centralizado
+    ? 'Sube foto del módulo de contador asignado y/o del armario de centralización completo.'
+    : 'Sube fotos de la fachada, plano de la propuesta y cualquier elemento de la acometida.'
   const [dragging, setDragging] = useState(false)
 
   const readBase64 = (file: File): Promise<string> =>
@@ -28,25 +43,6 @@ export function Step5CGP({ onNext: _onNext }: Props) {
       reader.onload = () => resolve(reader.result as string)
       reader.readAsDataURL(file)
     })
-
-  const analizarYRellenar = async (fotoId: string, base64: string) => {
-    setAnalyzing((s) => new Set(s).add(fotoId))
-    try {
-      const result = await analizarFotoCGP(base64)
-
-      // Rellena título con la etiqueta detectada
-      if (result.notas) updateFoto(fotoId, { titulo: result.notas })
-
-      // Rellena campos del formulario si los detecta (sin sobreescribir si ya están)
-      const updates: Record<string, string> = {}
-      if (result.tipo_elemento && !data.elementoFrontera.tipo_elemento) updates.tipo_elemento = result.tipo_elemento
-      if (result.descripcion && !data.elementoFrontera.descripcion) updates.descripcion = result.descripcion
-      if (Object.keys(updates).length > 0) setElementoFrontera(updates)
-    } catch {
-      // silencioso — la foto queda igual, el usuario rellena a mano
-    }
-    setAnalyzing((s) => { const n = new Set(s); n.delete(fotoId); return n })
-  }
 
   const handleFiles = async (files: FileList) => {
     const arr = Array.from(files)
@@ -57,7 +53,6 @@ export function Step5CGP({ onNext: _onNext }: Props) {
       const base64 = await compressImage(raw)
       const id = crypto.randomUUID()
       addFoto({ id, titulo: '', base64 })
-      analizarYRellenar(id, base64)
     }))
 
     if (arr.length > 1) toast.success(`${arr.length} fotos añadidas`, { id: 'upload' })
@@ -66,10 +61,18 @@ export function Step5CGP({ onNext: _onNext }: Props) {
   return (
     <div className="space-y-5">
       <div className="card space-y-5">
+        {centralizado && (
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-emerald-950/20 border border-emerald-800/30">
+            <Info className="w-3.5 h-3.5 text-emerald-400/70 flex-shrink-0 mt-0.5" />
+            <p className="text-[11px] text-emerald-300/80 font-body leading-relaxed">
+              La finca ya dispone de centralización de contadores. Se aprovecha la existente; basta con identificar el módulo del nuevo suministro.
+            </p>
+          </div>
+        )}
         <div>
-          <span className="field-label">Tipo de elemento frontera</span>
+          <span className="field-label">{centralizado ? 'Tipo de centralización existente' : 'Tipo de elemento frontera propuesto'}</span>
           <div className="space-y-2 mt-2">
-            {TIPOS_CGP.map((tipo) => (
+            {tipos.map((tipo) => (
               <button
                 key={tipo}
                 type="button"
@@ -92,10 +95,10 @@ export function Step5CGP({ onNext: _onNext }: Props) {
         </div>
 
         <FormTextarea
-          label="Descripción de la ubicación propuesta"
+          label={tituloDesc}
           value={ef.descripcion}
           onChange={(e) => setElementoFrontera({ descripcion: e.target.value })}
-          placeholder="Describe dónde se propone instalar el elemento frontera: fachada, portal, local técnico..."
+          placeholder={placeholderDesc}
         />
       </div>
 
@@ -109,10 +112,9 @@ export function Step5CGP({ onNext: _onNext }: Props) {
 
         {ef.fotos.length === 0 && (
           <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-950/20 border border-amber-800/30">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500/70 flex-shrink-0 mt-0.5" />
+            <Info className="w-3.5 h-3.5 text-amber-500/70 flex-shrink-0 mt-0.5" />
             <p className="text-[11px] text-amber-500/70 font-body leading-relaxed">
-              Sube fotos del cuadro de portería, la acometida, croquis o cualquier elemento de la instalación.
-              La IA los identifica y rellena los campos automáticamente.
+              {ayudaFotos}
             </p>
           </div>
         )}
@@ -128,19 +130,13 @@ export function Step5CGP({ onNext: _onNext }: Props) {
               className="border border-ink-500 rounded-xl p-4 space-y-3"
             >
               <div className="flex items-center gap-2">
-                <div className="flex-1 relative">
+                <div className="flex-1">
                   <FormInput
                     label="¿Qué muestra esta foto?"
                     value={foto.titulo}
                     onChange={(e) => updateFoto(foto.id, { titulo: e.target.value })}
                     placeholder="Cuadro de contadores, Fachada, CGP existente, Croquis..."
                   />
-                  {analyzing.has(foto.id) && (
-                    <div className="absolute right-3 top-7 flex items-center gap-1 text-amber-500/70">
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      <span className="text-[10px] font-mono">IA...</span>
-                    </div>
-                  )}
                 </div>
                 <button
                   type="button"
@@ -154,10 +150,7 @@ export function Step5CGP({ onNext: _onNext }: Props) {
               <PhotoUpload
                 label=""
                 value={foto.base64}
-                onChange={(b64) => {
-                  updateFoto(foto.id, { base64: b64 })
-                  if (b64) analizarYRellenar(foto.id, b64)
-                }}
+                onChange={(b64) => updateFoto(foto.id, { base64: b64 })}
                 onClear={() => updateFoto(foto.id, { base64: '' })}
               />
             </motion.div>

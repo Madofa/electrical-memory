@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useWizardStore } from '../../stores/wizardStore'
 import { FormInput, FormSelect } from '../ui/FormField'
 import type { TipoSolicitud, UsoFinca } from '../../types'
-import { Zap, TrendingUp, Settings, RotateCcw, Home, ShoppingBag, Car, Factory, CircleDot, ChevronDown, ChevronUp } from 'lucide-react'
+import { Zap, TrendingUp, Settings, RotateCcw, Home, ShoppingBag, Car, Factory, CircleDot, ChevronDown, ChevronUp, Wrench, Package, Briefcase, Building2 } from 'lucide-react'
 
 interface Props { onNext: () => void }
 
@@ -16,8 +16,12 @@ const TIPO_CARDS: { value: TipoSolicitud; label: string; icon: React.ElementType
 const USO_CARDS: { value: UsoFinca; label: string; icon: React.ElementType }[] = [
   { value: 'vivienda',        label: 'Vivienda',   icon: Home },
   { value: 'local_comercial', label: 'Comercial',  icon: ShoppingBag },
+  { value: 'taller',          label: 'Taller',     icon: Wrench },
+  { value: 'almacen',         label: 'Almacén',    icon: Package },
+  { value: 'oficina',         label: 'Oficina',    icon: Briefcase },
   { value: 'garaje',          label: 'Garaje',     icon: Car },
   { value: 'industrial',      label: 'Industrial', icon: Factory },
+  { value: 'comunidad',       label: 'Comunidad',  icon: Building2 },
   { value: 'otro',            label: 'Otro',       icon: CircleDot },
 ]
 
@@ -75,7 +79,7 @@ export function Step3Ubicacion({ onNext: _onNext }: Props) {
         <h3 className="font-display font-semibold text-xs tracking-widest uppercase text-amber-500/70">
           Uso de la finca
         </h3>
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
           {USO_CARDS.map(({ value, label, icon: Icon }) => {
             const active = u.uso_finca === value
             return (
@@ -116,6 +120,54 @@ export function Step3Ubicacion({ onNext: _onNext }: Props) {
         <FormSelect label="Provincia" value={u.provincia} onChange={set('provincia') as any} options={PROVINCIAS} placeholder="Selecciona..." />
       </div>
 
+      {/* Estado actual de la instalación — adaptativo */}
+      <div className="card space-y-4">
+        <h3 className="font-display font-semibold text-xs tracking-widest uppercase text-amber-500/70">
+          Estado de la instalación
+        </h3>
+
+        <ToggleRow
+          label="¿La instalación interior ya está legalizada?"
+          help="Existe boletín (CIE) y/o número RITSIC. Permite ir por la vía simplificada del alta de suministro."
+          value={u.instalacion_legalizada}
+          onChange={(v) => setUbicacion({ instalacion_legalizada: v })}
+        />
+
+        {u.instalacion_legalizada && (
+          <FormInput
+            label="Número RITSIC / CIE"
+            value={u.numero_ritsic}
+            onChange={set('numero_ritsic')}
+            placeholder="Ej. 10.000.123/2025"
+            className="font-mono"
+          />
+        )}
+
+        <ToggleRow
+          label="¿Existe ya centralización de contadores en el edificio?"
+          help="Armario común con varios contadores en portería o local técnico. Si la hay, se aprovecha y no hace falta proponer una CGP nueva."
+          value={u.centralizacion_existente}
+          onChange={(v) => setUbicacion({ centralizacion_existente: v })}
+        />
+
+        <ToggleRow
+          label="¿La finca tiene varios suministros?"
+          help="Edificio con varias viviendas, locales, garaje comunitario… Activa el cálculo con coeficiente de simultaneidad."
+          value={u.multiples_suministros}
+          onChange={(v) => setUbicacion({ multiples_suministros: v })}
+        />
+
+        {(u.tipo_solicitud === 'ampliacion_potencia' || u.tipo_solicitud === 'reanudacion' || u.tipo_solicitud === 'modificacion') && (
+          <FormInput
+            label="CUPS del suministro existente"
+            value={u.cups}
+            onChange={set('cups')}
+            placeholder="ES0021000000000000XX0F"
+            className="font-mono"
+          />
+        )}
+      </div>
+
       {/* Datos registrales — colapsable */}
       <button
         type="button"
@@ -134,9 +186,36 @@ export function Step3Ubicacion({ onNext: _onNext }: Props) {
             <FormInput label="UTM Y" value={u.utm_y} onChange={set('utm_y')} className="font-mono" />
             <FormInput label="Huso" value={u.utm_huso} onChange={set('utm_huso')} placeholder="31" className="font-mono" />
           </div>
-          <FormInput label="CUPS (ampliaciones)" value={u.cups} onChange={set('cups')} />
         </div>
       )}
+    </div>
+  )
+}
+
+function ToggleRow({
+  label, help, value, onChange,
+}: { label: string; help?: string; value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-1">
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-body text-slate-200">{label}</p>
+        {help && <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{help}</p>}
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={value}
+        onClick={() => onChange(!value)}
+        className={`flex-shrink-0 relative w-11 h-6 rounded-full transition-colors duration-200 ${
+          value ? 'bg-amber-500' : 'bg-ink-600'
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-transform duration-200 ${
+            value ? 'translate-x-5' : 'translate-x-0'
+          }`}
+        />
+      </button>
     </div>
   )
 }

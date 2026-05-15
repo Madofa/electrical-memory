@@ -29,8 +29,12 @@ export type TipoSolicitud =
 export type UsoFinca =
   | 'vivienda'
   | 'local_comercial'
+  | 'taller'
+  | 'almacen'
+  | 'oficina'
   | 'garaje'
   | 'industrial'
+  | 'comunidad'
   | 'otro'
 
 export type GradoElectrificacion = 'basica' | 'elevada' | ''
@@ -72,6 +76,11 @@ export interface DatosUbicacion {
   utm_y: string
   utm_huso: string
   cups: string
+  // Nuevas preguntas adaptativas
+  instalacion_legalizada: boolean
+  numero_ritsic: string
+  centralizacion_existente: boolean
+  multiples_suministros: boolean
 }
 
 export interface FotoDoc {
@@ -152,8 +161,12 @@ export const LABELS_TIPO_SOLICITUD: Record<TipoSolicitud, string> = {
 export const LABELS_USO_FINCA: Record<UsoFinca, string> = {
   vivienda: 'Vivienda',
   local_comercial: 'Local comercial',
+  taller: 'Taller',
+  almacen: 'Almacén',
+  oficina: 'Oficina',
   garaje: 'Garaje / Aparcamiento',
   industrial: 'Uso industrial',
+  comunidad: 'Comunidad (edificio completo)',
   otro: 'Otro uso',
 }
 
@@ -181,10 +194,14 @@ export const defaultWizardData = (): WizardData => ({
     municipio: '', cp: '', provincia: '',
     referencia_catastral: '', utm_x: '', utm_y: '', utm_huso: '',
     cups: '',
+    instalacion_legalizada: false,
+    numero_ritsic: '',
+    centralizacion_existente: false,
+    multiples_suministros: false,
   },
   receptores: [],
   elementoFrontera: {
-    tipo_elemento: 'Caja General de Protección (CGP)',
+    tipo_elemento: '',
     descripcion: '',
     fotos: [],
   },
