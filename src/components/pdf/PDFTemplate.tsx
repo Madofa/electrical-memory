@@ -20,10 +20,10 @@ const S = {
   td: { border: '1px solid #000', padding: '4px 6px' } as React.CSSProperties,
   tdTotal: { border: '1px solid #000', padding: '4px 6px', fontWeight: 'bold', textAlign: 'right' } as React.CSSProperties,
   note: { fontSize: '9px', fontStyle: 'italic', color: '#555', marginTop: '4px' } as React.CSSProperties,
-  signatureBox: { border: '1px solid #000', height: '60px', width: '220px', marginTop: '6px' } as React.CSSProperties,
-  photo: { maxWidth: '100%', maxHeight: '180px', width: 'auto', height: 'auto', border: '1px solid #ccc', display: 'inline-block' } as React.CSSProperties,
+  signatureBox: { border: '1px solid #000', height: '45px', width: '200px', marginTop: '4px' } as React.CSSProperties,
+  photo: { maxWidth: '100%', maxHeight: '240px', width: 'auto', height: 'auto', border: '1px solid #ccc', display: 'inline-block' } as React.CSSProperties,
   photoGrid: { marginTop: '6px', fontSize: 0 } as React.CSSProperties,
-  photoCell: { display: 'inline-block', verticalAlign: 'top', width: '48%', marginRight: '2%', marginBottom: '10px', boxSizing: 'border-box', textAlign: 'center', pageBreakInside: 'avoid', breakInside: 'avoid' } as React.CSSProperties,
+  photoCell: { display: 'inline-block', verticalAlign: 'top', width: '48%', marginRight: '2%', marginBottom: '12px', boxSizing: 'border-box', textAlign: 'center', pageBreakInside: 'avoid', breakInside: 'avoid' } as React.CSSProperties,
 }
 
 function Row({ label, value, blank }: { label: string; value?: string | null; blank?: boolean }) {
@@ -189,12 +189,12 @@ export function PDFTemplate({ data, instalador }: Props) {
 
       {/* SECCIÓN 7 — Declaración */}
       <SectionTitle>7. Declaración responsable de calidad de onda</SectionTitle>
-      <p style={{ fontSize: '11px', textAlign: 'justify', margin: '0 0 12px' }}>
+      <p style={{ fontSize: '11px', textAlign: 'justify', margin: '0 0 6px' }}>
         En calidad de solicitante del suministro descrito en la presente memoria, declaro bajo mi responsabilidad
         que la instalación eléctrica objeto de la solicitud de acceso y conexión cumplirá con la normativa de
         calidad de la onda vigente y huecos de tensión exigible por la empresa distribuidora.
       </p>
-      <div style={{ fontSize: '10px', marginTop: '6px' }}>Firma del solicitante:</div>
+      <div style={{ fontSize: '10px', marginTop: '4px' }}>Firma del solicitante:</div>
       <div style={S.signatureBox} />
 
       {/* SECCIÓN 8 — Redactor */}
@@ -211,17 +211,17 @@ export function PDFTemplate({ data, instalador }: Props) {
           {instalador.empresa_direccion && <Row label="Dirección" value={instalador.empresa_direccion} />}
           {instalador.empresa_telefono && <Row label="Teléfono" value={instalador.empresa_telefono} />}
           {instalador.empresa_email && <Row label="Email" value={instalador.empresa_email} />}
-          <div style={{ fontSize: '10px', textAlign: 'justify', marginTop: '10px', lineHeight: '1.5' }}>
+          <div style={{ fontSize: '10px', textAlign: 'justify', marginTop: '6px', lineHeight: '1.4' }}>
             El instalador/técnico redactor declara que la presente Memoria Técnica está de acuerdo con las
             prescripciones del vigente Reglamento Electrotécnico para Baja Tensión (RD 842/2002) e
             instrucciones ITC-BT específicas de aplicación.
           </div>
-          <div style={{ marginTop: '8px', fontSize: '11px' }}>
+          <div style={{ marginTop: '6px', fontSize: '11px' }}>
             {data.lugarFirma}, a {formatDate(data.fechaFirma)}
           </div>
-          <div style={{ marginTop: '6px', fontSize: '10px' }}>Firma y sello del instalador:</div>
+          <div style={{ marginTop: '4px', fontSize: '10px' }}>Firma y sello del instalador:</div>
           {instalador.firma_url ? (
-            <img src={instalador.firma_url} style={{ height: '60px', marginTop: '4px' }} />
+            <img src={instalador.firma_url} style={{ height: '50px', marginTop: '2px' }} />
           ) : (
             <div style={S.signatureBox} />
           )}
