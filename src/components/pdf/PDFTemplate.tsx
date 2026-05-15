@@ -21,9 +21,9 @@ const S = {
   tdTotal: { border: '1px solid #000', padding: '4px 6px', fontWeight: 'bold', textAlign: 'right' } as React.CSSProperties,
   note: { fontSize: '9px', fontStyle: 'italic', color: '#555', marginTop: '4px' } as React.CSSProperties,
   signatureBox: { border: '1px solid #000', height: '60px', width: '220px', marginTop: '6px' } as React.CSSProperties,
-  photo: { width: '100%', maxHeight: '320px', objectFit: 'contain', border: '1px solid #ccc', display: 'block', backgroundColor: '#fafafa' } as React.CSSProperties,
+  photo: { maxWidth: '100%', maxHeight: '320px', height: 'auto', width: 'auto', border: '1px solid #ccc', display: 'block' } as React.CSSProperties,
   photoGrid: { display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '6px' } as React.CSSProperties,
-  photoCell: { width: 'calc(50% - 6px)', boxSizing: 'border-box' } as React.CSSProperties,
+  photoCell: { width: 'calc(50% - 6px)', boxSizing: 'border-box', textAlign: 'center', pageBreakInside: 'avoid', breakInside: 'avoid' } as React.CSSProperties,
 }
 
 function Row({ label, value, blank }: { label: string; value?: string | null; blank?: boolean }) {
@@ -139,17 +139,14 @@ export function PDFTemplate({ data, instalador }: Props) {
         if (fotos.length === 0) return null
         return (
           <div style={S.photoGrid}>
-            {fotos.map((foto, i) => {
-              const isOdd = fotos.length % 2 === 1 && i === fotos.length - 1
-              return (
-                <div key={foto.id} style={{ ...S.photoCell, ...(isOdd ? { width: '100%' } : {}) }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '3px' }}>
-                    {foto.titulo || `Fotografía ${i + 1}`}:
-                  </div>
-                  <img src={foto.base64} style={S.photo} />
+            {fotos.map((foto, i) => (
+              <div key={foto.id} style={S.photoCell}>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '3px', textAlign: 'left' }}>
+                  {foto.titulo || `Fotografía ${i + 1}`}:
                 </div>
-              )
-            })}
+                <img src={foto.base64} style={S.photo} />
+              </div>
+            ))}
           </div>
         )
       })()}
