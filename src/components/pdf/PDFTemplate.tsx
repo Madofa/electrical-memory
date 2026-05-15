@@ -11,7 +11,7 @@ const S = {
   page: { fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#000', lineHeight: '1.4', padding: '0' } as React.CSSProperties,
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #000', paddingBottom: '10px', marginBottom: '16px' } as React.CSSProperties,
   h1: { fontSize: '14px', fontWeight: 'bold', margin: 0, textTransform: 'uppercase' } as React.CSSProperties,
-  sectionTitle: { fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', borderBottom: '1px solid #000', paddingBottom: '6px', marginBottom: '10px', marginTop: '18px', lineHeight: '1.3' } as React.CSSProperties,
+  sectionTitle: { fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', borderBottom: '1px solid #000', paddingBottom: '5px', marginBottom: '8px', marginTop: '12px', lineHeight: '1.3' } as React.CSSProperties,
   row: { display: 'flex', borderBottom: '1px solid #e0e0e0', paddingBottom: '3px', marginBottom: '3px' } as React.CSSProperties,
   label: { width: '220px', fontWeight: 'bold', flexShrink: 0, fontSize: '10px' } as React.CSSProperties,
   value: { flex: 1, fontSize: '11px' } as React.CSSProperties,
@@ -21,9 +21,9 @@ const S = {
   tdTotal: { border: '1px solid #000', padding: '4px 6px', fontWeight: 'bold', textAlign: 'right' } as React.CSSProperties,
   note: { fontSize: '9px', fontStyle: 'italic', color: '#555', marginTop: '4px' } as React.CSSProperties,
   signatureBox: { border: '1px solid #000', height: '60px', width: '220px', marginTop: '6px' } as React.CSSProperties,
-  photo: { maxWidth: '100%', maxHeight: '260px', width: 'auto', height: 'auto', border: '1px solid #ccc', display: 'inline-block' } as React.CSSProperties,
+  photo: { maxWidth: '100%', maxHeight: '180px', width: 'auto', height: 'auto', border: '1px solid #ccc', display: 'inline-block' } as React.CSSProperties,
   photoGrid: { marginTop: '6px', fontSize: 0 } as React.CSSProperties,
-  photoCell: { display: 'inline-block', verticalAlign: 'top', width: '48%', marginRight: '2%', marginBottom: '14px', boxSizing: 'border-box', textAlign: 'center', pageBreakInside: 'avoid', breakInside: 'avoid' } as React.CSSProperties,
+  photoCell: { display: 'inline-block', verticalAlign: 'top', width: '48%', marginRight: '2%', marginBottom: '10px', boxSizing: 'border-box', textAlign: 'center', pageBreakInside: 'avoid', breakInside: 'avoid' } as React.CSSProperties,
 }
 
 function Row({ label, value, blank }: { label: string; value?: string | null; blank?: boolean }) {
