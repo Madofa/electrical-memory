@@ -114,10 +114,21 @@ export function PDFTemplate({ data, instalador }: Props) {
         </tbody>
       </table>
 
-      {/* SECCIÓN 5 — CGP */}
-      <SectionTitle>5. Propuesta de ubicación del elemento frontera</SectionTitle>
-      <Row label="Tipo de elemento" value={ef.tipo_elemento} />
-      <div style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>Descripción:</div>
+      {/* SECCIÓN 5 — Punto de medida / CGP */}
+      <SectionTitle>
+        {u.centralizacion_existente
+          ? '5. Punto de medida — centralización existente'
+          : '5. Propuesta de ubicación del elemento frontera'}
+      </SectionTitle>
+      <Row
+        label={u.centralizacion_existente ? 'Tipo de centralización' : 'Tipo de elemento'}
+        value={ef.tipo_elemento}
+      />
+      <div style={{ fontSize: '10px', fontWeight: 'bold', marginTop: '6px' }}>
+        {u.centralizacion_existente
+          ? 'Ubicación del módulo de contador asignado:'
+          : 'Descripción:'}
+      </div>
       <div style={{ fontSize: '11px', marginTop: '2px', marginBottom: '8px' }}>
         {ef.descripcion || '—'}
       </div>
@@ -141,7 +152,9 @@ export function PDFTemplate({ data, instalador }: Props) {
         )
       })()}
       <div style={S.note}>
-        * Las fotografías y el croquis adjuntos muestran la propuesta de ubicación de la CGP en el emplazamiento indicado.
+        {u.centralizacion_existente
+          ? '* Las fotografías adjuntas muestran la centralización de contadores existente y el módulo asignado al nuevo suministro.'
+          : '* Las fotografías y el croquis adjuntos muestran la propuesta de ubicación del elemento frontera (CGP/CGPM) en el emplazamiento indicado.'}
       </div>
 
       {/* SECCIÓN 6 — Cálculos (opcional) */}
