@@ -190,21 +190,13 @@ export function PDFTemplate({ data, instalador }: Props) {
 
       {/* SECCIÓN 7 — Declaración */}
       <SectionTitle>7. Declaración responsable de calidad de onda</SectionTitle>
-      <p style={{ fontSize: '11px', textAlign: 'justify', margin: '0 0 8px' }}>
-        En calidad de solicitante, declaro bajo mi responsabilidad que la instalación eléctrica objeto de la
-        solicitud de acceso y conexión cumplirá con la normativa de calidad de la onda vigente y huecos de tensión.
+      <p style={{ fontSize: '11px', textAlign: 'justify', margin: '0 0 12px' }}>
+        En calidad de solicitante del suministro descrito en la presente memoria, declaro bajo mi responsabilidad
+        que la instalación eléctrica objeto de la solicitud de acceso y conexión cumplirá con la normativa de
+        calidad de la onda vigente y huecos de tensión exigible por la empresa distribuidora.
       </p>
-      <p style={{ fontSize: '11px', marginBottom: '12px' }}>
-        Y para que conste a los efectos oportunos, firma la presente en <strong>{data.lugarFirma}</strong>, a <strong>{formatDate(data.fechaFirma)}</strong>.
-      </p>
-      <div style={{ display: 'flex', gap: '40px' }}>
-        <div>
-          <div style={{ fontSize: '10px' }}>Razón Social / Nombre (Solicitante): ____________________________</div>
-          <div style={{ fontSize: '10px', marginTop: '6px' }}>DNI / NIF (Solicitante): ____________________________</div>
-          <div style={{ fontSize: '10px', marginTop: '6px' }}>Firma del solicitante:</div>
-          <div style={S.signatureBox} />
-        </div>
-      </div>
+      <div style={{ fontSize: '10px', marginTop: '6px' }}>Firma del solicitante:</div>
+      <div style={S.signatureBox} />
 
       {/* SECCIÓN 8 — Redactor */}
       <SectionTitle>8. Datos del redactor</SectionTitle>
