@@ -149,8 +149,26 @@ export const useWizardStore = create<WizardStore>()(
         return receptores.reduce((sum, r) => sum + (r.potencia_kw || 0), 0)
       },
 
-      loadMemoria: (id, data) =>
-        set({ memoriaId: id, data, isDirty: false }),
+      loadMemoria: (id, saved) => {
+        const d = defaultWizardData()
+        set({
+          memoriaId: id,
+          data: {
+            ...d,
+            ...saved,
+            solicitante: { ...d.solicitante, ...saved.solicitante },
+            ubicacion: { ...d.ubicacion, ...saved.ubicacion },
+            receptores: saved.receptores ?? d.receptores,
+            elementoFrontera: {
+              ...d.elementoFrontera,
+              ...saved.elementoFrontera,
+              fotos: saved.elementoFrontera?.fotos ?? [],
+            },
+            calculos: { ...d.calculos, ...saved.calculos },
+          },
+          isDirty: false,
+        })
+      },
 
       reset: () =>
         set({ data: defaultWizardData(), memoriaId: null, isDirty: false }),
