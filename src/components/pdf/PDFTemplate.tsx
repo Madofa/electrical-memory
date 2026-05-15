@@ -11,7 +11,7 @@ const S = {
   page: { fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#000', lineHeight: '1.4', padding: '0' } as React.CSSProperties,
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #000', paddingBottom: '10px', marginBottom: '16px' } as React.CSSProperties,
   h1: { fontSize: '14px', fontWeight: 'bold', margin: 0, textTransform: 'uppercase' } as React.CSSProperties,
-  sectionTitle: { fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', borderBottom: '1px solid #000', paddingBottom: '2px', marginBottom: '8px', marginTop: '16px' } as React.CSSProperties,
+  sectionTitle: { fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', borderBottom: '1px solid #000', paddingBottom: '6px', marginBottom: '10px', marginTop: '18px', lineHeight: '1.3' } as React.CSSProperties,
   row: { display: 'flex', borderBottom: '1px solid #e0e0e0', paddingBottom: '3px', marginBottom: '3px' } as React.CSSProperties,
   label: { width: '220px', fontWeight: 'bold', flexShrink: 0, fontSize: '10px' } as React.CSSProperties,
   value: { flex: 1, fontSize: '11px' } as React.CSSProperties,
