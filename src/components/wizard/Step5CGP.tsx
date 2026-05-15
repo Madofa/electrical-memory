@@ -14,7 +14,7 @@ const TIPOS_CGP = [
 
 export function Step5CGP({ onNext: _onNext }: Props) {
   const { data, setElementoFrontera, addFoto, updateFoto, removeFoto } = useWizardStore()
-  const ef = data.elementoFrontera
+  const ef = { ...data.elementoFrontera, fotos: data.elementoFrontera.fotos ?? [] }
 
   const handleAddFoto = () => {
     addFoto({ id: crypto.randomUUID(), titulo: '', base64: '' })
