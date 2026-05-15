@@ -145,10 +145,9 @@ export function Wizard() {
             currentStep={step}
             completedSteps={completedSteps}
             onStepClick={(s) => {
-              if (completedSteps.has(s) || s <= step) {
-                setDirection(s > step ? 1 : -1)
-                setStep(s)
-              }
+              if (s === step) return
+              setDirection(s > step ? 1 : -1)
+              setStep(s)
             }}
           />
         </div>
