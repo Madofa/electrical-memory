@@ -22,8 +22,8 @@ const S = {
   note: { fontSize: '9px', fontStyle: 'italic', color: '#555', marginTop: '4px' } as React.CSSProperties,
   signatureBox: { border: '1px solid #000', height: '60px', width: '220px', marginTop: '6px' } as React.CSSProperties,
   photo: { maxWidth: '100%', maxHeight: '260px', width: 'auto', height: 'auto', border: '1px solid #ccc', display: 'inline-block' } as React.CSSProperties,
-  photoGrid: { display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '6px', justifyContent: 'flex-start' } as React.CSSProperties,
-  photoCell: { width: 'calc(50% - 6px)', boxSizing: 'border-box', textAlign: 'center', pageBreakInside: 'avoid', breakInside: 'avoid' } as React.CSSProperties,
+  photoGrid: { marginTop: '6px', fontSize: 0 } as React.CSSProperties,
+  photoCell: { display: 'inline-block', verticalAlign: 'top', width: '48%', marginRight: '2%', marginBottom: '14px', boxSizing: 'border-box', textAlign: 'center', pageBreakInside: 'avoid', breakInside: 'avoid' } as React.CSSProperties,
 }
 
 function Row({ label, value, blank }: { label: string; value?: string | null; blank?: boolean }) {
@@ -141,7 +141,7 @@ export function PDFTemplate({ data, instalador }: Props) {
           <div style={S.photoGrid}>
             {fotos.map((foto, i) => (
               <div key={foto.id} className="pdf-photo-cell" style={S.photoCell}>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '3px', textAlign: 'left' }}>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '6px', textAlign: 'left' }}>
                   {foto.titulo || `Fotografía ${i + 1}`}:
                 </div>
                 <img src={foto.base64} style={S.photo} />

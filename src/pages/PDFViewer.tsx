@@ -38,7 +38,7 @@ export function PDFViewer() {
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true, letterRendering: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['css', 'legacy'], avoid: ['.pdf-photo-cell', '.pdf-no-break'] },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'], avoid: ['.pdf-photo-cell', '.pdf-no-break'] },
         } as any)
         .from(contentRef.current)
         .save()
