@@ -35,8 +35,8 @@ const PRESETS_BY_USO: Record<UsoFinca | 'default', string[]> = {
 }
 
 function getPresets(uso: string | null): Preset[] {
-  const keys = (uso && PRESETS_BY_USO[uso as UsoFinca]) ?? PRESETS_BY_USO.default
-  return keys.map(k => ALL_PRESETS.find(p => p.label === k)!).filter(Boolean)
+  const keys = (uso ? PRESETS_BY_USO[uso as UsoFinca] : undefined) ?? PRESETS_BY_USO.default
+  return keys.map((k: string) => ALL_PRESETS.find(p => p.label === k)!).filter(Boolean)
 }
 
 const GRADO_OPTIONS: { value: GradoElectrificacion; label: string }[] = [
@@ -50,7 +50,7 @@ const TENSION_OPTIONS = [
   { value: '3×230/400 V', label: '3×230/400 V (trifásico)' },
 ]
 
-function newReceptor(preset?: typeof PRESETS[0]): Receptor {
+function newReceptor(preset?: Preset): Receptor {
   return {
     id: crypto.randomUUID(),
     concepto: preset?.concepto ?? '',
@@ -72,7 +72,7 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
   const potenciaTotal = getPotenciaTotal()
   const needsTrifasico = potenciaTotal > 15
 
-  const handleAdd = (preset?: typeof PRESETS[0]) => {
+  const handleAdd = (preset?: Preset) => {
     const r = newReceptor(preset)
     addReceptor(r)
     setExpanded(r.id)
