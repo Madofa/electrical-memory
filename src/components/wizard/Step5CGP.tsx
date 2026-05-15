@@ -177,7 +177,7 @@ export function Step5CGP({ onNext: _onNext }: Props) {
         <input
           ref={addFotoInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
           multiple
           className="hidden"
           onChange={(e) => { if (e.target.files?.length) handleFiles(e.target.files) }}
