@@ -247,6 +247,12 @@ export function Dashboard() {
           </AnimatePresence>
         )}
       </main>
+
+      <footer className="border-t border-[#1e2d47]/50 px-6 py-3 text-center">
+        <span className="text-[10px] font-mono text-slate-700">
+          v {__APP_VERSION__}
+        </span>
+      </footer>
     </div>
   )
 }
