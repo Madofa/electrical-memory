@@ -31,10 +31,19 @@ export function PDFViewer() {
     try {
       const html2pdf = (await import('html2pdf.js')).default
       const ref = memoria.wizard_data.referencia_interna || 'memoria-tecnica'
+      const direccion = memoria.wizard_data.ubicacion.direccion || ''
+      const slug = direccion
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-zA-Z0-9 ]+/g, ' ')
+        .trim()
+        .replace(/\s+/g, '_')
+      const filename = slug
+        ? `${ref.replace(/\//g, '-')}-${slug}.pdf`
+        : `${ref.replace(/\//g, '-')}.pdf`
       await html2pdf()
         .set({
           margin: [15, 15, 15, 15],
-          filename: `${ref.replace(/\//g, '-')}.pdf`,
+          filename,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true, letterRendering: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
