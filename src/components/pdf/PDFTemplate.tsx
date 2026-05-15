@@ -21,7 +21,7 @@ const S = {
   tdTotal: { border: '1px solid #000', padding: '4px 6px', fontWeight: 'bold', textAlign: 'right' } as React.CSSProperties,
   note: { fontSize: '9px', fontStyle: 'italic', color: '#555', marginTop: '4px' } as React.CSSProperties,
   signatureBox: { border: '1px solid #000', height: '45px', width: '200px', marginTop: '4px' } as React.CSSProperties,
-  photo: { maxWidth: '100%', maxHeight: '240px', width: 'auto', height: 'auto', border: '1px solid #ccc', display: 'inline-block' } as React.CSSProperties,
+  photo: { maxWidth: '100%', maxHeight: '276px', width: 'auto', height: 'auto', border: '1px solid #ccc', display: 'inline-block' } as React.CSSProperties,
   photoGrid: { marginTop: '6px', fontSize: 0 } as React.CSSProperties,
   photoCell: { display: 'inline-block', verticalAlign: 'top', width: '48%', marginRight: '2%', marginBottom: '12px', boxSizing: 'border-box', textAlign: 'center', pageBreakInside: 'avoid', breakInside: 'avoid' } as React.CSSProperties,
 }
@@ -141,7 +141,7 @@ export function PDFTemplate({ data, instalador }: Props) {
           <div style={S.photoGrid}>
             {fotos.map((foto, i) => (
               <div key={foto.id} className="pdf-photo-cell" style={S.photoCell}>
-                <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '6px', textAlign: 'left' }}>
+                <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '10px', textAlign: 'left' }}>
                   {foto.titulo || `Fotografía ${i + 1}`}:
                 </div>
                 <img src={foto.base64} style={S.photo} />
