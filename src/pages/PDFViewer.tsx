@@ -39,7 +39,7 @@ export function PDFViewer() {
           html2canvas: { scale: 2, useCORS: true, letterRendering: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['css', 'legacy'], avoid: ['img', '.pdf-photo-cell', '.pdf-no-break'] },
-        })
+        } as any)
         .from(contentRef.current)
         .save()
       toast.success('PDF descargado')
