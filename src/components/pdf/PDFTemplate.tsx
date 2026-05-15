@@ -71,11 +71,13 @@ export function PDFTemplate({ data, instalador }: Props) {
 
       {/* SECCIÓN 2 */}
       <SectionTitle>2. Datos del solicitante</SectionTitle>
-      <Row label="Razón social / Nombre" value={s.razon_social} />
-      <Row label="CIF / NIF" value={s.cif_nif} />
-      <Row label="Dirección" value={`${s.direccion}, ${s.municipio} ${s.cp}`} />
-      <Row label="Teléfono" value={s.telefono} />
-      <Row label="Email" value={s.email} />
+      {s.razon_social && <Row label="Razón social / Nombre" value={s.razon_social} />}
+      {s.cif_nif && <Row label="CIF / NIF" value={s.cif_nif} />}
+      {(s.direccion || s.municipio || s.cp) && (
+        <Row label="Dirección" value={[s.direccion, s.municipio, s.cp].filter(Boolean).join(', ')} />
+      )}
+      {s.telefono && <Row label="Teléfono" value={s.telefono} />}
+      {s.email && <Row label="Email" value={s.email} />}
 
       {/* SECCIÓN 3 */}
       <SectionTitle>3. Ubicación del suministro</SectionTitle>
