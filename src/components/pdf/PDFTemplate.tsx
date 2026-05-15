@@ -206,7 +206,7 @@ export function PDFTemplate({ data, instalador }: Props) {
           <Row label="Tipo / Categoría" value={instalador.tipo ? LABELS_TIPO_INSTALADOR[instalador.tipo] : null} blank />
           <Row label="Nº de instalador" value={instalador.numero_carnet} blank />
           {instalador.numero_colegiado && <Row label="Nº de colegiado" value={instalador.numero_colegiado} blank />}
-          <Row label="Empresa" value={instalador.empresa_nombre} blank />
+          {instalador.empresa_nombre && <Row label="Empresa" value={instalador.empresa_nombre} />}
           {instalador.empresa_cif && <Row label="CIF empresa" value={instalador.empresa_cif} />}
           {instalador.empresa_direccion && <Row label="Dirección" value={instalador.empresa_direccion} />}
           {instalador.empresa_telefono && <Row label="Teléfono" value={instalador.empresa_telefono} />}
