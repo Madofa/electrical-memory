@@ -25,16 +25,16 @@ const TIPOS_CGP = [
 
 export async function analizarFotoCGP(base64: string, mimeType = 'image/jpeg'): Promise<GeminiCGPResult> {
   const prompt = `Eres un técnico electricista español experto en instalaciones en baja tensión (REBT).
-Analiza esta imagen de una instalación eléctrica y extrae información técnica.
+Analiza esta imagen de una instalación eléctrica. Puede ser: cuadro de contadores, armario de portería, CGP/CGPM, acometida, fachada del edificio, croquis o esquema eléctrico, elemento de medida, etc.
 
 Devuelve ÚNICAMENTE un objeto JSON con este formato exacto (sin markdown, sin explicaciones):
 {
-  "tipo_elemento": "<uno de: 'Caja General de Protección (CGP)' | 'Caja General de Protección y Medida (CGPM)' | 'Equipo de Medida en Fachada' | null si no es identificable>",
-  "descripcion": "<descripción breve y técnica de la ubicación y estado del elemento frontera visible en la imagen, máximo 2 frases>",
-  "notas": "<observaciones técnicas adicionales relevantes para la memoria técnica, o null>"
+  "tipo_elemento": "<si identificas el elemento frontera, uno de: 'Caja General de Protección (CGP)' | 'Caja General de Protección y Medida (CGPM)' | 'Equipo de Medida en Fachada' — o null si no lo identificas>",
+  "descripcion": "<descripción técnica breve de lo que ves: ubicación, estado, características relevantes para la memoria técnica. Máximo 2 frases. Si es un croquis, descríbelo como tal.>",
+  "notas": "<breve etiqueta descriptiva de la foto: 'Cuadro de contadores portería', 'Fachada edificio', 'Acometida exterior', 'Croquis planta', etc. — para usar como título>"
 }
 
-Si la imagen no muestra una instalación eléctrica o elemento frontera, devuelve null en todos los campos.`
+Sé específico con lo que ves. Si es un plano o croquis, indícalo.`
 
   const body = {
     contents: [{

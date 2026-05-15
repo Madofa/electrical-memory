@@ -18,48 +18,49 @@ const TIPOS_CGP = [
 export function Step5CGP({ onNext: _onNext }: Props) {
   const { data, setElementoFrontera, addFoto, updateFoto, removeFoto } = useWizardStore()
   const ef = { ...data.elementoFrontera, fotos: data.elementoFrontera.fotos ?? [] }
-  const [analyzing, setAnalyzing] = useState<string | null>(null)
+  const [analyzing, setAnalyzing] = useState<Set<string>>(new Set())
   const addFotoInputRef = useRef<HTMLInputElement>(null)
 
-  const handleAddFoto = () => {
-    addFotoInputRef.current?.click()
-  }
+  const readBase64 = (file: File): Promise<string> =>
+    new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.readAsDataURL(file)
+    })
 
-  const handleAddFotoFile = (file: File) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      addFoto({ id: crypto.randomUUID(), titulo: '', base64: reader.result as string })
-    }
-    reader.readAsDataURL(file)
-    if (addFotoInputRef.current) addFotoInputRef.current.value = ''
-  }
-
-  const handleAnalizar = async (fotoId: string, base64: string) => {
-    setAnalyzing(fotoId)
+  const analizarYRellenar = async (fotoId: string, base64: string) => {
+    setAnalyzing((s) => new Set(s).add(fotoId))
     try {
       const result = await analizarFotoCGP(base64)
 
+      // Rellena título con la etiqueta detectada
+      if (result.notas) updateFoto(fotoId, { titulo: result.notas })
+
+      // Rellena campos del formulario si los detecta (sin sobreescribir si ya están)
       const updates: Record<string, string> = {}
-      if (result.tipo_elemento) updates.tipo_elemento = result.tipo_elemento
-      if (result.descripcion) updates.descripcion = result.descripcion
-
-      if (Object.keys(updates).length > 0) {
-        setElementoFrontera(updates)
-        toast.success('IA ha rellenado los campos detectados')
-      } else {
-        toast('No he podido identificar el elemento — rellena manualmente', { icon: '🤷' })
-      }
-
-      if (result.notas) {
-        const fotoActual = ef.fotos.find((f) => f.id === fotoId)
-        if (fotoActual && !fotoActual.titulo) {
-          updateFoto(fotoId, { titulo: result.notas })
-        }
-      }
+      if (result.tipo_elemento && !data.elementoFrontera.tipo_elemento) updates.tipo_elemento = result.tipo_elemento
+      if (result.descripcion && !data.elementoFrontera.descripcion) updates.descripcion = result.descripcion
+      if (Object.keys(updates).length > 0) setElementoFrontera(updates)
     } catch {
-      toast.error('Error al analizar la imagen')
+      // silencioso — la foto queda igual, el usuario rellena a mano
     }
-    setAnalyzing(null)
+    setAnalyzing((s) => { const n = new Set(s); n.delete(fotoId); return n })
+  }
+
+  const handleFiles = async (files: FileList) => {
+    const arr = Array.from(files)
+    const toastId = arr.length > 1 ? toast.loading(`Subiendo ${arr.length} fotos...`) : undefined
+
+    await Promise.all(arr.map(async (file) => {
+      const base64 = await readBase64(file)
+      const id = crypto.randomUUID()
+      addFoto({ id, titulo: '', base64 })
+      analizarYRellenar(id, base64) // análisis en paralelo, sin bloquear
+    }))
+
+    if (toastId) toast.dismiss(toastId)
+    if (arr.length > 1) toast.success(`${arr.length} fotos añadidas — analizando con IA...`)
+    if (addFotoInputRef.current) addFotoInputRef.current.value = ''
   }
 
   return (
@@ -101,17 +102,17 @@ export function Step5CGP({ onNext: _onNext }: Props) {
       <div className="card space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-display font-semibold text-xs tracking-widest uppercase text-amber-500/70">
-            Fotografías y croquis
+            Fotos de la instalación
           </h3>
           <span className="text-[11px] text-slate-500 font-mono">{ef.fotos.length} adjuntos</span>
         </div>
 
-        {/* Hint IA */}
         {ef.fotos.length === 0 && (
           <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-950/20 border border-amber-800/30">
             <Sparkles className="w-3.5 h-3.5 text-amber-500/70 flex-shrink-0 mt-0.5" />
             <p className="text-[11px] text-amber-500/70 font-body leading-relaxed">
-              Sube una foto y la IA detectará automáticamente el tipo de elemento y su ubicación.
+              Sube fotos del cuadro de portería, la acometida, croquis o cualquier elemento de la instalación.
+              La IA los identifica y rellena los campos automáticamente.
             </p>
           </div>
         )}
@@ -127,13 +128,20 @@ export function Step5CGP({ onNext: _onNext }: Props) {
               className="border border-ink-500 rounded-xl p-4 space-y-3"
             >
               <div className="flex items-center gap-2">
-                <FormInput
-                  label="Título / descripción"
-                  value={foto.titulo}
-                  onChange={(e) => updateFoto(foto.id, { titulo: e.target.value })}
-                  placeholder="Ej: Fachada actual, Propuesta CGP, Croquis planta..."
-                  className="flex-1"
-                />
+                <div className="flex-1 relative">
+                  <FormInput
+                    label="¿Qué muestra esta foto?"
+                    value={foto.titulo}
+                    onChange={(e) => updateFoto(foto.id, { titulo: e.target.value })}
+                    placeholder="Cuadro de contadores, Fachada, CGP existente, Croquis..."
+                  />
+                  {analyzing.has(foto.id) && (
+                    <div className="absolute right-3 top-7 flex items-center gap-1 text-amber-500/70">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <span className="text-[10px] font-mono">IA...</span>
+                    </div>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={() => removeFoto(foto.id)}
@@ -146,46 +154,32 @@ export function Step5CGP({ onNext: _onNext }: Props) {
               <PhotoUpload
                 label=""
                 value={foto.base64}
-                onChange={(b64) => updateFoto(foto.id, { base64: b64 })}
+                onChange={(b64) => {
+                  updateFoto(foto.id, { base64: b64 })
+                  if (b64) analizarYRellenar(foto.id, b64)
+                }}
                 onClear={() => updateFoto(foto.id, { base64: '' })}
               />
-
-              {/* Botón Analizar con IA — visible solo cuando hay imagen */}
-              <AnimatePresence>
-                {foto.base64 && (
-                  <motion.button
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    type="button"
-                    onClick={() => handleAnalizar(foto.id, foto.base64)}
-                    disabled={analyzing === foto.id}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
-                               border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10
-                               text-amber-400 text-[12px] font-body font-semibold
-                               transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {analyzing === foto.id
-                      ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Analizando con IA...</>
-                      : <><Sparkles className="w-3.5 h-3.5" /> Analizar con IA → rellenar campos</>
-                    }
-                  </motion.button>
-                )}
-              </AnimatePresence>
             </motion.div>
           ))}
         </AnimatePresence>
 
-        <button type="button" onClick={handleAddFoto} className="btn-secondary w-full justify-center">
+        <button
+          type="button"
+          onClick={() => addFotoInputRef.current?.click()}
+          className="btn-secondary w-full justify-center"
+        >
           <Plus className="w-4 h-4" />
-          Añadir foto o croquis
+          Añadir fotos
+          <span className="text-[10px] text-slate-500 font-mono ml-1">(puedes seleccionar varias)</span>
         </button>
         <input
           ref={addFotoInputRef}
           type="file"
           accept="image/*"
+          multiple
           className="hidden"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAddFotoFile(f) }}
+          onChange={(e) => { if (e.target.files?.length) handleFiles(e.target.files) }}
         />
       </div>
     </div>
