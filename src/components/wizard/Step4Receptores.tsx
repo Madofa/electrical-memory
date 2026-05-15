@@ -162,11 +162,11 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
                           required
                         />
                         <FormInput
-                          label="Identificador"
+                          label="Aclarador (opcional)"
                           value={r.aclarador}
                           onChange={upd(r.id)('aclarador')}
-                          placeholder="1º 1ª, Local 2, Planta -1..."
-                          hint="Cómo aparece en la tabla"
+                          placeholder="1º 1ª, Planta -1..."
+                          hint="Si hay varios del mismo tipo"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
