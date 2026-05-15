@@ -107,7 +107,7 @@ export function PDFTemplate({ data, instalador }: Props) {
             </tr>
           ))}
           <tr>
-            <td colSpan={2} style={{ ...S.td, fontWeight: 'bold', textAlign: 'right' }}>POTENCIA TOTAL:</td>
+            <td style={{ ...S.td, fontWeight: 'bold', textAlign: 'right' }}>POTENCIA TOTAL:</td>
             <td style={{ ...S.td, fontWeight: 'bold', textAlign: 'right' }}>{potenciaTotal.toFixed(2).replace('.', ',')}</td>
             <td colSpan={2} style={S.td}></td>
           </tr>
