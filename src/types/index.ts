@@ -166,7 +166,7 @@ export const TENSION_OPTIONS = [
 ]
 
 export const defaultWizardData = (): WizardData => ({
-  referencia_interna: '',
+  referencia_interna: `MT-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 900) + 100)}`,
   solicitante: {
     razon_social: '', cif_nif: '', direccion: '',
     municipio: '', cp: '', telefono: '', email: '',

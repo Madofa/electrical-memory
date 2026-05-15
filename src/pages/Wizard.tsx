@@ -6,7 +6,6 @@ import { useWizardStore } from '../stores/wizardStore'
 import { useAuthStore } from '../stores/authStore'
 import { saveMemoria } from '../lib/supabase'
 import { StepIndicator, WIZARD_STEPS } from '../components/ui/StepIndicator'
-import { Step1Referencia } from '../components/wizard/Step1Referencia'
 import { Step2Solicitante } from '../components/wizard/Step2Solicitante'
 import { Step3Ubicacion } from '../components/wizard/Step3Ubicacion'
 import { Step4Receptores } from '../components/wizard/Step4Receptores'
@@ -18,7 +17,6 @@ import { MiniPreview } from '../components/wizard/MiniPreview'
 import toast from 'react-hot-toast'
 
 const STEPS = [
-  Step1Referencia,
   Step2Solicitante,
   Step3Ubicacion,
   Step4Receptores,

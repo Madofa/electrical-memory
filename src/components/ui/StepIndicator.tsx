@@ -2,14 +2,13 @@ import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 
 export const WIZARD_STEPS = [
-  { label: 'Referencia', short: '01' },
-  { label: 'Solicitante', short: '02' },
-  { label: 'Ubicación', short: '03' },
-  { label: 'Receptores', short: '04' },
-  { label: 'CGP', short: '05' },
-  { label: 'Cálculos', short: '06' },
-  { label: 'Declaración', short: '07' },
-  { label: 'Redactor', short: '08' },
+  { label: 'Solicitante', short: '01' },
+  { label: 'Ubicación', short: '02' },
+  { label: 'Receptores', short: '03' },
+  { label: 'CGP', short: '04' },
+  { label: 'Cálculos', short: '05' },
+  { label: 'Declaración', short: '06' },
+  { label: 'Redactor', short: '07' },
 ]
 
 interface StepIndicatorProps {
@@ -28,7 +27,6 @@ export function StepIndicator({ currentStep, onStepClick, completedSteps = new S
 
         return (
           <div key={index} className="flex items-center">
-            {/* Node */}
             <motion.button
               onClick={() => onStepClick?.(index)}
               disabled={!onStepClick}
@@ -39,7 +37,6 @@ export function StepIndicator({ currentStep, onStepClick, completedSteps = new S
               whileHover={onStepClick ? { scale: 1.05 } : {}}
               whileTap={onStepClick ? { scale: 0.95 } : {}}
             >
-              {/* Circle */}
               <div className={`
                 w-9 h-9 rounded-full flex items-center justify-center
                 border-2 font-mono text-xs font-semibold
@@ -56,7 +53,6 @@ export function StepIndicator({ currentStep, onStepClick, completedSteps = new S
                   : step.short}
               </div>
 
-              {/* Label */}
               <span className={`
                 mt-1.5 text-[10px] font-display font-semibold tracking-wider uppercase
                 whitespace-nowrap transition-colors duration-300
@@ -66,7 +62,6 @@ export function StepIndicator({ currentStep, onStepClick, completedSteps = new S
               </span>
             </motion.button>
 
-            {/* Connector line */}
             {index < WIZARD_STEPS.length - 1 && (
               <div className="relative w-8 flex items-center" style={{ marginBottom: '18px' }}>
                 <div className="h-px w-full bg-ink-600" />
