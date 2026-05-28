@@ -1,9 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { signIn, signUp } from '../lib/supabase'
+import { useAuthStore } from '../stores/authStore'
 import { Zap, Mail, Lock, AlertCircle } from 'lucide-react'
 
 export function Login() {
+  const navigate = useNavigate()
+  const user = useAuthStore((s) => s.user)
+  useEffect(() => {
+    if (user) navigate('/', { replace: true })
+  }, [user, navigate])
+
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
