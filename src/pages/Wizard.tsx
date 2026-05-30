@@ -46,6 +46,12 @@ export function Wizard() {
 
   useEffect(() => { setPasoActual(step) }, [step])
 
+  // Pre-cargar el motor PDF (~485 KB gzip) cuando el usuario llega a Cálculos
+  // (paso 5). Así, al pulsar "Finalizar y generar PDF" el chunk ya está listo.
+  useEffect(() => {
+    if (step >= 4) import('./PDFViewer')
+  }, [step])
+
   // Autoguardado: dispara 1s después del último cambio
   useEffect(() => {
     if (!isDirty || !user) return

@@ -86,8 +86,9 @@ export default function App() {
             <RequireAuth>
               <Suspense
                 fallback={
-                  <div className="min-h-screen flex items-center justify-center">
+                  <div className="min-h-screen flex flex-col items-center justify-center gap-4">
                     <div className="w-8 h-8 border-2 border-[#1e2d47] border-t-amber-500 rounded-full animate-spin" />
+                    <p className="text-[12px] text-slate-500 font-mono">Cargando motor PDF…</p>
                   </div>
                 }
               >
