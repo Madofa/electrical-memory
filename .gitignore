@@ -25,3 +25,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Brainstorming workspace (Superpowers)
+.superpowers/
+
+# Reference PDFs (contain PII: DNI, NIF, addresses)
+Referencias nuevas Herramietnas/
+
