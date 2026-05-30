@@ -1,7 +1,8 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Download, Loader2, Zap } from 'lucide-react'
+import { PDFViewer as ReactPDFViewer, pdf } from '@react-pdf/renderer'
 import { getMemoria } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
 import type { Memoria } from '../types'
@@ -15,7 +16,6 @@ export function PDFViewer() {
   const [memoria, setMemoria] = useState<Memoria | null>(null)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
-  const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!id) return
@@ -25,34 +25,36 @@ export function PDFViewer() {
     })
   }, [id])
 
+  const buildFilename = () => {
+    if (!memoria) return 'memoria-tecnica.pdf'
+    const ref = memoria.wizard_data.referencia_interna || 'memoria-tecnica'
+    const u = memoria.wizard_data.ubicacion
+    const partes = [u.direccion, u.numero, u.piso_puerta].filter(Boolean).join(' ')
+    const slug = partes
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-zA-Z0-9 ]+/g, ' ')
+      .trim()
+      .replace(/\s+/g, '_')
+    return slug
+      ? `${ref.replace(/\//g, '-')}-${slug}.pdf`
+      : `${ref.replace(/\//g, '-')}.pdf`
+  }
+
   const handleDownload = async () => {
-    if (!contentRef.current || !memoria) return
+    if (!memoria || !instalador) return
     setGenerating(true)
     try {
-      const html2pdf = (await import('html2pdf.js')).default
-      const ref = memoria.wizard_data.referencia_interna || 'memoria-tecnica'
-      const u = memoria.wizard_data.ubicacion
-      const partes = [u.direccion, u.numero, u.piso_puerta].filter(Boolean).join(' ')
-      const slug = partes
-        .normalize('NFD').replace(/[̀-ͯ]/g, '')
-        .replace(/[^a-zA-Z0-9 ]+/g, ' ')
-        .trim()
-        .replace(/\s+/g, '_')
-      const filename = slug
-        ? `${ref.replace(/\//g, '-')}-${slug}.pdf`
-        : `${ref.replace(/\//g, '-')}.pdf`
-      // pagebreak no está en Html2PdfOptions de html2pdf.js v0.14 (type.d.ts incompleto)
-      await html2pdf()
-        .set({
-          margin: [15, 15, 15, 15],
-          filename,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['css', 'legacy'], avoid: ['.pdf-photo-cell', '.pdf-no-break'] },
-        } as any)
-        .from(contentRef.current)
-        .save()
+      const blob = await pdf(
+        <PDFTemplate data={memoria.wizard_data} instalador={instalador} />,
+      ).toBlob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = buildFilename()
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
       toast.success('PDF descargado')
     } catch {
       toast.error('Error al generar el PDF')
@@ -101,32 +103,17 @@ export function PDFViewer() {
       </header>
 
       <div className="flex-1 flex">
-        {/* PDF preview */}
-        <main className="flex-1 p-8 flex justify-center">
+        {/* PDF preview — render real con @react-pdf/renderer */}
+        <main className="flex-1 p-8 flex justify-center bg-ink-900/40">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-[794px]"
+            className="w-full max-w-[900px] rounded-xl overflow-hidden shadow-2xl"
+            style={{ boxShadow: '0 25px 60px rgba(0,0,0,0.6)' }}
           >
-            <div
-              className="relative bg-white rounded-xl shadow-2xl overflow-hidden"
-              style={{
-                boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
-                // Indicador visual de salto de página A4: línea roja punteada cada 1008px
-                // (alto útil A4 a 96dpi tras restar márgenes 15mm sup+inf de html2pdf).
-                backgroundImage:
-                  'repeating-linear-gradient(to bottom, transparent 0, transparent 1007px, rgba(239,68,68,0.55) 1007px, rgba(239,68,68,0.55) 1009px, transparent 1009px, transparent 1010px)',
-                backgroundSize: '100% 1010px',
-                backgroundRepeat: 'repeat-y',
-              }}
-            >
-              <div ref={contentRef} className="p-[30px]">
-                <PDFTemplate data={data} instalador={instalador} />
-              </div>
-            </div>
-            <p className="text-[10px] text-amber-500/60 font-mono text-center mt-3">
-              Las líneas rojas marcan el salto de página A4 al exportar
-            </p>
+            <ReactPDFViewer width="100%" height={900} showToolbar={false}>
+              <PDFTemplate data={data} instalador={instalador} />
+            </ReactPDFViewer>
           </motion.div>
         </main>
 

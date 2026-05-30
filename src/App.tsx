@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { supabase, getInstalador, getMemorias } from './lib/supabase'
@@ -8,7 +8,10 @@ import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
 import { ProfileSetup } from './pages/ProfileSetup'
 import { Wizard } from './pages/Wizard'
-import { PDFViewer } from './pages/PDFViewer'
+
+// El motor PDF (@react-pdf/renderer) pesa ~1.5 MB — lo cargamos sólo cuando
+// el usuario navega a la vista previa.
+const PDFViewer = lazy(() => import('./pages/PDFViewer').then((m) => ({ default: m.PDFViewer })))
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuthStore()
@@ -77,7 +80,22 @@ export default function App() {
         <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
         <Route path="/perfil" element={<RequireAuth><ProfileSetup /></RequireAuth>} />
         <Route path="/wizard" element={<RequireAuth><Wizard /></RequireAuth>} />
-        <Route path="/pdf/:id" element={<RequireAuth><PDFViewer /></RequireAuth>} />
+        <Route
+          path="/pdf/:id"
+          element={
+            <RequireAuth>
+              <Suspense
+                fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <div className="w-8 h-8 border-2 border-[#1e2d47] border-t-amber-500 rounded-full animate-spin" />
+                  </div>
+                }
+              >
+                <PDFViewer />
+              </Suspense>
+            </RequireAuth>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

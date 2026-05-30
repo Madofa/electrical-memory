@@ -12,10 +12,11 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@react-pdf/renderer": "^4.5.1",
     "@supabase/supabase-js": "^2.105.4",
     "framer-motion": "^12.38.0",
-    "html2pdf.js": "^0.14.0",
     "lucide-react": "^1.16.0",
+    "pako": "^2.1.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.75.0",
@@ -27,7 +28,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/html2pdf.js": "^0.10.0",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
