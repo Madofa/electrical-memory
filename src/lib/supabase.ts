@@ -28,6 +28,27 @@ export async function getSession() {
   return supabase.auth.getSession()
 }
 
+export async function resetPassword(email: string) {
+  return supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  })
+}
+
+export async function updatePassword(newPassword: string) {
+  return supabase.auth.updateUser({ password: newPassword })
+}
+
+export async function signInWithMagicLink(email: string) {
+  return supabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.origin },
+  })
+}
+
+export async function resendConfirmation(email: string) {
+  return supabase.auth.resend({ type: 'signup', email })
+}
+
 // ── Instalador ────────────────────────────────────────────────────
 
 export async function getInstalador(userId: string): Promise<Instalador | null> {

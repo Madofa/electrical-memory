@@ -5,6 +5,7 @@ import { supabase, getInstalador, getMemorias } from './lib/supabase'
 import { useAuthStore } from './stores/authStore'
 import { useWizardStore } from './stores/wizardStore'
 import { Login } from './pages/Login'
+import { ResetPassword } from './pages/ResetPassword'
 import { Dashboard } from './pages/Dashboard'
 import { ProfileSetup } from './pages/ProfileSetup'
 import { Wizard } from './pages/Wizard'
@@ -77,6 +78,7 @@ export default function App() {
       />
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
         <Route path="/perfil" element={<RequireAuth><ProfileSetup /></RequireAuth>} />
         <Route path="/wizard" element={<RequireAuth><Wizard /></RequireAuth>} />
