@@ -204,7 +204,14 @@ export const PLANTILLA_HABITATGE_BASICA: Circuit[] = [
 ]
 ```
 
-(Equivalents per electrificació elevada, locals, garatges, etc.)
+Cada tipus té la seva pròpia plantilla amb els seus circuits típics segons la REBT:
+- `habitatge_elevada`: afegeix C6 (aire condicionat), C7 (eixugadora/auxiliars), C8 (climatització), C9 (calefacció) sobre la bàsica
+- `local_comercial` / `oficina`: circuits d'il·luminació, preses, climatització, ventilació
+- `garatge`: il·luminació, preses, port motoritzat, ventilació forçada (si normativa ITC-BT-29)
+- `taller` / `magatzem`: circuits monofàsics per il·luminació + circuits trifàsics per maquinària
+- `industrial`: només estructura mínima, l'usuari afegeix tot
+- `comunitat`: serveis comuns (ascensor, il·luminació escala, bombes, porter electrònic)
+- `altre`: plantilla buida
 
 ### Drag-and-drop
 
@@ -243,4 +250,4 @@ Al Dashboard actual s'afegeix una nova targeta "Esquema Unifilar" amb el seu bot
 2. **Format de la secció**: "2×1,5+1,5" és el format normatiu. S'ha de validar que l'usuari escrigui bé (autocompletat amb les seccions estàndard 1,5 / 2,5 / 4 / 6 / 10 / 16 mm²).
 3. **Tipografia PDF**: html2pdf.js pot tenir problemes amb símbols Unicode (subíndexs C₁, fletxes). Cal validar amb proves.
 4. **Scroll horitzontal**: amb molts circuits l'SVG creix. El PDF haurà d'usar pàgina apaïsada (A3 si cal).
-5. **Persistència en edició**: autoguardat cada N segons a Supabase (com fa el wizard actual amb la MTD).
+5. **Persistència en edició**: autoguardat amb debounce de 2 segons després de cada canvi (com fa el wizard actual amb la MTD).
