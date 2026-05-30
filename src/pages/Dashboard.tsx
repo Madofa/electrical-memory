@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, FileText, Download, Pencil, Trash2, Zap, User, LogOut, Search, ChevronRight } from 'lucide-react'
+import { Plus, FileText, Download, Pencil, Trash2, Zap, User, LogOut, Search, ChevronRight, Clock } from 'lucide-react'
 import { getMemorias, deleteMemoria, signOut, formatDate } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
 import { useWizardStore } from '../stores/wizardStore'
 import type { Memoria } from '../types'
 import toast from 'react-hot-toast'
+
+const PROPERES_EINES = [
+  'Esquema Unifilar (Model ELEC 2)',
+  'Memòria Tècnica de càlculs (ELEC-3)',
+  'Certificat d\'instal·lació (ELEC-1)',
+  'Memòria Descriptiva',
+]
 
 export function Dashboard() {
   const navigate = useNavigate()
@@ -46,7 +53,7 @@ export function Dashboard() {
     await deleteMemoria(id)
     setMemorias((prev) => prev.filter((m) => m.id !== id))
     setDeleting(null)
-    toast.success('Memoria eliminada')
+    toast.success('Memòria eliminada')
   }
 
   const handleLogout = async () => {
@@ -67,7 +74,7 @@ export function Dashboard() {
             <Zap className="w-4 h-4 text-ink-900" fill="currentColor" />
           </div>
           <span className="font-display font-bold text-base tracking-widest uppercase text-slate-100">
-            Memoria Eléctrica
+            Quadre
           </span>
         </div>
 
@@ -90,14 +97,17 @@ export function Dashboard() {
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10"
         >
           <div>
-            <p className="section-sub mb-1">Mis documentos</p>
+            <p className="section-sub mb-1">Eina activa</p>
             <h1 className="font-display font-bold text-4xl tracking-wide uppercase text-slate-100">
-              Memorias Técnicas
+              Memòria Tècnica Descriptiva
             </h1>
+            <p className="text-slate-500 font-body text-sm mt-1">
+              Per a sol·licituds d'alta de subministrament a e-distribució.
+            </p>
           </div>
           <button onClick={handleNew} className="btn-primary">
             <Plus className="w-4 h-4" />
-            Nueva memoria
+            Nova memòria
           </button>
         </motion.div>
 
@@ -110,10 +120,10 @@ export function Dashboard() {
         >
           {[
             { label: 'Total', value: memorias.length, color: 'text-slate-300' },
-            { label: 'Borradores', value: memorias.filter(m => m.estado === 'borrador').length, color: 'text-slate-400' },
-            { label: 'Finalizadas', value: memorias.filter(m => m.estado === 'finalizada').length, color: 'text-emerald-400' },
+            { label: 'Esborranys', value: memorias.filter(m => m.estado === 'borrador').length, color: 'text-slate-400' },
+            { label: 'Finalitzades', value: memorias.filter(m => m.estado === 'finalizada').length, color: 'text-emerald-400' },
             {
-              label: 'kW totales',
+              label: 'kW totals',
               value: memorias.reduce((s, m) => s + potenciaTotal(m), 0).toFixed(1),
               color: 'text-amber-400'
             },
@@ -137,7 +147,7 @@ export function Dashboard() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por referencia o municipio..."
+              placeholder="Cerca per referència o municipi…"
               className="input-box w-full pl-10 py-3"
             />
           </motion.div>
@@ -159,14 +169,14 @@ export function Dashboard() {
               <FileText className="w-8 h-8 text-slate-500" />
             </div>
             <h3 className="font-display font-bold text-xl uppercase text-slate-400 mb-2">
-              {search ? 'Sin resultados' : 'Sin memorias aún'}
+              {search ? 'Sense resultats' : 'Encara no tens cap memòria'}
             </h3>
             <p className="text-slate-600 text-sm font-body mb-6">
-              {search ? 'Prueba con otra búsqueda.' : 'Crea tu primera memoria técnica descriptiva.'}
+              {search ? 'Prova amb una altra cerca.' : 'Crea la teva primera memòria tècnica descriptiva.'}
             </p>
             {!search && (
               <button onClick={handleNew} className="btn-primary mx-auto">
-                <Plus className="w-4 h-4" /> Nueva memoria
+                <Plus className="w-4 h-4" /> Nova memòria
               </button>
             )}
           </motion.div>
@@ -183,36 +193,33 @@ export function Dashboard() {
                   className="card-hover"
                 >
                   <div className="flex items-center gap-4">
-                    {/* Icon */}
                     <div className="w-10 h-10 rounded-xl bg-ink-700 flex items-center justify-center flex-shrink-0">
                       <FileText className="w-5 h-5 text-amber-500/70" />
                     </div>
 
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="font-mono text-xs text-amber-500/70">
                           {m.referencia_interna || '—'}
                         </span>
                         <span className={m.estado === 'finalizada' ? 'badge-done' : 'badge-draft'}>
-                          {m.estado === 'finalizada' ? '✓ Finalizada' : '○ Borrador'}
+                          {m.estado === 'finalizada' ? '✓ Finalitzada' : '○ Esborrany'}
                         </span>
                       </div>
                       <div className="font-body font-semibold text-slate-200 text-[14px] truncate">
                         {m.wizard_data?.ubicacion?.municipio
                           ? `${m.wizard_data.ubicacion.direccion || ''} ${m.wizard_data.ubicacion.numero || ''}, ${m.wizard_data.ubicacion.municipio}`
-                          : 'Dirección pendiente'}
+                          : 'Adreça pendent'}
                       </div>
                       <div className="flex items-center gap-3 mt-1 text-[11px] text-slate-500 font-mono">
                         <span>{formatDate(m.updated_at)}</span>
                         {potenciaTotal(m) > 0 && (
                           <span className="text-amber-500/60">{potenciaTotal(m).toFixed(2)} kW</span>
                         )}
-                        <span>{m.wizard_data?.receptores?.length ?? 0} receptores</span>
+                        <span>{m.wizard_data?.receptores?.length ?? 0} receptors</span>
                       </div>
                     </div>
 
-                    {/* Actions */}
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleEdit(m)}
@@ -246,11 +253,32 @@ export function Dashboard() {
             </div>
           </AnimatePresence>
         )}
+
+        {/* Properes eines */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mt-16 pt-8 border-t border-[#1e2d47]/60"
+        >
+          <p className="section-sub mb-3">Pròximament</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {PROPERES_EINES.map((eina) => (
+              <div
+                key={eina}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl border border-ink-600/50 bg-ink-800/30"
+              >
+                <Clock className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+                <span className="text-[12.5px] font-body text-slate-500">{eina}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </main>
 
       <footer className="border-t border-[#1e2d47]/50 px-6 py-3 text-center">
         <span className="text-[10px] font-mono text-slate-700">
-          v {__APP_VERSION__}
+          Quadre · v {__APP_VERSION__}
         </span>
       </footer>
     </div>

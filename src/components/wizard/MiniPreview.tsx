@@ -63,7 +63,7 @@ export function MiniPreview({ data, currentStep }: Props) {
       {/* Header */}
       <div className="mb-4">
         <p className="text-[9px] font-display font-bold tracking-widest uppercase text-amber-500/50 mb-1">
-          Vista previa del documento
+          Vista prèvia del document
         </p>
         {/* Miniature document header */}
         <div className="border border-[#1e2d47] rounded-lg p-3 bg-[#0f1729]/60">
@@ -72,8 +72,8 @@ export function MiniPreview({ data, currentStep }: Props) {
               <span className="text-[8px] text-slate-600">LOGO</span>
             </div>
             <div className="text-right">
-              <div className="text-[9px] font-display font-bold text-slate-400 leading-tight">MEMORIA TÉCNICA</div>
-              <div className="text-[8px] text-slate-600 font-mono">Instalación BT</div>
+              <div className="text-[9px] font-display font-bold text-slate-400 leading-tight">MEMÒRIA TÈCNICA</div>
+              <div className="text-[8px] text-slate-600 font-mono">Instal·lació BT</div>
             </div>
           </div>
           <div className="text-[9px] font-mono text-amber-500/70">
@@ -86,35 +86,35 @@ export function MiniPreview({ data, currentStep }: Props) {
       {isEmpty ? (
         <div className="text-center py-6">
           <div className="text-[10px] text-slate-600 font-body leading-relaxed">
-            El documento se irá<br />completando aquí<br />conforme avances.
+            El document s'anirà<br />completant aquí<br />a mesura que avancis.
           </div>
         </div>
       ) : (
         <div className="overflow-y-auto">
-          <PreviewSection title="§1 Solicitud" show={hasRef || hasUbicacion}>
-            <PreviewRow label="Tipo" value={u.tipo_solicitud ? LABELS_TIPO_SOLICITUD[u.tipo_solicitud] : undefined} />
-            <PreviewRow label="Uso" value={u.uso_finca ? LABELS_USO_FINCA[u.uso_finca] : undefined} />
+          <PreviewSection title="§1 Sol·licitud" show={hasRef || hasUbicacion}>
+            <PreviewRow label="Tipus" value={u.tipo_solicitud ? LABELS_TIPO_SOLICITUD[u.tipo_solicitud] : undefined} />
+            <PreviewRow label="Ús" value={u.uso_finca ? LABELS_USO_FINCA[u.uso_finca] : undefined} />
             {potenciaTotal > 0 && (
-              <PreviewRow label="Potencia" value={`${potenciaTotal.toFixed(2).replace('.', ',')} kW`} />
+              <PreviewRow label="Potència" value={`${potenciaTotal.toFixed(2).replace('.', ',')} kW`} />
             )}
           </PreviewSection>
 
-          <PreviewSection title="§2 Solicitante" show={hasSolicitante}>
-            <PreviewRow label="Nombre" value={s.razon_social} />
+          <PreviewSection title="§2 Sol·licitant" show={hasSolicitante}>
+            <PreviewRow label="Nom" value={s.razon_social} />
             <PreviewRow label="NIF/CIF" value={s.cif_nif} />
-            <PreviewRow label="Municipio" value={s.municipio} />
+            <PreviewRow label="Municipi" value={s.municipio} />
           </PreviewSection>
 
-          <PreviewSection title="§3 Ubicación" show={hasUbicacion}>
+          <PreviewSection title="§3 Ubicació" show={hasUbicacion}>
             <PreviewRow
-              label="Dirección"
+              label="Adreça"
               value={[u.direccion, u.numero, u.piso_puerta].filter(Boolean).join(' ')}
             />
-            <PreviewRow label="Municipio" value={[u.municipio, u.cp].filter(Boolean).join(' ')} />
-            <PreviewRow label="Provincia" value={u.provincia} />
+            <PreviewRow label="Municipi" value={[u.municipio, u.cp].filter(Boolean).join(' ')} />
+            <PreviewRow label="Província" value={u.provincia} />
           </PreviewSection>
 
-          <PreviewSection title="§4 Receptores" show={hasReceptores}>
+          <PreviewSection title="§4 Receptors" show={hasReceptores}>
             {receptores.map((r) => (
               <PreviewRow
                 key={r.id}
@@ -129,7 +129,7 @@ export function MiniPreview({ data, currentStep }: Props) {
           </PreviewSection>
 
           <PreviewSection title="§5 CGP" show={hasCGP}>
-            <PreviewRow label="Elemento" value={ef.tipo_elemento} />
+            <PreviewRow label="Element" value={ef.tipo_elemento} />
             {fotos.filter((f) => f.base64).slice(0, 1).map((f) => (
               <div key={f.id} className="rounded-md overflow-hidden border border-ink-600/50 mt-1.5 mb-2">
                 <img src={f.base64} className="w-full h-16 object-cover opacity-60" />
@@ -137,8 +137,8 @@ export function MiniPreview({ data, currentStep }: Props) {
             ))}
           </PreviewSection>
 
-          <PreviewSection title="§7 Declaración" show={hasFirma}>
-            <PreviewRow label="Lugar y fecha" value={`${data.lugarFirma}, a ${formatDate(data.fechaFirma)}`} />
+          <PreviewSection title="§7 Declaració" show={hasFirma}>
+            <PreviewRow label="Lloc i data" value={`${data.lugarFirma}, a ${formatDate(data.fechaFirma)}`} />
           </PreviewSection>
         </div>
       )}
@@ -146,7 +146,7 @@ export function MiniPreview({ data, currentStep }: Props) {
       {/* Progress bar */}
       <div className="mt-4 pt-3 border-t border-[#1e2d47]">
         <div className="flex justify-between text-[9px] font-mono text-slate-600 mb-1">
-          <span>Completado</span>
+          <span>Completat</span>
           <span>{Math.round(currentStep / 7 * 100)}%</span>
         </div>
         <div className="h-1 rounded-full bg-ink-600 overflow-hidden">

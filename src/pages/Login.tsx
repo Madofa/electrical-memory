@@ -3,9 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { signIn, signUp, resetPassword, signInWithMagicLink, resendConfirmation } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
-import { Zap, Mail, Lock, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react'
+import { Zap, Mail, Lock, AlertCircle, CheckCircle, ArrowLeft, Check, Clock } from 'lucide-react'
 
 type Mode = 'login' | 'register' | 'forgot' | 'magic'
+
+const EINES = [
+  { nom: 'Memòria Tècnica Descriptiva (e-distribució)', estat: 'available' as const },
+  { nom: 'Esquema Unifilar (Model ELEC 2)', estat: 'soon' as const },
+  { nom: 'Memòria Tècnica de càlculs (ELEC-3)', estat: 'soon' as const },
+  { nom: 'Certificat d\'instal·lació (ELEC-1)', estat: 'soon' as const },
+  { nom: 'Memòria Descriptiva', estat: 'soon' as const },
+]
 
 export function Login() {
   const navigate = useNavigate()
@@ -23,11 +31,7 @@ export function Login() {
   const [unconfirmedEmail, setUnconfirmedEmail] = useState('')
 
   const clearMsgs = () => { setError(''); setSuccess(''); setUnconfirmedEmail('') }
-
-  const changeMode = (next: Mode) => {
-    setMode(next)
-    clearMsgs()
-  }
+  const changeMode = (next: Mode) => { setMode(next); clearMsgs() }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,25 +47,16 @@ export function Login() {
         }
       } else if (mode === 'register') {
         const { error: err } = await signUp(email, password)
-        if (err) {
-          setError(translateError(err.message))
-        } else {
-          setSuccess('Cuenta creada. Revisa tu email para confirmar la dirección antes de entrar.')
-        }
+        if (err) setError(translateError(err.message))
+        else setSuccess('Compte creat. Revisa el teu correu per confirmar l\'adreça abans d\'entrar.')
       } else if (mode === 'forgot') {
         const { error: err } = await resetPassword(email)
-        if (err) {
-          setError(err.message)
-        } else {
-          setSuccess('Te hemos enviado un email con el enlace para recuperar tu contraseña. Revisa también la carpeta de spam.')
-        }
+        if (err) setError(err.message)
+        else setSuccess('T\'hem enviat un correu amb l\'enllaç per recuperar la contrasenya. Revisa també la carpeta de correu brossa.')
       } else if (mode === 'magic') {
         const { error: err } = await signInWithMagicLink(email)
-        if (err) {
-          setError(err.message)
-        } else {
-          setSuccess('Te hemos enviado un enlace mágico para entrar sin contraseña. Revisa tu email (y el spam).')
-        }
+        if (err) setError(err.message)
+        else setSuccess('T\'hem enviat un enllaç màgic per entrar sense contrasenya. Revisa el teu correu (i el correu brossa).')
       }
     } finally {
       setLoading(false)
@@ -73,10 +68,9 @@ export function Login() {
     setLoading(true)
     const { error: err } = await resendConfirmation(unconfirmedEmail)
     setLoading(false)
-    if (err) {
-      setError(err.message)
-    } else {
-      setSuccess('Email de confirmación reenviado. Revisa tu bandeja de entrada.')
+    if (err) setError(err.message)
+    else {
+      setSuccess('Correu de confirmació reenviat. Revisa la teva safata d\'entrada.')
       setUnconfirmedEmail('')
     }
   }
@@ -84,31 +78,28 @@ export function Login() {
   const showPassword = mode === 'login' || mode === 'register'
 
   const titleByMode: Record<Mode, string> = {
-    login: 'Acceder',
-    register: 'Crear cuenta',
-    forgot: 'Recuperar contraseña',
-    magic: 'Entrar con enlace mágico',
+    login: 'Accedeix',
+    register: 'Crea el teu compte',
+    forgot: 'Recupera la contrasenya',
+    magic: 'Entra amb enllaç màgic',
   }
-
   const subtitleByMode: Record<Mode, string> = {
-    login: 'Introduce tus credenciales para continuar.',
-    register: 'Regístrate para empezar a generar memorias.',
-    forgot: 'Te enviaremos un email con un enlace para crear una nueva contraseña.',
-    magic: 'Te enviaremos un enlace de un solo uso para entrar sin contraseña.',
+    login: 'Introdueix les teves credencials per continuar.',
+    register: 'Registra\'t per començar a generar documents.',
+    forgot: 'T\'enviarem un correu amb un enllaç per crear una contrasenya nova.',
+    magic: 'T\'enviarem un enllaç d\'un sol ús per entrar sense contrasenya.',
   }
-
   const ctaByMode: Record<Mode, string> = {
-    login: 'Entrar',
-    register: 'Crear cuenta',
-    forgot: 'Enviar email de recuperación',
-    magic: 'Enviar enlace mágico',
+    login: 'Entra',
+    register: 'Crea el compte',
+    forgot: 'Envia\'m el correu',
+    magic: 'Envia\'m l\'enllaç',
   }
 
   return (
     <div className="min-h-screen flex">
       {/* Left panel — branding */}
       <div className="hidden lg:flex flex-col justify-between w-[480px] flex-shrink-0 p-12 border-r border-[#1e2d47] relative overflow-hidden">
-        {/* Circuit decorations */}
         <svg className="absolute inset-0 w-full h-full opacity-30" viewBox="0 0 480 800" preserveAspectRatio="none">
           <line x1="120" y1="0" x2="120" y2="200" stroke="#f59e0b" strokeWidth="1" opacity="0.3" />
           <circle cx="120" cy="200" r="4" fill="none" stroke="#f59e0b" strokeWidth="1.5" opacity="0.5" />
@@ -120,47 +111,56 @@ export function Login() {
           <line x1="240" y1="400" x2="240" y2="800" stroke="#f59e0b" strokeWidth="1" opacity="0.15" />
         </svg>
 
-        {/* Logo */}
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-16">
+          <div className="flex items-center gap-3 mb-12">
             <div className="w-10 h-10 rounded-lg bg-amber-500 flex items-center justify-center">
               <Zap className="w-6 h-6 text-ink-900" fill="currentColor" />
             </div>
             <span className="font-display font-bold text-xl tracking-widest uppercase text-slate-100">
-              Memoria Eléctrica
+              Quadre
             </span>
           </div>
 
           <h1 className="font-display font-bold text-5xl leading-tight tracking-wide text-slate-100 mb-6">
-            Memorias<br />
-            <span className="text-amber-500">Técnicas</span><br />
-            en minutos.
+            Tots els<br />
+            <span className="text-amber-500">documents elèctrics</span><br />
+            a un sol quadre.
           </h1>
 
-          <p className="text-slate-400 font-body leading-relaxed max-w-xs">
-            Genera memorias técnicas descriptivas para instalaciones eléctricas
-            en baja tensión. Formato e-distribución, listo para presentar.
+          <p className="text-slate-400 font-body leading-relaxed max-w-xs mb-10">
+            La suite per a instal·ladors de baixa tensió a Catalunya.
+            Genera, signa i exporta cada document oficial en minuts.
           </p>
+
+          {/* Lista de las 5 herramientas */}
+          <div className="space-y-2.5">
+            {EINES.map((eina, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 + i * 0.07 }}
+                className="flex items-center gap-3 text-[12.5px] font-body"
+              >
+                {eina.estat === 'available' ? (
+                  <span className="w-5 h-5 rounded-full bg-amber-500/15 border border-amber-500/40 flex items-center justify-center flex-shrink-0">
+                    <Check className="w-3 h-3 text-amber-400" strokeWidth={2.5} />
+                  </span>
+                ) : (
+                  <span className="w-5 h-5 rounded-full bg-ink-700 border border-ink-500 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-2.5 h-2.5 text-slate-500" />
+                  </span>
+                )}
+                <span className={eina.estat === 'available' ? 'text-slate-300' : 'text-slate-500'}>
+                  {eina.nom}
+                </span>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
-        {/* Features */}
-        <div className="relative z-10 space-y-4">
-          {[
-            { icon: '⚡', text: 'Conforme REBT (RD 842/2002)' },
-            { icon: '📋', text: 'Formato exacto e-distribución' },
-            { icon: '📄', text: 'PDF descargable al instante' },
-          ].map((f, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + i * 0.1 }}
-              className="flex items-center gap-3 text-slate-400 font-body text-sm"
-            >
-              <span className="text-lg">{f.icon}</span>
-              {f.text}
-            </motion.div>
-          ))}
+        <div className="relative z-10 text-[10px] font-mono text-slate-600 tracking-widest uppercase">
+          REBT · RD 842/2002 · ITC-BT
         </div>
       </div>
 
@@ -178,7 +178,7 @@ export function Login() {
               <Zap className="w-5 h-5 text-ink-900" fill="currentColor" />
             </div>
             <span className="font-display font-bold text-lg tracking-widest uppercase text-slate-100">
-              Memoria Eléctrica
+              Quadre
             </span>
           </div>
 
@@ -189,7 +189,7 @@ export function Login() {
                 onClick={() => changeMode('login')}
                 className="text-[12px] text-slate-500 hover:text-amber-400 font-body flex items-center gap-1 mb-2"
               >
-                <ArrowLeft className="w-3 h-3" /> Volver al acceso
+                <ArrowLeft className="w-3 h-3" /> Torna a l'accés
               </button>
             )}
             <h2 className="font-display font-bold text-3xl tracking-wide uppercase text-slate-100">
@@ -202,14 +202,14 @@ export function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="field-label">Email</label>
+              <label className="field-label">Correu electrònic</label>
               <div className="relative">
                 <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tu@email.com"
+                  placeholder="tu@correu.com"
                   className="input-field pl-6"
                   required
                   autoComplete="email"
@@ -226,7 +226,7 @@ export function Login() {
                   transition={{ duration: 0.15 }}
                   className="overflow-hidden"
                 >
-                  <label className="field-label">Contraseña</label>
+                  <label className="field-label">Contrasenya</label>
                   <div className="relative">
                     <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                     <input
@@ -260,7 +260,7 @@ export function Login() {
                       className="text-[12px] text-amber-400 hover:text-amber-300 underline mt-1"
                       disabled={loading}
                     >
-                      Reenviar email de confirmación
+                      Reenviar el correu de confirmació
                     </button>
                   )}
                 </div>
@@ -286,13 +286,12 @@ export function Login() {
               {loading ? (
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-ink-900/30 border-t-ink-900 rounded-full animate-spin" />
-                  Procesando…
+                  Processant…
                 </span>
               ) : ctaByMode[mode]}
             </button>
           </form>
 
-          {/* Enlaces secundarios */}
           <div className="mt-6 space-y-2 text-center">
             {mode === 'login' && (
               <>
@@ -301,21 +300,21 @@ export function Login() {
                   onClick={() => changeMode('forgot')}
                   className="text-sm text-slate-500 hover:text-amber-400 transition-colors font-body block w-full"
                 >
-                  ¿Olvidaste tu contraseña?
+                  Has oblidat la contrasenya?
                 </button>
                 <button
                   type="button"
                   onClick={() => changeMode('magic')}
                   className="text-sm text-slate-500 hover:text-amber-400 transition-colors font-body block w-full"
                 >
-                  Entrar con enlace mágico (sin contraseña)
+                  Entra amb enllaç màgic (sense contrasenya)
                 </button>
                 <button
                   type="button"
                   onClick={() => changeMode('register')}
                   className="text-sm text-slate-500 hover:text-amber-400 transition-colors font-body block w-full pt-2 border-t border-ink-600/30"
                 >
-                  ¿No tienes cuenta? Regístrate
+                  No tens compte? Registra't
                 </button>
               </>
             )}
@@ -325,7 +324,7 @@ export function Login() {
                 onClick={() => changeMode('login')}
                 className="text-sm text-slate-500 hover:text-amber-400 transition-colors font-body"
               >
-                ¿Ya tienes cuenta? Accede
+                Ja tens compte? Accedeix
               </button>
             )}
           </div>
@@ -336,11 +335,11 @@ export function Login() {
 }
 
 function translateError(msg: string): string {
-  if (msg.includes('Invalid login')) return 'Email o contraseña incorrectos.'
-  if (msg.includes('Email not confirmed')) return 'Tu email no está confirmado. Revisa tu bandeja o reenvía el email de confirmación abajo.'
-  if (msg.includes('already registered')) return 'Este email ya está registrado. Prueba a iniciar sesión.'
-  if (msg.toLowerCase().includes('password') && msg.toLowerCase().includes('short')) return 'La contraseña debe tener al menos 6 caracteres.'
-  if (msg.includes('rate limit') || msg.includes('Too many')) return 'Demasiados intentos. Espera unos minutos y vuelve a probar.'
-  if (msg.includes('Network')) return 'Error de red. Comprueba tu conexión.'
+  if (msg.includes('Invalid login')) return 'Correu o contrasenya incorrectes.'
+  if (msg.includes('Email not confirmed')) return 'El teu correu no està confirmat. Revisa la safata o reenvia el correu de confirmació a sota.'
+  if (msg.includes('already registered')) return 'Aquest correu ja està registrat. Prova a iniciar sessió.'
+  if (msg.toLowerCase().includes('password') && msg.toLowerCase().includes('short')) return 'La contrasenya ha de tenir almenys 6 caràcters.'
+  if (msg.includes('rate limit') || msg.includes('Too many')) return 'Massa intents. Espera uns minuts i torna a provar.'
+  if (msg.includes('Network')) return 'Error de xarxa. Comprova la teva connexió.'
   return msg
 }

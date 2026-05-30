@@ -15,12 +15,12 @@ export function Step1Referencia({ onNext: _onNext }: Props) {
             <Hash className="w-5 h-5 text-amber-500" />
           </div>
           <div className="flex-1">
-            <h3 className="font-body font-semibold text-slate-200 mb-1">Referencia interna</h3>
+            <h3 className="font-body font-semibold text-slate-200 mb-1">Referència interna</h3>
             <p className="text-[13px] text-slate-500 font-body mb-4">
-              Código identificador de tu expediente. Aparecerá en la cabecera del documento.
+              Codi identificador del teu expedient. Apareixerà a la capçalera del document.
             </p>
             <FormInput
-              label="Referencia"
+              label="Referència"
               value={data.referencia_interna}
               onChange={(e) => setReferencia(e.target.value)}
               placeholder=""
@@ -34,8 +34,8 @@ export function Step1Referencia({ onNext: _onNext }: Props) {
         <div className="flex items-start gap-3">
           <FileText className="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" />
           <p className="text-[12px] text-slate-500 font-body leading-relaxed">
-            La referencia se genera automáticamente si la dejas en blanco. Puedes modificarla en cualquier momento
-            sin afectar al contenido del documento.
+            La referència es genera automàticament si la deixes en blanc. Pots modificar-la en qualsevol moment
+            sense afectar el contingut del document.
           </p>
         </div>
       </div>

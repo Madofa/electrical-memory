@@ -7,22 +7,22 @@ import { Zap, TrendingUp, Settings, RotateCcw, Home, ShoppingBag, Car, Factory, 
 interface Props { onNext: () => void }
 
 const TIPO_CARDS: { value: TipoSolicitud; label: string; icon: React.ElementType; desc: string }[] = [
-  { value: 'nuevo_suministro',   label: 'Nuevo suministro',       icon: Zap,        desc: 'Finca nueva sin acometida' },
-  { value: 'ampliacion_potencia',label: 'Ampliar potencia',        icon: TrendingUp, desc: 'Aumentar potencia contratada' },
-  { value: 'modificacion',       label: 'Modificación',            icon: Settings,   desc: 'Cambios en instalación existente' },
-  { value: 'reanudacion',        label: 'Reanudación',             icon: RotateCcw,  desc: 'Reanudar suministro cortado' },
+  { value: 'nuevo_suministro',   label: 'Nou subministrament',     icon: Zap,        desc: 'Finca nova sense escomesa' },
+  { value: 'ampliacion_potencia',label: 'Ampliar potència',        icon: TrendingUp, desc: 'Augmentar potència contractada' },
+  { value: 'modificacion',       label: 'Modificació',             icon: Settings,   desc: 'Canvis en instal·lació existent' },
+  { value: 'reanudacion',        label: 'Represa',                 icon: RotateCcw,  desc: 'Reactivar subministrament tallat' },
 ]
 
 const USO_CARDS: { value: UsoFinca; label: string; icon: React.ElementType }[] = [
-  { value: 'vivienda',        label: 'Vivienda',   icon: Home },
+  { value: 'vivienda',        label: 'Habitatge',  icon: Home },
   { value: 'local_comercial', label: 'Comercial',  icon: ShoppingBag },
   { value: 'taller',          label: 'Taller',     icon: Wrench },
-  { value: 'almacen',         label: 'Almacén',    icon: Package },
+  { value: 'almacen',         label: 'Magatzem',   icon: Package },
   { value: 'oficina',         label: 'Oficina',    icon: Briefcase },
-  { value: 'garaje',          label: 'Garaje',     icon: Car },
+  { value: 'garaje',          label: 'Garatge',    icon: Car },
   { value: 'industrial',      label: 'Industrial', icon: Factory },
-  { value: 'comunidad',       label: 'Comunidad',  icon: Building2 },
-  { value: 'otro',            label: 'Otro',       icon: CircleDot },
+  { value: 'comunidad',       label: 'Comunitat',  icon: Building2 },
+  { value: 'otro',            label: 'Altre',      icon: CircleDot },
 ]
 
 const PROVINCIAS = [
@@ -47,7 +47,7 @@ export function Step3Ubicacion({ onNext: _onNext }: Props) {
       {/* Tipo de solicitud */}
       <div className="card space-y-4">
         <h3 className="font-display font-semibold text-xs tracking-widest uppercase text-amber-500/70">
-          Tipo de solicitud
+          Tipus de sol·licitud
         </h3>
         <div className="grid grid-cols-2 gap-3">
           {TIPO_CARDS.map(({ value, label, icon: Icon, desc }) => {
@@ -77,7 +77,7 @@ export function Step3Ubicacion({ onNext: _onNext }: Props) {
       {/* Uso de la finca */}
       <div className="card space-y-4">
         <h3 className="font-display font-semibold text-xs tracking-widest uppercase text-amber-500/70">
-          Uso de la finca
+          Ús de la finca
         </h3>
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
           {USO_CARDS.map(({ value, label, icon: Icon }) => {
@@ -106,29 +106,29 @@ export function Step3Ubicacion({ onNext: _onNext }: Props) {
       {/* Dirección */}
       <div className="card space-y-4">
         <h3 className="font-display font-semibold text-xs tracking-widest uppercase text-amber-500/70">
-          Dirección del suministro
+          Adreça del subministrament
         </h3>
         <div className="grid grid-cols-3 gap-4">
-          <FormInput label="Calle / Avenida" value={u.direccion} onChange={set('direccion')} className="col-span-2" />
+          <FormInput label="Carrer / Avinguda" value={u.direccion} onChange={set('direccion')} className="col-span-2" />
           <FormInput label="Número" value={u.numero} onChange={set('numero')} />
         </div>
-        <FormInput label="Piso / Puerta (opcional)" value={u.piso_puerta} onChange={set('piso_puerta')} />
+        <FormInput label="Pis / Porta (opcional)" value={u.piso_puerta} onChange={set('piso_puerta')} />
         <div className="grid grid-cols-3 gap-4">
-          <FormInput label="Municipio" value={u.municipio} onChange={set('municipio')} className="col-span-2" />
+          <FormInput label="Municipi" value={u.municipio} onChange={set('municipio')} className="col-span-2" />
           <FormInput label="C.P." value={u.cp} onChange={set('cp')} />
         </div>
-        <FormSelect label="Provincia" value={u.provincia} onChange={set('provincia')} options={PROVINCIAS} placeholder="Selecciona..." />
+        <FormSelect label="Província" value={u.provincia} onChange={set('provincia')} options={PROVINCIAS} placeholder="Tria…" />
       </div>
 
       {/* Estado actual de la instalación — adaptativo */}
       <div className="card space-y-4">
         <h3 className="font-display font-semibold text-xs tracking-widest uppercase text-amber-500/70">
-          Estado de la instalación
+          Estat de la instal·lació
         </h3>
 
         <ToggleRow
-          label="¿La instalación interior ya está legalizada?"
-          help="Existe boletín (CIE) y/o número RITSIC. Permite ir por la vía simplificada del alta de suministro."
+          label="La instal·lació interior ja està legalitzada?"
+          help="Hi ha butlletí (CIE) i/o número RITSIC. Permet anar per la via simplificada de l'alta de subministrament."
           value={u.instalacion_legalizada}
           onChange={(v) => setUbicacion({ instalacion_legalizada: v })}
         />
@@ -138,28 +138,28 @@ export function Step3Ubicacion({ onNext: _onNext }: Props) {
             label="Número RITSIC / CIE"
             value={u.numero_ritsic}
             onChange={set('numero_ritsic')}
-            placeholder="Ej. 10.000.123/2025"
+            placeholder="Ex. 10.000.123/2025"
             className="font-mono"
           />
         )}
 
         <ToggleRow
-          label="¿Existe ya centralización de contadores en el edificio?"
-          help="Armario común con varios contadores en portería o local técnico. Si la hay, se aprovecha y no hace falta proponer una CGP nueva."
+          label="Ja hi ha centralització de comptadors a l'edifici?"
+          help="Armari comú amb diversos comptadors a porteria o local tècnic. Si n'hi ha, s'aprofita i no cal proposar una CGP nova."
           value={u.centralizacion_existente}
           onChange={(v) => setUbicacion({ centralizacion_existente: v })}
         />
 
         <ToggleRow
-          label="¿La finca tiene varios suministros?"
-          help="Edificio con varias viviendas, locales, garaje comunitario… Activa el cálculo con coeficiente de simultaneidad."
+          label="La finca té diversos subministraments?"
+          help="Edifici amb diversos habitatges, locals, garatge comunitari… Activa el càlcul amb coeficient de simultaneïtat."
           value={u.multiples_suministros}
           onChange={(v) => setUbicacion({ multiples_suministros: v })}
         />
 
         {(u.tipo_solicitud === 'ampliacion_potencia' || u.tipo_solicitud === 'reanudacion' || u.tipo_solicitud === 'modificacion') && (
           <FormInput
-            label="CUPS del suministro existente"
+            label="CUPS del subministrament existent"
             value={u.cups}
             onChange={set('cups')}
             placeholder="ES0021000000000000XX0F"
@@ -175,16 +175,16 @@ export function Step3Ubicacion({ onNext: _onNext }: Props) {
         className="flex items-center gap-2 text-[12px] text-slate-500 hover:text-slate-300 transition-colors font-body w-full"
       >
         {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-        Datos registrales opcionales (catastro, UTM, CUPS)
+        Dades registrals opcionals (cadastre, UTM, CUPS)
       </button>
 
       {showAdvanced && (
         <div className="card space-y-4">
-          <FormInput label="Referencia catastral" value={u.referencia_catastral} onChange={set('referencia_catastral')} />
+          <FormInput label="Referència cadastral" value={u.referencia_catastral} onChange={set('referencia_catastral')} />
           <div className="grid grid-cols-3 gap-4">
             <FormInput label="UTM X" value={u.utm_x} onChange={set('utm_x')} className="font-mono" />
             <FormInput label="UTM Y" value={u.utm_y} onChange={set('utm_y')} className="font-mono" />
-            <FormInput label="Huso" value={u.utm_huso} onChange={set('utm_huso')} placeholder="31" className="font-mono" />
+            <FormInput label="Fus" value={u.utm_huso} onChange={set('utm_huso')} placeholder="31" className="font-mono" />
           </div>
         </div>
       )}

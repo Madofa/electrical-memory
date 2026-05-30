@@ -55,9 +55,9 @@ export function PDFViewer() {
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
-      toast.success('PDF descargado')
+      toast.success('PDF descarregat')
     } catch {
-      toast.error('Error al generar el PDF')
+      toast.error('Error en generar el PDF')
     }
     setGenerating(false)
   }
@@ -70,7 +70,7 @@ export function PDFViewer() {
 
   if (!memoria || !instalador) return (
     <div className="min-h-screen flex items-center justify-center text-slate-500">
-      Memoria no encontrada
+      Memòria no trobada
     </div>
   )
 
@@ -88,7 +88,7 @@ export function PDFViewer() {
             <Zap className="w-4 h-4 text-ink-900" fill="currentColor" />
           </div>
           <span className="font-mono text-sm text-amber-500/70">
-            {data.referencia_interna || 'Sin referencia'}
+            {data.referencia_interna || 'Sense referència'}
           </span>
         </div>
         <button
@@ -97,8 +97,8 @@ export function PDFViewer() {
           className="btn-primary"
         >
           {generating
-            ? <><Loader2 className="w-4 h-4 animate-spin" /> Generando...</>
-            : <><Download className="w-4 h-4" /> Descargar PDF</>}
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> Generant…</>
+            : <><Download className="w-4 h-4" /> Descarrega el PDF</>}
         </button>
       </header>
 
@@ -119,14 +119,14 @@ export function PDFViewer() {
 
         {/* Sidebar */}
         <aside className="hidden lg:block w-64 border-l border-[#1e2d47] p-6">
-          <p className="section-sub mb-4">Resumen</p>
+          <p className="section-sub mb-4">Resum</p>
           <div className="space-y-3">
             {[
-              { label: 'Referencia', value: data.referencia_interna || '—' },
-              { label: 'Potencia total', value: `${data.receptores.reduce((s, r) => s + r.potencia_kw, 0).toFixed(2)} kW` },
-              { label: 'Receptores', value: String(data.receptores.length) },
-              { label: 'Municipio', value: data.ubicacion.municipio || '—' },
-              { label: 'Instalador', value: instalador.nombre_completo },
+              { label: 'Referència', value: data.referencia_interna || '—' },
+              { label: 'Potència total', value: `${data.receptores.reduce((s, r) => s + r.potencia_kw, 0).toFixed(2)} kW` },
+              { label: 'Receptors', value: String(data.receptores.length) },
+              { label: 'Municipi', value: data.ubicacion.municipio || '—' },
+              { label: 'Instal·lador', value: instalador.nombre_completo },
             ].map((item) => (
               <div key={item.label}>
                 <span className="field-label">{item.label}</span>

@@ -2,12 +2,12 @@ import { motion } from 'framer-motion'
 import { Check } from 'lucide-react'
 
 export const WIZARD_STEPS = [
-  { label: 'Solicitante', short: '01' },
-  { label: 'Ubicación', short: '02' },
-  { label: 'Receptores', short: '03' },
-  { label: 'Pto. medida', short: '04' },
-  { label: 'Cálculos', short: '05' },
-  { label: 'Declaración', short: '06' },
+  { label: 'Sol·licitant', short: '01' },
+  { label: 'Ubicació', short: '02' },
+  { label: 'Receptors', short: '03' },
+  { label: 'Pt. mesura', short: '04' },
+  { label: 'Càlculs', short: '05' },
+  { label: 'Declaració', short: '06' },
   { label: 'Redactor', short: '07' },
 ]
 

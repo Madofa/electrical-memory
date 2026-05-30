@@ -15,14 +15,14 @@ export function Step7Declaracion({ onNext: _onNext }: Props) {
             <ShieldCheck className="w-5 h-5 text-amber-500" />
           </div>
           <div>
-            <h3 className="font-body font-semibold text-slate-200 mb-1">Declaración responsable</h3>
+            <h3 className="font-body font-semibold text-slate-200 mb-1">Declaració responsable</h3>
             <p className="text-[12px] text-slate-500 font-body">
-              Texto obligatorio según e-distribución. Aparecerá literalmente en el documento.
+              Text obligatori segons e-distribució. Apareixerà literalment al document.
             </p>
           </div>
         </div>
 
-        {/* Texto legal */}
+        {/* Texto legal — el PDF de la MTD se mantiene en castellano (documento oficial e-distribución) */}
         <div className="bg-ink-700/40 border border-ink-600/50 rounded-xl p-5 mb-6">
           <p className="text-[12px] text-slate-400 font-body leading-relaxed text-justify italic">
             "En calidad de solicitante, declaro bajo mi responsabilidad que la instalación eléctrica
@@ -30,19 +30,19 @@ export function Step7Declaracion({ onNext: _onNext }: Props) {
             onda vigente y huecos de tensión."
           </p>
           <p className="text-[11px] text-slate-500 font-mono mt-3">
-            Y para que conste a los efectos oportunos, firma la presente en <strong className="text-slate-400">[lugar]</strong>, a <strong className="text-slate-400">[fecha]</strong>.
+            Y para que conste a los efectos oportunos, firma la presente en <strong className="text-slate-400">[lloc]</strong>, a <strong className="text-slate-400">[data]</strong>.
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-5">
           <FormInput
-            label="Lugar de firma"
+            label="Lloc de signatura"
             value={data.lugarFirma}
             onChange={(e) => setFirma(e.target.value, data.fechaFirma)}
             placeholder="Barcelona"
           />
           <FormInput
-            label="Fecha"
+            label="Data"
             value={data.fechaFirma}
             onChange={(e) => setFirma(data.lugarFirma, e.target.value)}
             type="date"
@@ -52,8 +52,8 @@ export function Step7Declaracion({ onNext: _onNext }: Props) {
 
       <div className="card bg-ink-700/20 border-ink-600/30">
         <p className="text-[12px] text-slate-600 font-body leading-relaxed">
-          El espacio de firma del solicitante aparecerá en blanco en el PDF para que pueda ser
-          firmado a mano o con firma electrónica por la persona solicitante.
+          L'espai de signatura del sol·licitant apareixerà en blanc al PDF perquè el pugui signar
+          a mà o amb signatura electrònica la persona sol·licitant.
         </p>
       </div>
     </div>

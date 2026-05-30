@@ -97,10 +97,10 @@ export function ProfileSetup() {
 
       await upsertInstalador(updated)
       setInstalador(updated)
-      toast.success('Perfil guardado correctamente')
+      toast.success('Perfil desat correctament')
       navigate('/')
     } catch {
-      toast.error('Error al guardar el perfil')
+      toast.error('Error en desar el perfil')
     }
     setSaving(false)
   }
@@ -117,40 +117,40 @@ export function ProfileSetup() {
             <Zap className="w-4 h-4 text-ink-900" fill="currentColor" />
           </div>
           <span className="font-display font-bold text-sm tracking-widest uppercase text-slate-300">
-            Perfil del instalador
+            Perfil de l'instal·lador
           </span>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-10">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <p className="section-sub mb-1">Configuración</p>
+          <p className="section-sub mb-1">Configuració</p>
           <h1 className="font-display font-bold text-3xl tracking-wide uppercase text-slate-100 mb-2">
-            Datos del redactor
+            Dades del redactor
           </h1>
           <p className="text-slate-500 font-body text-sm mb-8">
-            Estos datos aparecerán al pie de todas las memorias técnicas que generes.
+            Aquestes dades apareixeran al peu de tots els documents que generis.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Personal */}
             <section className="card">
               <h2 className="font-display font-bold text-sm tracking-widest uppercase text-amber-500 mb-6">
-                01 — Datos personales
+                01 — Dades personals
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <FormInput label="Nombre completo" value={form.nombre_completo ?? ''} onChange={set('nombre_completo')} required className="sm:col-span-2" />
+                <FormInput label="Nom complet" value={form.nombre_completo ?? ''} onChange={set('nombre_completo')} required className="sm:col-span-2" />
                 <FormInput label="DNI / NIE" value={form.dni_nie ?? ''} onChange={set('dni_nie')} placeholder="12345678A" required />
                 <FormSelect
-                  label="Tipo de instalador"
+                  label="Tipus d'instal·lador"
                   value={form.tipo ?? 'IBTM'}
                   onChange={set('tipo')}
                   options={TIPO_OPTIONS}
                   required
                 />
-                <FormInput label="Nº de carnet / autorización" value={form.numero_carnet ?? ''} onChange={set('numero_carnet')} required />
+                <FormInput label="Núm. de carnet / autorització" value={form.numero_carnet ?? ''} onChange={set('numero_carnet')} required />
                 {form.tipo === 'TECNICO_TITULADO' && (
-                  <FormInput label="Nº de colegiado" value={form.numero_colegiado ?? ''} onChange={set('numero_colegiado')} />
+                  <FormInput label="Núm. de col·legiat" value={form.numero_colegiado ?? ''} onChange={set('numero_colegiado')} />
                 )}
               </div>
             </section>
@@ -158,12 +158,12 @@ export function ProfileSetup() {
             {/* Empresa */}
             <section className="card">
               <h2 className="font-display font-bold text-sm tracking-widest uppercase text-amber-500 mb-6">
-                02 — Datos de empresa <span className="text-slate-600 normal-case font-body font-normal">(opcional)</span>
+                02 — Dades de l'empresa <span className="text-slate-600 normal-case font-body font-normal">(opcional)</span>
               </h2>
 
               {/* Logo */}
               <div className="mb-6">
-                <span className="field-label">Logo de empresa</span>
+                <span className="field-label">Logo de l'empresa</span>
                 <div className="flex items-center gap-4 mt-1">
                   <div
                     className="w-20 h-20 rounded-xl border-2 border-dashed border-ink-500 flex items-center justify-center overflow-hidden cursor-pointer hover:border-amber-500/40 transition-colors"
@@ -175,9 +175,9 @@ export function ProfileSetup() {
                   </div>
                   <div>
                     <button type="button" onClick={() => logoInputRef.current?.click()} className="btn-ghost text-sm px-3 py-1.5">
-                      <Upload className="w-3.5 h-3.5" /> Subir logo
+                      <Upload className="w-3.5 h-3.5" /> Puja el logo
                     </button>
-                    <p className="text-[11px] text-slate-600 mt-1 font-mono">PNG o JPG, aparece en la cabecera del PDF</p>
+                    <p className="text-[11px] text-slate-600 mt-1 font-mono">PNG o JPG, apareix a la capçalera del PDF</p>
                   </div>
                   <input ref={logoInputRef} type="file" accept="image/*" className="hidden"
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) handleLogoFile(f) }} />
@@ -185,21 +185,21 @@ export function ProfileSetup() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <FormInput label="Nombre de empresa" value={form.empresa_nombre ?? ''} onChange={set('empresa_nombre')} className="sm:col-span-2" />
-                <FormInput label="CIF de empresa" value={form.empresa_cif ?? ''} onChange={set('empresa_cif')} />
-                <FormInput label="Teléfono" value={form.empresa_telefono ?? ''} onChange={set('empresa_telefono')} />
-                <FormInput label="Email" value={form.empresa_email ?? ''} onChange={set('empresa_email')} type="email" />
-                <FormInput label="Dirección" value={form.empresa_direccion ?? ''} onChange={set('empresa_direccion')} className="sm:col-span-2" />
+                <FormInput label="Nom de l'empresa" value={form.empresa_nombre ?? ''} onChange={set('empresa_nombre')} className="sm:col-span-2" />
+                <FormInput label="CIF de l'empresa" value={form.empresa_cif ?? ''} onChange={set('empresa_cif')} />
+                <FormInput label="Telèfon" value={form.empresa_telefono ?? ''} onChange={set('empresa_telefono')} />
+                <FormInput label="Correu electrònic" value={form.empresa_email ?? ''} onChange={set('empresa_email')} type="email" />
+                <FormInput label="Adreça" value={form.empresa_direccion ?? ''} onChange={set('empresa_direccion')} className="sm:col-span-2" />
               </div>
             </section>
 
             {/* Firma */}
             <section className="card">
               <h2 className="font-display font-bold text-sm tracking-widest uppercase text-amber-500 mb-2">
-                03 — Firma digital
+                03 — Signatura digital
               </h2>
               <p className="text-[12px] text-slate-500 font-body mb-5">
-                Aparecerá al pie del documento. Dibuja o sube una imagen.
+                Apareixerà al peu del document. Dibuixa-la o puja una imatge.
               </p>
 
               <div className="flex gap-2 mb-4">
@@ -210,7 +210,7 @@ export function ProfileSetup() {
                     onClick={() => setSigMode(m)}
                     className={`btn-ghost text-sm px-4 py-2 ${sigMode === m ? 'text-amber-400 bg-[#162034]' : ''}`}
                   >
-                    {m === 'draw' ? <><Pen className="w-3.5 h-3.5" /> Dibujar</> : <><Upload className="w-3.5 h-3.5" /> Subir imagen</>}
+                    {m === 'draw' ? <><Pen className="w-3.5 h-3.5" /> Dibuixa</> : <><Upload className="w-3.5 h-3.5" /> Puja una imatge</>}
                   </button>
                 ))}
               </div>
@@ -221,7 +221,7 @@ export function ProfileSetup() {
                     <div className="border border-amber-500/30 rounded-xl overflow-hidden mb-3">
                       <img src={firmaDataUrl} className="w-full h-[160px] object-contain bg-white" />
                       <div className="px-3 py-2 text-[11px] text-slate-500 font-mono bg-ink-800/50">
-                        Firma guardada — pulsa "Limpiar" para redibujar
+                        Signatura desada — prem "Neteja" per redibuixar-la
                       </div>
                     </div>
                   ) : (
@@ -236,17 +236,17 @@ export function ProfileSetup() {
                   )}
                   <div className="flex gap-2">
                     <button type="button" onClick={() => { sigPadRef.current?.clear(); setHasFirma(false); setFirmaDataUrl('') }} className="btn-ghost text-sm">
-                      <RotateCcw className="w-3.5 h-3.5" /> Limpiar
+                      <RotateCcw className="w-3.5 h-3.5" /> Neteja
                     </button>
                     <button type="button" onClick={handleSaveFirma} disabled={!hasFirma} className="btn-ghost text-sm text-amber-400 disabled:opacity-30">
-                      <Check className="w-3.5 h-3.5" /> Guardar firma
+                      <Check className="w-3.5 h-3.5" /> Desa la signatura
                     </button>
                   </div>
                 </div>
               ) : (
                 <label className="w-full h-[120px] border-2 border-dashed border-ink-500 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-amber-500/40 transition-colors">
                   <Upload className="w-5 h-5 text-slate-500" />
-                  <span className="text-[12px] text-slate-500 font-body">PNG o JPG con fondo transparente o blanco</span>
+                  <span className="text-[12px] text-slate-500 font-body">PNG o JPG amb fons transparent o blanc</span>
                   <input type="file" accept="image/*" className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0]
@@ -261,8 +261,8 @@ export function ProfileSetup() {
 
             <button type="submit" disabled={saving} className="btn-primary w-full justify-center">
               {saving
-                ? <><span className="w-4 h-4 border-2 border-ink-900/30 border-t-ink-900 rounded-full animate-spin" /> Guardando...</>
-                : <><Save className="w-4 h-4" /> Guardar perfil</>}
+                ? <><span className="w-4 h-4 border-2 border-ink-900/30 border-t-ink-900 rounded-full animate-spin" /> Desant…</>
+                : <><Save className="w-4 h-4" /> Desa el perfil</>}
             </button>
           </form>
         </motion.div>

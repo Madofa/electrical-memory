@@ -1,4 +1,4 @@
-# Roadmap — Suite d'eines per a la legalització elèctrica BT
+# Quadre — Roadmap de la suite
 
 ## Objectiu
 

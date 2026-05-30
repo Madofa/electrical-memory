@@ -10,31 +10,31 @@ interface Props { onNext: () => void }
 type Preset = { label: string; concepto: string; grado: GradoElectrificacion; tension: string; potencia_kw: number; hint?: string }
 
 const ALL_PRESETS: Preset[] = [
-  { label: 'Local 4,6 kW mono',   concepto: 'Local comercial', grado: '',        tension: '230 V',       potencia_kw: 4.60, hint: 'IGA 20A · monofásico' },
-  { label: 'Vivienda básica',     concepto: 'Vivienda',        grado: 'basica',  tension: '230 V',       potencia_kw: 5.75, hint: 'Grado básico (mín. 5,75 kW)' },
-  { label: 'Vivienda elevada',    concepto: 'Vivienda',        grado: 'elevada', tension: '230 V',       potencia_kw: 9.20, hint: 'Grado elevado (mín. 9,20 kW)' },
-  { label: 'Trastero',            concepto: 'Trastero',        grado: '',        tension: '230 V',       potencia_kw: 0 },
-  { label: 'Garaje / Parking',    concepto: 'Garaje',          grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
-  { label: 'Zonas comunes',       concepto: 'Zonas comunes',   grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
+  { label: 'Local 4,6 kW mono',   concepto: 'Local comercial', grado: '',        tension: '230 V',       potencia_kw: 4.60, hint: 'IGA 20A · monofàsic' },
+  { label: 'Habitatge bàsic',     concepto: 'Habitatge',       grado: 'basica',  tension: '230 V',       potencia_kw: 5.75, hint: 'Grau bàsic (mín. 5,75 kW)' },
+  { label: 'Habitatge elevat',    concepto: 'Habitatge',       grado: 'elevada', tension: '230 V',       potencia_kw: 9.20, hint: 'Grau elevat (mín. 9,20 kW)' },
+  { label: 'Traster',             concepto: 'Traster',         grado: '',        tension: '230 V',       potencia_kw: 0 },
+  { label: 'Garatge / Aparcament',concepto: 'Garatge',         grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
+  { label: 'Zones comunes',       concepto: 'Zones comunes',   grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
   { label: 'Ascensor',            concepto: 'Ascensor',        grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
   { label: 'Local comercial',     concepto: 'Local comercial', grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
   { label: 'Oficina',             concepto: 'Oficina',         grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
-  { label: 'Almacén',             concepto: 'Almacén',         grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
-  { label: 'Uso industrial',      concepto: 'Uso industrial',  grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
-  { label: 'Vehículo eléctrico',  concepto: 'Punto de recarga VE', grado: '',    tension: '3×230/400 V', potencia_kw: 0 },
-  { label: 'Otro',                concepto: '',                grado: '',        tension: '230 V',       potencia_kw: 0 },
+  { label: 'Magatzem',            concepto: 'Magatzem',        grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
+  { label: 'Ús industrial',       concepto: 'Ús industrial',   grado: '',        tension: '3×230/400 V', potencia_kw: 0 },
+  { label: 'Vehicle elèctric',    concepto: 'Punt de càrrega VE', grado: '',     tension: '3×230/400 V', potencia_kw: 0 },
+  { label: 'Altre',               concepto: '',                grado: '',        tension: '230 V',       potencia_kw: 0 },
 ]
 
 const PRESETS_BY_USO: Record<UsoFinca | 'default', string[]> = {
-  vivienda:        ['Vivienda básica', 'Vivienda elevada', 'Trastero', 'Garaje / Parking', 'Zonas comunes', 'Ascensor', 'Otro'],
-  local_comercial: ['Local 4,6 kW mono', 'Local comercial', 'Oficina', 'Zonas comunes', 'Otro'],
-  taller:          ['Local comercial', 'Uso industrial', 'Almacén', 'Otro'],
-  almacen:         ['Almacén', 'Local comercial', 'Otro'],
-  oficina:         ['Oficina', 'Local comercial', 'Otro'],
-  garaje:          ['Garaje / Parking', 'Zonas comunes', 'Ascensor', 'Otro'],
-  industrial:      ['Uso industrial', 'Oficina', 'Otro'],
-  comunidad:       ['Vivienda básica', 'Vivienda elevada', 'Local comercial', 'Ascensor', 'Zonas comunes', 'Garaje / Parking', 'Vehículo eléctrico', 'Otro'],
-  otro:            ['Local comercial', 'Uso industrial', 'Garaje / Parking', 'Zonas comunes', 'Otro'],
+  vivienda:        ['Habitatge bàsic', 'Habitatge elevat', 'Traster', 'Garatge / Aparcament', 'Zones comunes', 'Ascensor', 'Altre'],
+  local_comercial: ['Local 4,6 kW mono', 'Local comercial', 'Oficina', 'Zones comunes', 'Altre'],
+  taller:          ['Local comercial', 'Ús industrial', 'Magatzem', 'Altre'],
+  almacen:         ['Magatzem', 'Local comercial', 'Altre'],
+  oficina:         ['Oficina', 'Local comercial', 'Altre'],
+  garaje:          ['Garatge / Aparcament', 'Zones comunes', 'Ascensor', 'Altre'],
+  industrial:      ['Ús industrial', 'Oficina', 'Altre'],
+  comunidad:       ['Habitatge bàsic', 'Habitatge elevat', 'Local comercial', 'Ascensor', 'Zones comunes', 'Garatge / Aparcament', 'Vehicle elèctric', 'Altre'],
+  otro:            ['Local comercial', 'Ús industrial', 'Garatge / Aparcament', 'Zones comunes', 'Altre'],
   default:         ALL_PRESETS.map(p => p.label),
 }
 
@@ -44,14 +44,14 @@ function getPresets(uso: string | null): Preset[] {
 }
 
 const GRADO_OPTIONS: { value: GradoElectrificacion; label: string }[] = [
-  { value: 'basica',   label: 'Básica — 5,75 kW (ITC-BT-10)' },
+  { value: 'basica',   label: 'Bàsica — 5,75 kW (ITC-BT-10)' },
   { value: 'elevada',  label: 'Elevada — 9,20 kW (ITC-BT-10)' },
-  { value: '',         label: 'Sin grado (locales, garajes, servicios...)' },
+  { value: '',         label: 'Sense grau (locals, garatges, serveis…)' },
 ]
 
 const TENSION_OPTIONS = [
-  { value: '230 V',       label: '230 V (monofásico)' },
-  { value: '3×230/400 V', label: '3×230/400 V (trifásico)' },
+  { value: '230 V',       label: '230 V (monofàsic)' },
+  { value: '3×230/400 V', label: '3×230/400 V (trifàsic)' },
 ]
 
 function newReceptor(preset?: Preset): Receptor {
@@ -98,7 +98,7 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
       <div className="card border-amber-500/20 flex items-center justify-between">
         <div>
           <p className="text-[11px] font-display font-semibold tracking-widest uppercase text-amber-500/60 mb-0.5">
-            Potencia total solicitada
+            Potència total sol·licitada
           </p>
           <p className="font-mono font-semibold text-2xl text-amber-400">
             {potenciaTotal.toFixed(2).replace('.', ',')} kW
@@ -106,10 +106,10 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
         </div>
         <div className="text-right">
           <p className="text-[11px] text-slate-500 font-mono">
-            {needsTrifasico ? '3×230/400 V · Trifásico' : '230 V · Monofásico'}
+            {needsTrifasico ? '3×230/400 V · Trifàsic' : '230 V · Monofàsic'}
           </p>
           <p className="text-[11px] text-slate-600 font-mono">
-            {data.receptores.length} {data.receptores.length === 1 ? 'elemento' : 'elementos'}
+            {data.receptores.length} {data.receptores.length === 1 ? 'element' : 'elements'}
           </p>
         </div>
       </div>
@@ -117,7 +117,7 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
       {needsTrifasico && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-950/30 border border-amber-800/40 text-amber-400 text-xs font-body">
           <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-          Potencia &gt;15 kW → suministro trifásico obligatorio (ITC-BT-10)
+          Potència &gt;15 kW → subministrament trifàsic obligatori (ITC-BT-10)
         </div>
       )}
 
@@ -139,12 +139,12 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-body font-semibold text-slate-200 text-[13px] truncate">
-                    {r.concepto || `Elemento ${i + 1}`}
+                    {r.concepto || `Element ${i + 1}`}
                   </div>
                   <div className="text-[11px] text-amber-500/60 font-mono">
                     {r.potencia_kw > 0
-                      ? `${r.potencia_kw.toFixed(2)} kW · ${r.tension}${r.grado === 'basica' ? ' · Básica' : r.grado === 'elevada' ? ' · Elevada' : ''}`
-                      : 'Sin potencia definida'}
+                      ? `${r.potencia_kw.toFixed(2)} kW · ${r.tension}${r.grado === 'basica' ? ' · Bàsica' : r.grado === 'elevada' ? ' · Elevada' : ''}`
+                      : 'Sense potència definida'}
                   </div>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
@@ -170,24 +170,24 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
                   >
                     <div className="pt-5 mt-4 border-t border-[#1e2d47] space-y-4">
                       <FormInput
-                        label="Tipo de espacio"
+                        label="Tipus d'espai"
                         value={r.concepto}
                         onChange={upd(r.id)('concepto')}
-                        placeholder="Vivienda, Almacén 1, Local..."
+                        placeholder="Habitatge, Magatzem 1, Local…"
                       />
                       <div className="grid grid-cols-2 gap-4">
                         <FormInput
-                          label="Potencia solicitada (kW)"
+                          label="Potència sol·licitada (kW)"
                           value={r.potencia_kw || ''}
                           onChange={upd(r.id)('potencia_kw')}
                           type="number"
                           step="0.01"
                           min="0"
                           className="font-mono"
-                          hint="Editable — independiente del grado"
+                          hint="Editable — independent del grau"
                         />
                         <FormSelect
-                          label="Tensión"
+                          label="Tensió"
                           value={r.tension}
                           onChange={upd(r.id)('tension')}
                           options={TENSION_OPTIONS}
@@ -195,7 +195,7 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
                       </div>
                       {esVivienda(r.concepto) && (
                         <FormSelect
-                          label="Grado de electrificación (ITC-BT-10)"
+                          label="Grau d'electrificació (ITC-BT-10)"
                           value={r.grado}
                           onChange={upd(r.id)('grado')}
                           options={GRADO_OPTIONS}
@@ -217,7 +217,7 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
         className="btn-secondary w-full justify-center"
       >
         <Plus className="w-4 h-4" />
-        Añadir elemento
+        Afegir element
         {showPresets ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
       </button>
 
@@ -240,7 +240,7 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
                 >
                   <div className="font-body font-semibold text-[12px] text-slate-300">{p.label}</div>
                   <div className="text-[10px] font-mono text-amber-500/50">
-                    {p.hint ?? (p.potencia_kw > 0 ? `${p.potencia_kw.toFixed(2)} kW` : 'Potencia a definir')}
+                    {p.hint ?? (p.potencia_kw > 0 ? `${p.potencia_kw.toFixed(2)} kW` : 'Potència a definir')}
                   </div>
                 </button>
               ))}

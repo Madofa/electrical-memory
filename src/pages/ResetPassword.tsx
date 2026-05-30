@@ -30,11 +30,11 @@ export function ResetPassword() {
     e.preventDefault()
     setError('')
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.')
+      setError('La contrasenya ha de tenir almenys 6 caràcters.')
       return
     }
     if (password !== password2) {
-      setError('Las contraseñas no coinciden.')
+      setError('Les contrasenyes no coincideixen.')
       return
     }
     setLoading(true)
@@ -60,33 +60,33 @@ export function ResetPassword() {
             <Zap className="w-5 h-5 text-ink-900" fill="currentColor" />
           </div>
           <span className="font-display font-bold text-lg tracking-widest uppercase text-slate-100">
-            Memoria Eléctrica
+            Quadre
           </span>
         </div>
 
         <h2 className="font-display font-bold text-3xl tracking-wide uppercase text-slate-100">
-          Nueva contraseña
+          Nova contrasenya
         </h2>
         <p className="text-slate-500 mt-1 mb-8 font-body text-sm">
-          Elige una nueva contraseña para tu cuenta.
+          Tria una nova contrasenya per al teu compte.
         </p>
 
         {!ready && (
           <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-950/30 border border-amber-800/40 text-amber-400 text-sm font-body mb-4">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            Procesando el enlace de recuperación…
+            Processant l'enllaç de recuperació…
           </div>
         )}
 
         {done ? (
           <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-950/40 border border-emerald-800/50 text-emerald-400 text-sm font-body">
             <CheckCircle className="w-4 h-4 flex-shrink-0" />
-            Contraseña actualizada. Redirigiendo…
+            Contrasenya actualitzada. Redirigint…
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="field-label">Nueva contraseña</label>
+              <label className="field-label">Nova contrasenya</label>
               <div className="relative">
                 <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
@@ -102,7 +102,7 @@ export function ResetPassword() {
               </div>
             </div>
             <div>
-              <label className="field-label">Repite la contraseña</label>
+              <label className="field-label">Repeteix-la</label>
               <div className="relative">
                 <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
@@ -130,7 +130,7 @@ export function ResetPassword() {
               disabled={loading || !ready}
               className="btn-primary w-full justify-center"
             >
-              {loading ? 'Guardando…' : 'Guardar contraseña'}
+              {loading ? 'Desant…' : 'Desa la contrasenya'}
             </button>
 
             <button
@@ -138,7 +138,7 @@ export function ResetPassword() {
               onClick={() => navigate('/login')}
               className="text-sm text-slate-500 hover:text-amber-400 transition-colors font-body w-full text-center"
             >
-              Volver al login
+              Torna a l'accés
             </button>
           </form>
         )}

@@ -10,15 +10,15 @@ import toast from 'react-hot-toast'
 interface Props { onNext: () => void }
 
 const TIPOS_CGP_NUEVA = [
-  'Caja General de Protección (CGP)',
-  'Caja General de Protección y Medida (CGPM)',
-  'Equipo de Medida en Fachada',
+  'Caixa General de Protecció (CGP)',
+  'Caixa General de Protecció i Mesura (CGPM)',
+  'Equip de Mesura en Façana',
 ]
 
 const TIPOS_CENTRALIZACION = [
-  'Centralización de contadores en portería',
-  'Centralización de contadores en local técnico',
-  'Centralización en armario de fachada',
+  'Centralització de comptadors a porteria',
+  'Centralització de comptadors a local tècnic',
+  'Centralització en armari de façana',
 ]
 
 export function Step5CGP({ onNext: _onNext }: Props) {
@@ -27,14 +27,14 @@ export function Step5CGP({ onNext: _onNext }: Props) {
   const centralizado = data.ubicacion.centralizacion_existente
   const tipos = centralizado ? TIPOS_CENTRALIZACION : TIPOS_CGP_NUEVA
   const tituloDesc = centralizado
-    ? 'Ubicación del módulo de contador asignado'
-    : 'Descripción de la ubicación propuesta'
+    ? 'Ubicació del mòdul de comptador assignat'
+    : 'Descripció de la ubicació proposada'
   const placeholderDesc = centralizado
-    ? 'Indica dónde está el armario de centralización y el módulo asignado a este suministro (planta, número de módulo, etiqueta...).'
-    : 'Describe dónde se propone instalar el elemento frontera: fachada, portal, local técnico...'
+    ? 'Indica on és l\'armari de centralització i el mòdul assignat a aquest subministrament (planta, número de mòdul, etiqueta…).'
+    : 'Descriu on es proposa instal·lar l\'element frontera: façana, portal, local tècnic…'
   const ayudaFotos = centralizado
-    ? 'Sube foto del módulo de contador asignado y/o del armario de centralización completo.'
-    : 'Sube fotos de la fachada, plano de la propuesta y cualquier elemento de la acometida.'
+    ? 'Puja foto del mòdul de comptador assignat i/o de l\'armari de centralització complet.'
+    : 'Puja fotos de la façana, plànol de la proposta i qualsevol element de l\'escomesa.'
   const [dragging, setDragging] = useState(false)
 
   const readBase64 = (file: File): Promise<string> =>
@@ -46,7 +46,7 @@ export function Step5CGP({ onNext: _onNext }: Props) {
 
   const handleFiles = async (files: FileList) => {
     const arr = Array.from(files)
-    if (arr.length > 1) toast.loading(`Procesando ${arr.length} fotos...`, { id: 'upload' })
+    if (arr.length > 1) toast.loading(`Processant ${arr.length} fotos…`, { id: 'upload' })
 
     await Promise.all(arr.map(async (file) => {
       const raw = await readBase64(file)
@@ -55,7 +55,7 @@ export function Step5CGP({ onNext: _onNext }: Props) {
       addFoto({ id, titulo: '', base64 })
     }))
 
-    if (arr.length > 1) toast.success(`${arr.length} fotos añadidas`, { id: 'upload' })
+    if (arr.length > 1) toast.success(`${arr.length} fotos afegides`, { id: 'upload' })
   }
 
   return (
@@ -65,12 +65,12 @@ export function Step5CGP({ onNext: _onNext }: Props) {
           <div className="flex items-start gap-2 p-3 rounded-lg bg-emerald-950/20 border border-emerald-800/30">
             <Info className="w-3.5 h-3.5 text-emerald-400/70 flex-shrink-0 mt-0.5" />
             <p className="text-[11px] text-emerald-300/80 font-body leading-relaxed">
-              La finca ya dispone de centralización de contadores. Se aprovecha la existente; basta con identificar el módulo del nuevo suministro.
+              La finca ja disposa de centralització de comptadors. S'aprofita l'existent; només cal identificar el mòdul del nou subministrament.
             </p>
           </div>
         )}
         <div>
-          <span className="field-label">{centralizado ? 'Tipo de centralización existente' : 'Tipo de elemento frontera propuesto'}</span>
+          <span className="field-label">{centralizado ? 'Tipus de centralització existent' : 'Tipus d\'element frontera proposat'}</span>
           <div className="space-y-2 mt-2">
             {tipos.map((tipo) => (
               <button
@@ -105,9 +105,9 @@ export function Step5CGP({ onNext: _onNext }: Props) {
       <div className="card space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-display font-semibold text-xs tracking-widest uppercase text-amber-500/70">
-            Fotos de la instalación
+            Fotos de la instal·lació
           </h3>
-          <span className="text-[11px] text-slate-500 font-mono">{ef.fotos.length} adjuntos</span>
+          <span className="text-[11px] text-slate-500 font-mono">{ef.fotos.length} adjunts</span>
         </div>
 
         {ef.fotos.length === 0 && (
@@ -132,10 +132,10 @@ export function Step5CGP({ onNext: _onNext }: Props) {
               <div className="flex items-center gap-2">
                 <div className="flex-1">
                   <FormInput
-                    label="¿Qué muestra esta foto?"
+                    label="Què mostra aquesta foto?"
                     value={foto.titulo}
                     onChange={(e) => updateFoto(foto.id, { titulo: e.target.value })}
-                    placeholder="Cuadro de contadores, Fachada, CGP existente, Croquis..."
+                    placeholder="Quadre de comptadors, Façana, CGP existent, Croquis…"
                   />
                 </div>
                 <button
@@ -174,9 +174,9 @@ export function Step5CGP({ onNext: _onNext }: Props) {
           <ImagePlus className={`w-6 h-6 transition-colors ${dragging ? 'text-amber-400' : 'text-slate-500'}`} />
           <div className="text-center pointer-events-none">
             <p className={`text-[13px] font-body font-semibold transition-colors ${dragging ? 'text-amber-300' : 'text-slate-400'}`}>
-              {dragging ? 'Suelta las fotos aquí' : 'Arrastra fotos aquí'}
+              {dragging ? 'Deixa anar les fotos aquí' : 'Arrossega fotos aquí'}
             </p>
-            <p className="text-[11px] text-slate-600 mt-0.5">o haz clic para seleccionar</p>
+            <p className="text-[11px] text-slate-600 mt-0.5">o fes clic per seleccionar</p>
           </div>
           <input
             type="file"

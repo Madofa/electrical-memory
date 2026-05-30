@@ -66,7 +66,7 @@ export function Wizard() {
         store.markClean()
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : JSON.stringify(e)
-        toast.error(`Error guardando: ${msg}`, { duration: 10000 })
+        toast.error(`Error desant: ${msg}`, { duration: 10000 })
       }
       setAutoSaving(false)
       saveInProgress.current = false
@@ -117,10 +117,10 @@ export function Wizard() {
         memoriaId ?? undefined
       )
       markClean()
-      toast.success(finalizar ? 'Memoria finalizada' : 'Borrador guardado')
+      toast.success(finalizar ? 'Memòria finalitzada' : 'Esborrany desat')
       if (finalizar) navigate(`/pdf/${id}`)
     } catch {
-      toast.error('Error al guardar')
+      toast.error('Error en desar')
     }
     setSaving(false)
   }
@@ -143,7 +143,7 @@ export function Wizard() {
             <Zap className="w-4 h-4 text-ink-900" fill="currentColor" />
           </div>
           <span className="font-display font-bold text-sm tracking-widest uppercase text-slate-300 hidden sm:block">
-            {data.referencia_interna || 'Nueva memoria'}
+            {data.referencia_interna || 'Nova memòria'}
           </span>
         </div>
         <div className="flex-1 flex justify-center overflow-x-auto py-1">
@@ -160,12 +160,12 @@ export function Wizard() {
         <div className="flex items-center gap-2 flex-shrink-0">
           {autoSaving && (
             <span className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
-              <Cloud className="w-3 h-3 animate-pulse" /> guardando...
+              <Cloud className="w-3 h-3 animate-pulse" /> desant…
             </span>
           )}
           {!autoSaving && !isDirty && (
             <span className="text-[11px] text-slate-600 font-mono flex items-center gap-1">
-              <Cloud className="w-3 h-3" /> guardado
+              <Cloud className="w-3 h-3" /> desat
             </span>
           )}
           {isDirty && !autoSaving && (
@@ -175,7 +175,7 @@ export function Wizard() {
               className="btn-ghost text-sm text-slate-400"
             >
               <Save className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Guardar</span>
+              <span className="hidden sm:inline">Desa</span>
             </button>
           )}
         </div>
@@ -187,7 +187,7 @@ export function Wizard() {
           <div className="max-w-2xl mx-auto px-6 py-8">
             {/* Step header */}
             <div className="mb-8">
-              <p className="section-sub mb-1">Paso {step + 1} de {WIZARD_STEPS.length}</p>
+              <p className="section-sub mb-1">Pas {step + 1} de {WIZARD_STEPS.length}</p>
               <h1 className="font-display font-bold text-3xl tracking-wide uppercase text-slate-100">
                 {WIZARD_STEPS[step].label}
               </h1>
@@ -238,11 +238,11 @@ export function Wizard() {
             className="btn-primary"
           >
             <FileDown className="w-4 h-4" />
-            {saving ? 'Generando...' : 'Finalizar y generar PDF'}
+            {saving ? 'Generant…' : 'Finalitza i genera PDF'}
           </button>
         ) : (
           <button onClick={goNext} className="btn-primary">
-            Siguiente
+            Següent
             <ArrowRight className="w-4 h-4" />
           </button>
         )}
