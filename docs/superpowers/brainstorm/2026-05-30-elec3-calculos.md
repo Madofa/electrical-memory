@@ -43,16 +43,16 @@ Camps **nous** que no estan al Unifilar:
 - tipus exacte de conductor (RZ1-K, ES07Z1-K, etc.)
 - tipus de canalització per tram
 
+## Decisions preses
+
+- **Reutilització de dades (2026-05-30)**: ELEC-3 i Esquema Unifilar comparteixen el mateix model de circuits — **totalment compatibles**. Quan l'usuari edita un circuit a una eina, l'altre ho veu. Cal un model de dades comú (circuits, diferencials, IGA, capçalera) que les dues eines llegeixin i escriguin.
+
 ## Decisions obertes
 
-1. **Reutilització de dades**: ELEC-3 comparteix model amb Esquema Unifilar (mateixa BD) o és independent?
-   - **A favor de compartir**: evita duplicar circuits, propagar canvis automàticament.
-   - **En contra**: acobla dues eines que el roadmap declarava "independents".
-   - Proposta inicial: crear un "Projecte ELEC" comú només si l'usuari ho activa explícitament (opcional, no obligatori).
-2. **Càlcul automàtic vs manual**: l'eina calcula la caiguda de tensió a partir de potència/longitud/secció (`ΔU% = (P × L) / (γ × U × S)`) o l'usuari introdueix els valors a mà?
+1. **Càlcul automàtic vs manual**: l'eina calcula la caiguda de tensió a partir de potència/longitud/secció (`ΔU% = (P × L) / (γ × U × S)`) o l'usuari introdueix els valors a mà?
    - Preferent: càlcul automàtic amb opció d'override per cel·la.
-3. **Validacions REBT**: marcar en vermell quan la caiguda total supera els llindars (3% il·luminació, 5% altres usos)?
-4. **Format del PDF**: la plantilla oficial té un layout molt rígid (taula amb caselles delimitades). Cal valorar si fem un PDF que imiti el model oficial exactament o un format propi més llegible.
+2. **Validacions REBT**: marcar en vermell quan la caiguda total supera els llindars (3% il·luminació, 5% altres usos)?
+3. **Format del PDF**: la plantilla oficial té un layout molt rígid (taula amb caselles delimitades). Cal valorar si fem un PDF que imiti el model oficial exactament o un format propi més llegible.
 
 ## Riscos
 

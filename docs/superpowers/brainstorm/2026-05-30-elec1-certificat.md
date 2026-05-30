@@ -44,13 +44,16 @@ Es poden reutilitzar **gairebé totes** de l'expedient previ:
 
 L'ELEC-1 hauria de ser **el document més senzill de generar** perquè totes les seves dades ja existeixen als documents anteriors.
 
+## Decisions preses
+
+- **Signatura digital (2026-05-30)**: només imatge de signatura, igual que la MTD. No s'integra Autofirma/AOC. L'usuari, si necessita signatura amb segell de temps oficial, exporta el PDF i el signa fora de l'eina.
+
 ## Decisions obertes
 
 1. **Origen de les dades**: l'usuari les ha d'omplir altre cop o se les ofereix prebuides des de la MTD/Unifilar?
    - Proposta: si existeix una MTD o Unifilar per a la mateixa adreça, oferir importar-les.
 2. **Categoria de l'instal·lador**: Bàsica vs Especialista — això ja és part del perfil (`tipo` a la BD d'instaladors). Reutilitzar directament.
-3. **Signatura digital**: el PDF de referència té una signatura digital amb segell de temps (`Signat digitalment per ... Data: 2025.01.09 19:20:14`). El html2pdf.js no genera signatura digital — només una imatge de signatura. Cal decidir si això és suficient per a presentar el document o si s'ha d'exportar i signar amb Autofirma/AOC fora de l'eina.
-4. **Format del PDF**: imitar exactament el model oficial (recomanat per evitar rebuig administratiu) o reescriure'l net.
+3. **Format del PDF**: imitar exactament el model oficial (recomanat per evitar rebuig administratiu) o reescriure'l net.
 
 ## Riscos
 
