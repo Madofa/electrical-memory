@@ -189,7 +189,7 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
                         <FormSelect
                           label="Tensión"
                           value={r.tension}
-                          onChange={upd(r.id)('tension') as any}
+                          onChange={upd(r.id)('tension')}
                           options={TENSION_OPTIONS}
                         />
                       </div>
@@ -197,7 +197,7 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
                         <FormSelect
                           label="Grado de electrificación (ITC-BT-10)"
                           value={r.grado}
-                          onChange={upd(r.id)('grado') as any}
+                          onChange={upd(r.id)('grado')}
                           options={GRADO_OPTIONS}
                         />
                       )}

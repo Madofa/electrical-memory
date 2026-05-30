@@ -3,7 +3,7 @@ import { useAuthStore } from '../../stores/authStore'
 import { useNavigate } from 'react-router-dom'
 import { CheckCircle, ExternalLink, Save } from 'lucide-react'
 import { LABELS_TIPO_INSTALADOR } from '../../types'
-import type { TipoInstalador } from '../../types'
+import type { TipoInstalador, Instalador } from '../../types'
 import { FormInput, FormSelect } from '../ui/FormField'
 import { upsertInstalador } from '../../lib/supabase'
 import toast from 'react-hot-toast'
@@ -36,9 +36,9 @@ export function Step8Redactor({ onNext: _onNext }: Props) {
     if (!user) return
     setSaving(true)
     try {
-      const updated = { ...instalador, ...form, id: user.id }
+      const updated: Instalador = { ...instalador, ...form, id: user.id }
       await upsertInstalador(updated)
-      setInstalador(updated as any)
+      setInstalador(updated)
       toast.success('Datos guardados')
     } catch {
       toast.error('Error al guardar')
@@ -108,7 +108,7 @@ export function Step8Redactor({ onNext: _onNext }: Props) {
           <FormInput label="DNI / NIE" value={form.dni_nie} onChange={set('dni_nie')} />
           <FormInput label="Nº de carnet / autorización" value={form.numero_carnet} onChange={set('numero_carnet')} />
         </div>
-        <FormSelect label="Tipo de instalador" value={form.tipo} onChange={set('tipo') as any} options={TIPO_OPTIONS} />
+        <FormSelect label="Tipo de instalador" value={form.tipo} onChange={set('tipo')} options={TIPO_OPTIONS} />
         <FormInput label="Empresa (opcional)" value={form.empresa_nombre} onChange={set('empresa_nombre')} />
 
         <div className="flex gap-3">

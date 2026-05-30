@@ -32,9 +32,10 @@ export const FormInput = forwardRef<HTMLInputElement, InputProps>(
 FormInput.displayName = 'FormInput'
 
 // ── Select ────────────────────────────────────────────────────────
-type SelectProps = FieldProps & SelectHTMLAttributes<HTMLSelectElement> & {
+type SelectProps = FieldProps & Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> & {
   options: { value: string; label: string }[]
   placeholder?: string
+  onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLSelectElement>
 }
 
 export const FormSelect = forwardRef<HTMLSelectElement, SelectProps>(

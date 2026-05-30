@@ -117,7 +117,7 @@ export function Step3Ubicacion({ onNext: _onNext }: Props) {
           <FormInput label="Municipio" value={u.municipio} onChange={set('municipio')} className="col-span-2" />
           <FormInput label="C.P." value={u.cp} onChange={set('cp')} />
         </div>
-        <FormSelect label="Provincia" value={u.provincia} onChange={set('provincia') as any} options={PROVINCIAS} placeholder="Selecciona..." />
+        <FormSelect label="Provincia" value={u.provincia} onChange={set('provincia')} options={PROVINCIAS} placeholder="Selecciona..." />
       </div>
 
       {/* Estado actual de la instalación — adaptativo */}

@@ -144,7 +144,7 @@ export function ProfileSetup() {
                 <FormSelect
                   label="Tipo de instalador"
                   value={form.tipo ?? 'IBTM'}
-                  onChange={set('tipo') as any}
+                  onChange={set('tipo')}
                   options={TIPO_OPTIONS}
                   required
                 />

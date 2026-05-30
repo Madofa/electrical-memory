@@ -41,6 +41,7 @@ export function PDFViewer() {
       const filename = slug
         ? `${ref.replace(/\//g, '-')}-${slug}.pdf`
         : `${ref.replace(/\//g, '-')}.pdf`
+      // pagebreak no está en Html2PdfOptions de html2pdf.js v0.14 (type.d.ts incompleto)
       await html2pdf()
         .set({
           margin: [15, 15, 15, 15],
