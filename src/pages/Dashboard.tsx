@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, FileText, Download, Pencil, Trash2, Zap, User, LogOut, Search, ChevronRight, Clock, Activity } from 'lucide-react'
+import { Plus, FileText, Download, Pencil, Trash2, Zap, User, LogOut, Search, ChevronRight, Clock, Activity, BookOpen } from 'lucide-react'
 import { getMemorias, deleteMemoria, signOut, formatDate } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
 import { useWizardStore } from '../stores/wizardStore'
@@ -11,7 +11,6 @@ import toast from 'react-hot-toast'
 const PROPERES_EINES = [
   'Memòria Tècnica de càlculs (ELEC-3)',
   'Certificat d\'instal·lació (ELEC-1)',
-  'Memòria Descriptiva',
 ]
 
 export function Dashboard() {
@@ -123,6 +122,22 @@ export function Dashboard() {
               <div className="flex-1 min-w-0">
                 <div className="font-body font-semibold text-slate-200 text-[14px]">Esquema Unifilar</div>
                 <div className="text-[11px] text-slate-500 font-body mt-0.5">Model ELEC 2 · Generalitat de Catalunya</div>
+                <div className="text-[11px] text-amber-500/70 font-mono mt-1.5 flex items-center gap-1">
+                  <ChevronRight className="w-3 h-3" /> Obrir
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => navigate('/memoria-descriptiva')}
+              className="card-hover text-left flex items-start gap-3"
+            >
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                <BookOpen className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-body font-semibold text-slate-200 text-[14px]">Memòria Descriptiva</div>
+                <div className="text-[11px] text-slate-500 font-body mt-0.5">Document narratiu · Generalitat de Catalunya</div>
                 <div className="text-[11px] text-amber-500/70 font-mono mt-1.5 flex items-center gap-1">
                   <ChevronRight className="w-3 h-3" /> Obrir
                 </div>

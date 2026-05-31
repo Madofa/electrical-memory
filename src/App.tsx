@@ -10,11 +10,13 @@ import { Dashboard } from './pages/Dashboard'
 import { ProfileSetup } from './pages/ProfileSetup'
 import { Wizard } from './pages/Wizard'
 import { EsquemaUnifilarList } from './pages/EsquemaUnifilarList'
+import { MemoriaDescriptivaList } from './pages/MemoriaDescriptivaList'
 
 // El motor PDF (@react-pdf/renderer) pesa ~1.5 MB — lo cargamos sólo cuando
 // el usuario navega a la vista previa.
 const PDFViewer = lazy(() => import('./pages/PDFViewer').then((m) => ({ default: m.PDFViewer })))
 const EsquemaUnifilarEditor = lazy(() => import('./pages/EsquemaUnifilarEditor').then((m) => ({ default: m.EsquemaUnifilarEditor })))
+const MemoriaDescriptivaEditor = lazy(() => import('./pages/MemoriaDescriptivaEditor').then((m) => ({ default: m.MemoriaDescriptivaEditor })))
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuthStore()
@@ -85,6 +87,8 @@ export default function App() {
         <Route path="/perfil" element={<RequireAuth><ProfileSetup /></RequireAuth>} />
         <Route path="/wizard" element={<RequireAuth><Wizard /></RequireAuth>} />
         <Route path="/unifilar" element={<RequireAuth><EsquemaUnifilarList /></RequireAuth>} />
+        <Route path="/memoria-descriptiva" element={<RequireAuth><MemoriaDescriptivaList /></RequireAuth>} />
+        <Route path="/memoria-descriptiva/:id" element={<RequireAuth><Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#1e2d47] border-t-amber-500 rounded-full animate-spin" /></div>}><MemoriaDescriptivaEditor /></Suspense></RequireAuth>} />
         <Route
           path="/unifilar/:id"
           element={

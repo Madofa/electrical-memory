@@ -32,3 +32,4 @@ dist-ssr
 # Reference PDFs (contain PII: DNI, NIF, addresses)
 Referencias nuevas Herramietnas/
 
+.env.supabase
