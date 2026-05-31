@@ -33,14 +33,16 @@ export function calculaTrams(trams: Tram[]): TramCalculat[] {
   return trams.map((t) => {
     const U = t.tensio_v ?? (t.tipus === 'mono' ? 230 : 400)
     const gamma = GAMMA[t.material]
+    const cosfi = Math.max(t.cos_fi || 0.001, 0.001)  // guard against 0 / empty
     const pot = (t.potencia_kw * (t.carrega_pct / 100))
     const I = t.tipus === 'mono'
-      ? (pot * 1000) / (U * t.cos_fi)
-      : (pot * 1000) / (Math.sqrt(3) * U * t.cos_fi)
+      ? (pot * 1000) / (U * cosfi)
+      : (pot * 1000) / (Math.sqrt(3) * U * cosfi)
     const moment = pot * t.longitud_m
+    // ITC-BT-19: ΔU% includes cos_fi in the denominator
     const dU = t.tipus === 'mono'
-      ? (200000 * pot * t.longitud_m) / (gamma * t.seccio_mm2 * U * U)
-      : (100000 * pot * t.longitud_m) / (gamma * t.seccio_mm2 * U * U)
+      ? (200000 * pot * t.longitud_m) / (gamma * t.seccio_mm2 * U * U * cosfi)
+      : (100000 * pot * t.longitud_m) / (gamma * t.seccio_mm2 * U * U * cosfi)
     acumulat += dU
     return {
       ...t,

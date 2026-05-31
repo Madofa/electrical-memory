@@ -36,8 +36,10 @@ export function Elec1List() {
   }
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm('Esborrar aquest certificat? Aquesta acció no es pot desfer.')) return
     setDeleting(id)
-    await deleteCertificatElec1(id)
+    const { error } = await deleteCertificatElec1(id)
+    if (error) { toast.error(error.message); setDeleting(null); return }
     setCerts((prev) => prev.filter((c) => c.id !== id))
     toast.success('Certificat esborrat')
     setDeleting(null)

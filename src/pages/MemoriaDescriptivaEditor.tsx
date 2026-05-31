@@ -57,11 +57,14 @@ export function MemoriaDescriptivaEditor() {
 
   useEffect(() => {
     if (!id) return
+    let mounted = true
     getMemoriaDescriptiva(id).then(({ data, error }) => {
+      if (!mounted) return
       if (error || !data) { toast.error('Document no trobat'); navigate('/memoria-descriptiva'); return }
       setDoc(data as MemoriaDescriptiva)
       setLoading(false)
     })
+    return () => { mounted = false; if (saveTimer.current) clearTimeout(saveTimer.current) }
   }, [id, navigate])
 
   const update = (field: keyof MemoriaDescriptiva, value: string) => {

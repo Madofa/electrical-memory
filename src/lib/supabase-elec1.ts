@@ -20,7 +20,7 @@ export interface CertificatElec1 {
   us_installacio: string
   potencia_kw: number; tensio_v: string; seccio_lga_mm2: string; num_circuits: number
   calibre_fusibles_cgp_a: number; material_conductor: string
-  resist_aillament_mt: number; resist_terra_ohm: number; intensitat_iga_a: number
+  resist_aillament_mt: number; resist_aillament_conductors_mt: number; resist_terra_ohm: number; intensitat_iga_a: number
   observacions: string; data_signatura: string
   estat: 'esborrany' | 'finalitzat'
   created_at: string; updated_at: string
@@ -42,7 +42,7 @@ export function emptyCertificat(_instalador: Instalador | null): Omit<Certificat
     us_installacio: 'f) Instal·lacions d\'habitatges',
     potencia_kw: 0, tensio_v: '230', seccio_lga_mm2: '', num_circuits: 0,
     calibre_fusibles_cgp_a: 0, material_conductor: 'Coure',
-    resist_aillament_mt: 0, resist_terra_ohm: 0, intensitat_iga_a: 0,
+    resist_aillament_mt: 0, resist_aillament_conductors_mt: 0, resist_terra_ohm: 0, intensitat_iga_a: 0,
     observacions: '',
     data_signatura: new Date().toISOString().split('T')[0],
     estat: 'esborrany',

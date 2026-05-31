@@ -34,8 +34,10 @@ export function Elec3List() {
   }
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm('Esborrar aquest càlcul? Aquesta acció no es pot desfer.')) return
     setDeleting(id)
-    await deleteElec3Doc(id)
+    const { error } = await deleteElec3Doc(id)
+    if (error) { toast.error(error.message); setDeleting(null); return }
     setDocs((prev) => prev.filter((d) => d.id !== id))
     toast.success('Document esborrat')
     setDeleting(null)

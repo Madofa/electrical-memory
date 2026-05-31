@@ -17,12 +17,11 @@ export function ResetPassword() {
   // Sólo entonces tiene sentido mostrar el formulario.
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') setReady(true)
+      // Només activem el formulari davant d'un token de recuperació de contrasenya.
+      // SIGNED_IN genèric (magic link, etc.) no ha de permetre canviar la contrasenya aquí.
+      if (event === 'PASSWORD_RECOVERY') setReady(true)
     })
-    // Si ya hay sesión activa (token procesado), también podemos cambiar contraseña.
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setReady(true)
-    })
+    // No activem el formulari per sessions genèriques ja existents.
     return () => subscription.unsubscribe()
   }, [])
 

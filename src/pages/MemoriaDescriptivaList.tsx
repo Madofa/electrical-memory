@@ -37,8 +37,10 @@ export function MemoriaDescriptivaList() {
   }
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm('Esborrar aquesta memòria descriptiva? Aquesta acció no es pot desfer.')) return
     setDeleting(id)
-    await deleteMemoriaDescriptiva(id)
+    const { error } = await deleteMemoriaDescriptiva(id)
+    if (error) { toast.error(error.message); setDeleting(null); return }
     setDocs((prev) => prev.filter((d) => d.id !== id))
     toast.success('Document esborrat')
     setDeleting(null)

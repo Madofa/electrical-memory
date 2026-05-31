@@ -141,7 +141,7 @@ export function CertificatElec1PDF({ cert, instalador }: Props) {
           </View>
           <View style={s.row}>
             <Cell label="Resist. d'aïllament amb terra (MΩ)" value={cert.resist_aillament_mt || ''} />
-            <Cell label="Resist. entre conductors (MΩ)" value={cert.resist_aillament_mt || ''} />
+            <Cell label="Resist. entre conductors (MΩ)" value={cert.resist_aillament_conductors_mt || ''} />
             <Cell label="Resistència a terra (Ω)" value={cert.resist_terra_ohm || ''} />
             <Cell label="Intensitat IGA (A)" value={cert.intensitat_iga_a || ''} borderRight={false} />
           </View>

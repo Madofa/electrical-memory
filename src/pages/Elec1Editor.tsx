@@ -43,11 +43,14 @@ export function Elec1Editor() {
 
   useEffect(() => {
     if (!id) return
+    let mounted = true
     getCertificatElec1(id).then(({ data, error }) => {
+      if (!mounted) return
       if (error || !data) { toast.error('Document no trobat'); navigate('/elec1'); return }
       setCert(data as CertificatElec1)
       setLoading(false)
     })
+    return () => { mounted = false; if (timer.current) clearTimeout(timer.current) }
   }, [id, navigate])
 
   const upd = (field: keyof CertificatElec1, value: string | number) => {
@@ -169,8 +172,11 @@ export function Elec1Editor() {
             <FormInput label="Calibre fusibles CGP (A)" type="number" value={String(cert.calibre_fusibles_cgp_a || '')} onChange={(e) => upd('calibre_fusibles_cgp_a', parseInt(e.target.value) || 0)} className="font-mono" />
             {fi('material_conductor', 'Material conductor', 'Coure')}
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <FormInput label="Resist. aïllament (MΩ)" type="number" step="0.1" value={String(cert.resist_aillament_mt || '')} onChange={(e) => upd('resist_aillament_mt', parseFloat(e.target.value) || 0)} className="font-mono" />
+          <div className="grid grid-cols-2 gap-4">
+            <FormInput label="Resist. aïllament amb terra (MΩ)" type="number" step="0.1" value={String(cert.resist_aillament_mt || '')} onChange={(e) => upd('resist_aillament_mt', parseFloat(e.target.value) || 0)} className="font-mono" />
+            <FormInput label="Resist. entre conductors (MΩ)" type="number" step="0.1" value={String(cert.resist_aillament_conductors_mt || '')} onChange={(e) => upd('resist_aillament_conductors_mt', parseFloat(e.target.value) || 0)} className="font-mono" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
             <FormInput label="Resistència a terra (Ω)" type="number" step="0.1" value={String(cert.resist_terra_ohm || '')} onChange={(e) => upd('resist_terra_ohm', parseFloat(e.target.value) || 0)} className="font-mono" />
             <FormInput label="Intensitat IGA (A)" type="number" value={String(cert.intensitat_iga_a || '')} onChange={(e) => upd('intensitat_iga_a', parseInt(e.target.value) || 0)} className="font-mono" />
           </div>
@@ -189,7 +195,7 @@ export function Elec1Editor() {
           <div className="bg-ink-700/30 border border-ink-600/50 rounded-xl p-4">
             <p className="text-[11px] text-slate-400 leading-relaxed">
               <span className="font-semibold text-slate-300">La signatura del certificat</span> prové del teu perfil d'instal·lador.
-              Si no has configurat la signatura, aneu a <button onClick={() => window.open('/perfil')} className="text-amber-400 underline">Perfil</button> per afegir-la.
+              Si no has configurat la signatura, aneu a <button type="button" onClick={() => navigate('/perfil')} className="text-amber-400 underline">Perfil</button> per afegir-la.
             </p>
           </div>
         </motion.div>
