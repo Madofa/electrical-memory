@@ -11,7 +11,7 @@ const EINES = [
   { nom: 'Memòria Tècnica Descriptiva (e-distribució)', estat: 'available' as const },
   { nom: 'Esquema Unifilar (Model ELEC 2)', estat: 'available' as const },
   { nom: 'Memòria Descriptiva', estat: 'available' as const },
-  { nom: 'Memòria Tècnica de càlculs (ELEC-3)', estat: 'soon' as const },
+  { nom: 'Memòria Tècnica de càlculs (ELEC-3)', estat: 'available' as const },
   { nom: 'Certificat d\'instal·lació (ELEC-1)', estat: 'available' as const },
   { nom: 'Memòria Descriptiva', estat: 'soon' as const },
 ]

@@ -12,6 +12,7 @@ import { Wizard } from './pages/Wizard'
 import { EsquemaUnifilarList } from './pages/EsquemaUnifilarList'
 import { MemoriaDescriptivaList } from './pages/MemoriaDescriptivaList'
 import { Elec1List } from './pages/Elec1List'
+import { Elec3List } from './pages/Elec3List'
 
 // El motor PDF (@react-pdf/renderer) pesa ~1.5 MB — lo cargamos sólo cuando
 // el usuario navega a la vista previa.
@@ -19,6 +20,7 @@ const PDFViewer = lazy(() => import('./pages/PDFViewer').then((m) => ({ default:
 const EsquemaUnifilarEditor = lazy(() => import('./pages/EsquemaUnifilarEditor').then((m) => ({ default: m.EsquemaUnifilarEditor })))
 const MemoriaDescriptivaEditor = lazy(() => import('./pages/MemoriaDescriptivaEditor').then((m) => ({ default: m.MemoriaDescriptivaEditor })))
 const Elec1Editor = lazy(() => import('./pages/Elec1Editor').then((m) => ({ default: m.Elec1Editor })))
+const Elec3Editor = lazy(() => import('./pages/Elec3Editor').then((m) => ({ default: m.Elec3Editor })))
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuthStore()
@@ -91,6 +93,8 @@ export default function App() {
         <Route path="/unifilar" element={<RequireAuth><EsquemaUnifilarList /></RequireAuth>} />
         <Route path="/memoria-descriptiva" element={<RequireAuth><MemoriaDescriptivaList /></RequireAuth>} />
         <Route path="/elec1" element={<RequireAuth><Elec1List /></RequireAuth>} />
+        <Route path="/elec3" element={<RequireAuth><Elec3List /></RequireAuth>} />
+        <Route path="/elec3/:id" element={<RequireAuth><Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#1e2d47] border-t-amber-500 rounded-full animate-spin" /></div>}><Elec3Editor /></Suspense></RequireAuth>} />
         <Route path="/elec1/:id" element={<RequireAuth><Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#1e2d47] border-t-amber-500 rounded-full animate-spin" /></div>}><Elec1Editor /></Suspense></RequireAuth>} />
         <Route path="/memoria-descriptiva/:id" element={<RequireAuth><Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#1e2d47] border-t-amber-500 rounded-full animate-spin" /></div>}><MemoriaDescriptivaEditor /></Suspense></RequireAuth>} />
         <Route

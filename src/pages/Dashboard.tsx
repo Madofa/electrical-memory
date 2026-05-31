@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, FileText, Download, Pencil, Trash2, Zap, User, LogOut, Search, ChevronRight, Clock, Activity, BookOpen, ClipboardCheck } from 'lucide-react'
+import { Plus, FileText, Download, Pencil, Trash2, Zap, User, LogOut, Search, ChevronRight, Activity, BookOpen, ClipboardCheck, Calculator } from 'lucide-react'
 import { getMemorias, deleteMemoria, signOut, formatDate } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
 import { useWizardStore } from '../stores/wizardStore'
 import type { Memoria } from '../types'
 import toast from 'react-hot-toast'
 
-const PROPERES_EINES = [
-  'Memòria Tècnica de càlculs (ELEC-3)',
-]
 
 export function Dashboard() {
   const navigate = useNavigate()
@@ -153,6 +150,22 @@ export function Dashboard() {
               <div className="flex-1 min-w-0">
                 <div className="font-body font-semibold text-slate-200 text-[14px]">Certificat d'instal·lació (ELEC-1)</div>
                 <div className="text-[11px] text-slate-500 font-body mt-0.5">Model ELEC-1 Abril 2024 · Generalitat de Catalunya</div>
+                <div className="text-[11px] text-amber-500/70 font-mono mt-1.5 flex items-center gap-1">
+                  <ChevronRight className="w-3 h-3" /> Obrir
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => navigate('/elec3')}
+              className="card-hover text-left flex items-start gap-3"
+            >
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                <Calculator className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-body font-semibold text-slate-200 text-[14px]">Memòria Tècnica de càlculs (ELEC-3)</div>
+                <div className="text-[11px] text-slate-500 font-body mt-0.5">Caiguda de tensió · REBT ITC-BT-19</div>
                 <div className="text-[11px] text-amber-500/70 font-mono mt-1.5 flex items-center gap-1">
                   <ChevronRight className="w-3 h-3" /> Obrir
                 </div>
@@ -322,26 +335,6 @@ export function Dashboard() {
           </AnimatePresence>
         )}
 
-        {/* Properes eines */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mt-16 pt-8 border-t border-[#1e2d47]/60"
-        >
-          <p className="section-sub mb-3">Pròximament</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {PROPERES_EINES.map((eina) => (
-              <div
-                key={eina}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl border border-ink-600/50 bg-ink-800/30"
-              >
-                <Clock className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
-                <span className="text-[12.5px] font-body text-slate-500">{eina}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
       </main>
 
       <footer className="border-t border-[#1e2d47]/50 px-6 py-3 text-center">
