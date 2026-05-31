@@ -9,10 +9,12 @@ import { ResetPassword } from './pages/ResetPassword'
 import { Dashboard } from './pages/Dashboard'
 import { ProfileSetup } from './pages/ProfileSetup'
 import { Wizard } from './pages/Wizard'
+import { EsquemaUnifilarList } from './pages/EsquemaUnifilarList'
 
 // El motor PDF (@react-pdf/renderer) pesa ~1.5 MB — lo cargamos sólo cuando
 // el usuario navega a la vista previa.
 const PDFViewer = lazy(() => import('./pages/PDFViewer').then((m) => ({ default: m.PDFViewer })))
+const EsquemaUnifilarEditor = lazy(() => import('./pages/EsquemaUnifilarEditor').then((m) => ({ default: m.EsquemaUnifilarEditor })))
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuthStore()
@@ -82,6 +84,24 @@ export default function App() {
         <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
         <Route path="/perfil" element={<RequireAuth><ProfileSetup /></RequireAuth>} />
         <Route path="/wizard" element={<RequireAuth><Wizard /></RequireAuth>} />
+        <Route path="/unifilar" element={<RequireAuth><EsquemaUnifilarList /></RequireAuth>} />
+        <Route
+          path="/unifilar/:id"
+          element={
+            <RequireAuth>
+              <Suspense
+                fallback={
+                  <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+                    <div className="w-8 h-8 border-2 border-[#1e2d47] border-t-amber-500 rounded-full animate-spin" />
+                    <p className="text-[12px] text-slate-500 font-mono">Carregant editor…</p>
+                  </div>
+                }
+              >
+                <EsquemaUnifilarEditor />
+              </Suspense>
+            </RequireAuth>
+          }
+        />
         <Route
           path="/pdf/:id"
           element={

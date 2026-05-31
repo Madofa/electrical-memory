@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, FileText, Download, Pencil, Trash2, Zap, User, LogOut, Search, ChevronRight, Clock } from 'lucide-react'
+import { Plus, FileText, Download, Pencil, Trash2, Zap, User, LogOut, Search, ChevronRight, Clock, Activity } from 'lucide-react'
 import { getMemorias, deleteMemoria, signOut, formatDate } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
 import { useWizardStore } from '../stores/wizardStore'
@@ -9,7 +9,6 @@ import type { Memoria } from '../types'
 import toast from 'react-hot-toast'
 
 const PROPERES_EINES = [
-  'Esquema Unifilar (Model ELEC 2)',
   'Memòria Tècnica de càlculs (ELEC-3)',
   'Certificat d\'instal·lació (ELEC-1)',
   'Memòria Descriptiva',
@@ -90,20 +89,59 @@ export function Dashboard() {
       </header>
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
-        {/* Hero */}
+        {/* Selector d'eines */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10"
+          className="mb-10"
+        >
+          <p className="section-sub mb-3">Eines disponibles</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              onClick={handleNew}
+              className="card-hover text-left flex items-start gap-3"
+            >
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                <FileText className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-body font-semibold text-slate-200 text-[14px]">Memòria Tècnica Descriptiva</div>
+                <div className="text-[11px] text-slate-500 font-body mt-0.5">e-distribució · alta de subministrament</div>
+                <div className="text-[11px] text-amber-500/70 font-mono mt-1.5 flex items-center gap-1">
+                  <Plus className="w-3 h-3" /> Nova memòria
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => navigate('/unifilar')}
+              className="card-hover text-left flex items-start gap-3"
+            >
+              <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                <Activity className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-body font-semibold text-slate-200 text-[14px]">Esquema Unifilar</div>
+                <div className="text-[11px] text-slate-500 font-body mt-0.5">Model ELEC 2 · Generalitat de Catalunya</div>
+                <div className="text-[11px] text-amber-500/70 font-mono mt-1.5 flex items-center gap-1">
+                  <ChevronRight className="w-3 h-3" /> Obrir
+                </div>
+              </div>
+            </button>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6"
         >
           <div>
-            <p className="section-sub mb-1">Eina activa</p>
-            <h1 className="font-display font-bold text-4xl tracking-wide uppercase text-slate-100">
+            <p className="section-sub mb-1">Les meves memòries</p>
+            <h2 className="font-display font-bold text-2xl tracking-wide uppercase text-slate-100">
               Memòria Tècnica Descriptiva
-            </h1>
-            <p className="text-slate-500 font-body text-sm mt-1">
-              Per a sol·licituds d'alta de subministrament a e-distribució.
-            </p>
+            </h2>
           </div>
           <button onClick={handleNew} className="btn-primary">
             <Plus className="w-4 h-4" />
