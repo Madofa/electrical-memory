@@ -142,12 +142,9 @@ export function EsquemaUnifilarList() {
             <h3 className="font-display font-bold text-xl uppercase text-slate-400 mb-2">
               Encara no tens cap esquema
             </h3>
-            <p className="text-slate-600 text-sm font-body mb-6">
+            <p className="text-slate-600 text-sm font-body">
               Crea el teu primer esquema unifilar des d'una plantilla.
             </p>
-            <button onClick={() => setShowNew(true)} className="btn-primary mx-auto">
-              <Plus className="w-4 h-4" /> Nou esquema
-            </button>
           </div>
         ) : (
           <div className="space-y-3">
