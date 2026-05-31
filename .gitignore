@@ -33,3 +33,4 @@ dist-ssr
 Referencias nuevas Herramietnas/
 
 .env.supabase
+supabase/.temp/
