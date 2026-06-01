@@ -99,7 +99,7 @@ export async function uploadFirma(userId: string, dataUrl: string): Promise<stri
 export async function getMemorias(instaladorId: string) {
   return supabase
     .from('memorias')
-    .select('id, referencia_interna, numero_expediente, estado, created_at, updated_at, wizard_data')
+    .select('id, referencia_interna, numero_expediente, estado, created_at, updated_at, wizard_data, projecte_id')
     .eq('instalador_id', instaladorId)
     .order('updated_at', { ascending: false })
 }
