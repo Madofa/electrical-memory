@@ -112,7 +112,8 @@ export async function saveMemoria(
   instaladorId: string,
   wizardData: WizardData,
   estado: EstadoMemoria = 'borrador',
-  id?: string
+  id?: string,
+  projecteId?: string,
 ): Promise<string> {
   const payload = {
     instalador_id: instaladorId,
@@ -120,6 +121,7 @@ export async function saveMemoria(
     estado,
     wizard_data: wizardData,
     updated_at: new Date().toISOString(),
+    ...(projecteId ? { projecte_id: projecteId } : {}),
   }
 
   if (id) {

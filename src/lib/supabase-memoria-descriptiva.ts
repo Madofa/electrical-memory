@@ -1,4 +1,6 @@
 import { supabase } from './supabase'
+import type { Projecte } from './supabase-projectes'
+import { prefillMemoriaDescriptiva } from './supabase-projectes'
 
 const TABLE = 'memories_descriptives'
 
@@ -43,10 +45,20 @@ export async function getMemoriaDescriptiva(id: string) {
   return supabase.from(TABLE).select('*').eq('id', id).single()
 }
 
-export async function createMemoriaDescriptiva(instaladorId: string): Promise<string> {
+export async function createMemoriaDescriptiva(
+  instaladorId: string,
+  projecteId?: string,
+  projecte?: Projecte,
+): Promise<string> {
+  const prefill = projecte ? prefillMemoriaDescriptiva(projecte) : {}
   const { data, error } = await supabase
     .from(TABLE)
-    .insert({ instalador_id: instaladorId, ...emptyMemoriaDescriptiva() })
+    .insert({
+      instalador_id: instaladorId,
+      ...emptyMemoriaDescriptiva(),
+      ...prefill,
+      ...(projecteId ? { projecte_id: projecteId } : {}),
+    })
     .select('id')
   if (error) throw error
   return (data![0] as { id: string }).id
