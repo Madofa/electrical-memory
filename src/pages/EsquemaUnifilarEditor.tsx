@@ -230,10 +230,21 @@ export function EsquemaUnifilarEditor() {
 
         {/* Vista prèvia — sota, ample complet */}
         <section className="px-6 pb-8 pt-4 bg-ink-900/20 border-t border-[#1e2d47] mt-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <p className="section-sub">Vista prèvia · Model ELEC 2</p>
             <p className="text-[10px] text-slate-600 font-mono">{store.circuits.length} circuits</p>
           </div>
+          {/* Capçalera del document (fora del SVG per evitar solapaments) */}
+          {(store.capcalera.emplacament || store.capcalera.titular || store.capcalera.empresa_distribuidora) && (
+            <div className="flex justify-between items-start text-[11px] font-mono text-slate-500 mb-2 px-1">
+              <span>{store.capcalera.empresa_distribuidora}</span>
+              <div className="text-right">
+                <div>{store.capcalera.seccio_connexio} · {store.capcalera.tensio}</div>
+                <div>{store.capcalera.emplacament}</div>
+                <div>{store.capcalera.titular}</div>
+              </div>
+            </div>
+          )}
           <div className="rounded-xl overflow-x-auto border border-[#1e2d47] shadow-2xl">
             <UnifilarSVG
               circuits={store.circuits}

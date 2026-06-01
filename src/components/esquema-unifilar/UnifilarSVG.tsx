@@ -94,22 +94,6 @@ export function UnifilarSVG({ circuits, diferencials, iga, capcalera, variant = 
         </text>
       ))}
 
-      {/* Capçalera (cantonada superior dreta) */}
-      <g transform={`translate(${totalWidth - RIGHT_MARGIN - 6}, 16)`}>
-        <text textAnchor="end" fill={muted} fontSize="9">
-          {capcalera.empresa_distribuidora}
-        </text>
-        <text textAnchor="end" y="12" fill={muted} fontSize="9">
-          {capcalera.seccio_connexio} · {capcalera.tensio}
-        </text>
-        <text textAnchor="end" y="24" fill={muted} fontSize="9">
-          {capcalera.emplacament}
-        </text>
-        <text textAnchor="end" y="36" fill={muted} fontSize="9">
-          {capcalera.titular}
-        </text>
-      </g>
-
       {/* Per cada circuit */}
       {circuits.map((c, i) => {
         const x = xOf(i)
