@@ -126,7 +126,7 @@ export async function saveMemoria(
 
   if (id) {
     const { error } = await supabase.from('memorias').update(payload).eq('id', id)
-    if (error) throw error
+    if (error) throw new Error(error.message || error.details || JSON.stringify(error))
     return id
   }
 
@@ -135,7 +135,7 @@ export async function saveMemoria(
     .insert({ ...payload, created_at: new Date().toISOString() })
     .select('id')
 
-  if (error) throw error
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error))
   if (!data?.length) throw new Error('Insert sin respuesta — posible bloqueo RLS')
   return (data[0] as Memoria).id
 }

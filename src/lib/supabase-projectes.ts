@@ -52,8 +52,9 @@ export async function createProjecte(instaladorId: string, data: ProjecteForm): 
     .from('projectes')
     .insert({ instalador_id: instaladorId, ...data })
     .select('id')
-  if (error) throw error
-  return (rows![0] as { id: string }).id
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error))
+  if (!rows?.length) throw new Error('Insert sense resposta — possible bloqueig RLS')
+  return (rows[0] as { id: string }).id
 }
 
 export async function updateProjecte(id: string, patch: Partial<ProjecteForm>) {
@@ -61,7 +62,7 @@ export async function updateProjecte(id: string, patch: Partial<ProjecteForm>) {
     .from('projectes')
     .update({ ...patch, updated_at: new Date().toISOString() })
     .eq('id', id)
-  if (error) throw error
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error))
 }
 
 export async function deleteProjecte(id: string) {
@@ -77,7 +78,7 @@ export async function assignDocToProjecte(
     .from(table)
     .update({ projecte_id: projecteId, updated_at: new Date().toISOString() })
     .eq('id', docId)
-  if (error) throw error
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error))
 }
 
 export function prefillMTD(p: Projecte) {

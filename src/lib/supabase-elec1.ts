@@ -75,7 +75,7 @@ export async function createCertificatElec1(
       ...(projecteId ? { projecte_id: projecteId } : {}),
     })
     .select('id')
-  if (error) throw error
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error))
   return (data![0] as { id: string }).id
 }
 
@@ -83,7 +83,7 @@ export async function updateCertificatElec1(id: string, patch: Partial<Certifica
   const { error } = await supabase.from(TABLE)
     .update({ ...patch, updated_at: new Date().toISOString() })
     .eq('id', id)
-  if (error) throw error
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error))
 }
 
 export async function deleteCertificatElec1(id: string) {

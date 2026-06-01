@@ -44,7 +44,7 @@ export async function createEsquemaFromPlantilla(
     ...(projecteId ? { projecte_id: projecteId } : {}),
   }
   const { data, error } = await supabase.from(TABLE).insert(payload).select('id')
-  if (error) throw error
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error))
   if (!data?.length) throw new Error('Insert sense resposta — possible bloqueig RLS')
   return (data[0] as { id: string }).id
 }
@@ -54,5 +54,5 @@ export async function updateEsquema(id: string, patch: Partial<EsquemaUnifilar>)
     .from(TABLE)
     .update({ ...patch, updated_at: new Date().toISOString() })
     .eq('id', id)
-  if (error) throw error
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error))
 }

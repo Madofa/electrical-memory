@@ -41,7 +41,7 @@ export async function createElec3Doc(
       ...(projecteId ? { projecte_id: projecteId } : {}),
     })
     .select('id')
-  if (error) throw error
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error))
   return (data![0] as { id: string }).id
 }
 
@@ -49,7 +49,7 @@ export async function updateElec3Doc(id: string, patch: Partial<Elec3Doc>) {
   const { error } = await supabase.from(TABLE)
     .update({ ...patch, updated_at: new Date().toISOString() })
     .eq('id', id)
-  if (error) throw error
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error))
 }
 
 export async function deleteElec3Doc(id: string) {

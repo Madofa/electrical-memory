@@ -60,7 +60,7 @@ export async function createMemoriaDescriptiva(
       ...(projecteId ? { projecte_id: projecteId } : {}),
     })
     .select('id')
-  if (error) throw error
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error))
   return (data![0] as { id: string }).id
 }
 
@@ -69,7 +69,7 @@ export async function updateMemoriaDescriptiva(id: string, patch: Partial<Memori
     .from(TABLE)
     .update({ ...patch, updated_at: new Date().toISOString() })
     .eq('id', id)
-  if (error) throw error
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error))
 }
 
 export async function deleteMemoriaDescriptiva(id: string) {

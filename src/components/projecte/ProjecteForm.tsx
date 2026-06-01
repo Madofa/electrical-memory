@@ -28,7 +28,10 @@ export function ProjecteForm({ initial, onSave, onClose }: Props) {
       await onSave(form)
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error en desar')
+      const msg = err instanceof Error
+        ? err.message
+        : (err as { message?: string })?.message ?? JSON.stringify(err)
+      setError(msg || 'Error en desar')
     }
     setSaving(false)
   }
