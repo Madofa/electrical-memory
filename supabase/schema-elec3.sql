@@ -22,3 +22,6 @@ create policy "Instal·lador actualitza els seus càlculs ELEC-3"
   on public.calculs_elec3 for update using (instalador_id = auth.uid());
 create policy "Instal·lador esborra els seus càlculs ELEC-3"
   on public.calculs_elec3 for delete using (instalador_id = auth.uid());
+
+grant select, insert, update, delete on public.calculs_elec3 to authenticated;
+grant select on public.calculs_elec3 to anon;

@@ -48,3 +48,8 @@ alter table public.calculs_elec3
 
 alter table public.memories_descriptives
   add column if not exists projecte_id uuid references public.projectes(id) on delete set null;
+
+
+-- GRANTs per al rol authenticated (Supabase no els afegeix automàticament amb SQL manual)
+grant select, insert, update, delete on public.projectes to authenticated;
+grant select on public.projectes to anon;

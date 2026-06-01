@@ -27,3 +27,6 @@ create policy "Instal·lador actualitza les seves memòries descriptives"
   on public.memories_descriptives for update using (instalador_id = auth.uid());
 create policy "Instal·lador esborra les seves memòries descriptives"
   on public.memories_descriptives for delete using (instalador_id = auth.uid());
+
+grant select, insert, update, delete on public.memories_descriptives to authenticated;
+grant select on public.memories_descriptives to anon;

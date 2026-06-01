@@ -40,3 +40,6 @@ create policy "Instalador actualitza els seus esquemes"
 create policy "Instalador esborra els seus esquemes"
   on public.esquemes_unifilars for delete
   using (instalador_id = auth.uid());
+
+grant select, insert, update, delete on public.esquemes_unifilars to authenticated;
+grant select on public.esquemes_unifilars to anon;

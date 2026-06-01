@@ -63,3 +63,6 @@ create policy "Instal·lador actualitza els seus certificats ELEC-1"
   on public.certificats_elec1 for update using (instalador_id = auth.uid());
 create policy "Instal·lador esborra els seus certificats ELEC-1"
   on public.certificats_elec1 for delete using (instalador_id = auth.uid());
+
+grant select, insert, update, delete on public.certificats_elec1 to authenticated;
+grant select on public.certificats_elec1 to anon;
