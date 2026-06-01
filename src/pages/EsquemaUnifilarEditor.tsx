@@ -14,6 +14,8 @@ import { DiferencialPanel } from '../components/esquema-unifilar/DiferencialPane
 import { CapcaleraForm } from '../components/esquema-unifilar/CapcaleraForm'
 import { UnifilarSVG } from '../components/esquema-unifilar/UnifilarSVG'
 import { EsquemaUnifilarPDF } from '../components/pdf/EsquemaUnifilarPDF'
+import { instanciarPlantilla } from '../lib/plantilles-installacio'
+import { LABELS_TIPUS_INSTALLACIO, type TipusInstallacio } from '../types/esquemaUnifilar'
 import toast from 'react-hot-toast'
 
 export function EsquemaUnifilarEditor() {
@@ -27,6 +29,7 @@ export function EsquemaUnifilarEditor() {
   const saveInProgress = useRef(false)
   const [projecteId, setProjecteId] = useState<string | null>(null)
   const [projecteNom, setProjecteNom] = useState('')
+  const [canviantPlantilla, setCanviantPlantilla] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -177,8 +180,47 @@ export function EsquemaUnifilarEditor() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <div className="text-[10px] font-display font-semibold tracking-widest uppercase text-amber-500/60 mb-2">
-              Circuits ({store.circuits.length})
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-[10px] font-display font-semibold tracking-widest uppercase text-amber-500/60">
+                Circuits ({store.circuits.length})
+              </div>
+              {!canviantPlantilla ? (
+                <button
+                  type="button"
+                  onClick={() => setCanviantPlantilla(true)}
+                  className="text-[11px] text-slate-500 hover:text-amber-400 font-mono transition-colors"
+                >
+                  Canviar plantilla
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <select
+                    autoFocus
+                    className="bg-ink-800 border border-amber-500/40 text-[12px] text-slate-200 rounded px-2 py-1 focus:outline-none"
+                    defaultValue=""
+                    onChange={(e) => {
+                      if (!e.target.value) return
+                      if (!window.confirm('Canviar la plantilla substituirà tots els circuits actuals. Continuar?')) {
+                        setCanviantPlantilla(false)
+                        return
+                      }
+                      const { circuits, diferencials, iga_amperatge } = instanciarPlantilla(e.target.value as TipusInstallacio)
+                      store.reorderCircuits([])
+                      circuits.forEach((c) => store.updateCircuit(c.id, c))
+                      // Reemplaça circuits i diferencials complets via store reset parcial
+                      useEsquemaStore.setState({ circuits, diferencials, iga_amperatge, dirty: true })
+                      setCanviantPlantilla(false)
+                      toast.success('Plantilla carregada')
+                    }}
+                  >
+                    <option value="" disabled>Tria el tipus…</option>
+                    {(Object.entries(LABELS_TIPUS_INSTALLACIO) as [TipusInstallacio, string][]).map(([v, label]) => (
+                      <option key={v} value={v}>{label}</option>
+                    ))}
+                  </select>
+                  <button onClick={() => setCanviantPlantilla(false)} className="text-[11px] text-slate-500 hover:text-slate-300">✕</button>
+                </div>
+              )}
             </div>
             <div className="card p-2">
               <CircuitTaula />
