@@ -188,7 +188,7 @@ export function EsquemaUnifilarEditor() {
                 <button
                   type="button"
                   onClick={() => setCanviantPlantilla(true)}
-                  className="text-[11px] text-slate-500 hover:text-amber-400 font-mono transition-colors"
+                  className="btn-ghost text-xs px-2 py-1"
                 >
                   Canviar plantilla
                 </button>

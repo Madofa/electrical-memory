@@ -10,6 +10,7 @@ import {
   type Projecte, type ProjecteForm,
 } from '../lib/supabase-projectes'
 import { createEsquemaFromPlantilla, getEsquemes } from '../lib/supabase-esquemes'
+import { LABELS_TIPUS_INSTALLACIO, type TipusInstallacio } from '../types/esquemaUnifilar'
 import { createCertificatElec1, getCertificatsElec1 } from '../lib/supabase-elec1'
 import { createElec3Doc, getElec3Docs } from '../lib/supabase-elec3'
 import { createMemoriaDescriptiva, getMemoriesDescriptives } from '../lib/supabase-memoria-descriptiva'
@@ -39,6 +40,7 @@ export function ProjectePage() {
   const [projecte, setProjecte] = useState<Projecte | null>(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
+  const [triantTipusEsquema, setTriantTipusEsquema] = useState(false)
 
   const [mtds, setMtds] = useState<Memoria[]>([])
   const [esquemes, setEsquemes] = useState<EsquemaUnifilar[]>([])
@@ -102,8 +104,14 @@ export function ProjectePage() {
   }
 
   const handleCreateEsquema = async () => {
+    // Mostra el selector de tipus en comptes de crear directament
+    setTriantTipusEsquema(true)
+  }
+
+  const handleConfirmEsquema = async (tipus: TipusInstallacio) => {
     if (!user || !projecte) return
-    const newId = await createEsquemaFromPlantilla(user.id, 'habitatge_basica', projecte.nom, id, projecte)
+    setTriantTipusEsquema(false)
+    const newId = await createEsquemaFromPlantilla(user.id, tipus, projecte.nom, id, projecte)
     navigate(`/unifilar/${newId}`)
   }
 
@@ -231,6 +239,45 @@ export function ProjectePage() {
           onSave={handleEditSave}
           onClose={() => setEditing(false)}
         />
+      )}
+
+      {/* Modal: selecció de tipus d'instal·lació per a l'Esquema Unifilar */}
+      {triantTipusEsquema && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => setTriantTipusEsquema(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-[#0f1729] border border-[#1e2d47] rounded-2xl shadow-2xl w-full max-w-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-display font-bold text-lg tracking-widest uppercase text-slate-100 mb-2">
+              Esquema Unifilar
+            </h3>
+            <p className="text-[13px] text-slate-500 font-body mb-6">
+              Tria el tipus d'instal·lació per carregar la plantilla de circuits corresponent.
+            </p>
+            <div className="space-y-2">
+              {(Object.entries(LABELS_TIPUS_INSTALLACIO) as [TipusInstallacio, string][]).map(([v, label]) => (
+                <button
+                  key={v}
+                  onClick={() => handleConfirmEsquema(v)}
+                  className="w-full text-left px-4 py-3 rounded-xl border border-ink-500 bg-ink-800 hover:border-amber-500/40 hover:bg-amber-500/5 transition-all text-[13px] font-body text-slate-300"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setTriantTipusEsquema(false)}
+              className="mt-4 w-full text-center text-[12px] text-slate-600 hover:text-slate-400 font-body"
+            >
+              Cancel·la
+            </button>
+          </motion.div>
+        </div>
       )}
     </div>
   )
