@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Plus, Zap, User, LogOut, ChevronRight, Trash2 } from 'lucide-react'
+import { Plus, Zap, User, LogOut, ChevronRight, Trash2, FolderOpen } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import { formatDate, signOut } from '../lib/supabase'
 import {
@@ -73,7 +73,7 @@ export function ProjecteList() {
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6"
         >
           <div>
             <p className="section-sub mb-1">Els meus expedients</p>
@@ -83,6 +83,22 @@ export function ProjecteList() {
             <Plus className="w-4 h-4" /> Nou projecte
           </button>
         </motion.div>
+
+        {/* Accés ràpid a documents sense projecte */}
+        <motion.button
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          onClick={() => navigate('/dashboard')}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/50 transition-all mb-8 text-left"
+        >
+          <FolderOpen className="w-5 h-5 text-amber-400 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-[13px] font-body font-semibold text-amber-300">Documents sense projecte</div>
+            <div className="text-[11px] text-slate-500 font-body">Memòries tècniques i documents creats abans dels projectes</div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-amber-500/60 flex-shrink-0" />
+        </motion.button>
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
@@ -135,14 +151,6 @@ export function ProjecteList() {
           </div>
         )}
 
-        <div className="mt-12 pt-6 border-t border-[#1e2d47]/40">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="text-[12px] text-slate-600 hover:text-slate-400 font-mono transition-colors"
-          >
-            → Documents sense projecte (MTDs antigues)
-          </button>
-        </div>
       </main>
 
       <footer className="border-t border-[#1e2d47]/50 px-6 py-3 text-center">
