@@ -8,7 +8,8 @@ interface Props {
 }
 
 // Distribución horizontal: cada circuito ocupa una columna.
-const COL_WIDTH = 100
+// COL_WIDTH ampliado a 130 per donar espai als noms diagonals (-60°)
+const COL_WIDTH = 130
 const LEFT_MARGIN = 140
 const RIGHT_MARGIN = 30
 
