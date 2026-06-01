@@ -250,7 +250,6 @@ export function EsquemaUnifilarEditor() {
               circuits={store.circuits}
               diferencials={store.diferencials}
               iga={store.iga_amperatge}
-              capcalera={store.capcalera}
             />
           </div>
         </section>

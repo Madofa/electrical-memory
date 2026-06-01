@@ -1,12 +1,9 @@
-import type { Circuit, Diferencial, DadesCapcalera } from '../../types/esquemaUnifilar'
+import type { Circuit, Diferencial } from '../../types/esquemaUnifilar'
 
 interface Props {
   circuits: Circuit[]
   diferencials: Diferencial[]
   iga: number
-  capcalera: DadesCapcalera
-  // Modo de renderizado: 'preview' (interactivo en pantalla, dark bg) o
-  // 'pdf' (blanco, sin estilos hover).
   variant?: 'preview' | 'pdf'
 }
 
@@ -44,7 +41,7 @@ const LAYER_LABELS = [
   { y: (Y_COMP_TOP + Y_COMP_BOTTOM) / 2, label: 'COMPTADORS' },
 ]
 
-export function UnifilarSVG({ circuits, diferencials, iga, capcalera, variant = 'preview' }: Props) {
+export function UnifilarSVG({ circuits, diferencials, iga, variant = 'preview' }: Props) {
   const totalWidth = Math.max(
     600,
     LEFT_MARGIN + Math.max(circuits.length, 3) * COL_WIDTH + RIGHT_MARGIN,
