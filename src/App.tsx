@@ -1,5 +1,6 @@
 import { useEffect, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { ErrorBoundary } from './components/ui/ErrorBoundary'
 import { Toaster } from 'react-hot-toast'
 import { supabase, getInstalador, getMemorias } from './lib/supabase'
 import { useAuthStore } from './stores/authStore'
@@ -96,9 +97,11 @@ export default function App() {
           path="/projectes/:id"
           element={
             <RequireAuth>
-              <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#1e2d47] border-t-amber-500 rounded-full animate-spin" /></div>}>
-                <ProjectePage />
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#1e2d47] border-t-amber-500 rounded-full animate-spin" /></div>}>
+                  <ProjectePage />
+                </Suspense>
+              </ErrorBoundary>
             </RequireAuth>
           }
         />

@@ -71,6 +71,11 @@ export function ProjectePage() {
       setElec3s(filterByProjecte(allE3, id))
       setMds(filterByProjecte(allMd, id))
       setLoading(false)
+    }).catch((err) => {
+      if (!mounted) return
+      console.error('[ProjectePage] Error carregant dades:', err)
+      toast.error(`Error carregant el projecte: ${err instanceof Error ? err.message : String(err)}`)
+      navigate('/projectes')
     })
     return () => { mounted = false }
   }, [id, user, navigate])
