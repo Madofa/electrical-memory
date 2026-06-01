@@ -6,8 +6,7 @@ import { ArrowLeft, Zap, Pencil, Loader2, Activity, FileText, BookOpen, Clipboar
 import { useAuthStore } from '../stores/authStore'
 import { formatDate, saveMemoria, getMemorias } from '../lib/supabase'
 import {
-  getProjecte, updateProjecte,
-  prefillEsquemaUnifilar, prefillElec1, prefillElec3, prefillMemoriaDescriptiva, prefillMTD,
+  getProjecte, updateProjecte, prefillMTD,
   type Projecte, type ProjecteForm,
 } from '../lib/supabase-projectes'
 import { createEsquemaFromPlantilla, getEsquemes } from '../lib/supabase-esquemes'
@@ -93,7 +92,7 @@ export function ProjectePage() {
     const newData = { ...defaultWizardData(), ...storeData }
     const newId = await saveMemoria(user.id, newData, 'borrador', undefined, id)
     wizardStore.setMemoriaId(newId)
-    wizardStore.setProjecteId(id)
+    wizardStore.setProjecteId(id ?? null)
     navigate('/wizard')
   }
 

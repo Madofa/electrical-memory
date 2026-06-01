@@ -21,7 +21,7 @@ export function Dashboard() {
   useEffect(() => {
     if (!user) return
     getMemorias(user.id).then(({ data }) => {
-      setMemorias((data as Memoria[]) ?? [])
+      setMemorias(((data ?? []) as unknown as Memoria[]))
       setLoading(false)
     })
   }, [user])
