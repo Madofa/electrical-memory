@@ -168,9 +168,9 @@ export function EsquemaUnifilarEditor() {
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col xl:flex-row">
-        {/* Panel izquierdo: editor */}
-        <section className="xl:w-[520px] xl:border-r border-[#1e2d47] p-6 space-y-5 overflow-y-auto">
+      <main className="flex-1 flex flex-col overflow-y-auto">
+        {/* Editor — ample complet */}
+        <section className="px-6 pt-6 space-y-5">
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
             <CapcaleraForm />
           </motion.div>
@@ -228,23 +228,19 @@ export function EsquemaUnifilarEditor() {
           </motion.div>
         </section>
 
-        {/* Panel derecho: previsualización */}
-        <section className="flex-1 p-6 bg-ink-900/30 overflow-auto">
-          <div className="max-w-[1100px] mx-auto">
-            <div className="flex items-center justify-between mb-3">
-              <p className="section-sub">Vista prèvia</p>
-              <p className="text-[10px] text-slate-600 font-mono">
-                Model ELEC 2 · {store.circuits.length} circuits
-              </p>
-            </div>
-            <div className="rounded-xl overflow-hidden border border-[#1e2d47] shadow-2xl">
-              <UnifilarSVG
-                circuits={store.circuits}
-                diferencials={store.diferencials}
-                iga={store.iga_amperatge}
-                capcalera={store.capcalera}
-              />
-            </div>
+        {/* Vista prèvia — sota, ample complet */}
+        <section className="px-6 pb-8 pt-4 bg-ink-900/20 border-t border-[#1e2d47] mt-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="section-sub">Vista prèvia · Model ELEC 2</p>
+            <p className="text-[10px] text-slate-600 font-mono">{store.circuits.length} circuits</p>
+          </div>
+          <div className="rounded-xl overflow-x-auto border border-[#1e2d47] shadow-2xl">
+            <UnifilarSVG
+              circuits={store.circuits}
+              diferencials={store.diferencials}
+              iga={store.iga_amperatge}
+              capcalera={store.capcalera}
+            />
           </div>
         </section>
       </main>
