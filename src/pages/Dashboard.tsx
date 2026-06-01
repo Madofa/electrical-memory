@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, FileText, Download, Pencil, Trash2, Zap, User, LogOut, Search, ChevronRight, Activity, BookOpen, ClipboardCheck, Calculator, ArrowLeft } from 'lucide-react'
+import { Plus, FileText, Download, Pencil, Trash2, Zap, User, LogOut, Search, ChevronRight, Activity, BookOpen, ClipboardCheck, Calculator, ArrowLeft, FolderInput } from 'lucide-react'
 import { getMemorias, deleteMemoria, signOut, formatDate } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
 import { useWizardStore } from '../stores/wizardStore'
 import type { Memoria } from '../types'
+import { getProjectes, assignDocToProjecte, type Projecte } from '../lib/supabase-projectes'
 import toast from 'react-hot-toast'
 
 
@@ -17,6 +18,8 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [projectes, setProjectes] = useState<Projecte[]>([])
+  const [assigning, setAssigning] = useState<string | null>(null)  // memoria id being assigned
 
   useEffect(() => {
     if (!user) return
@@ -24,7 +27,24 @@ export function Dashboard() {
       setMemorias(((data ?? []) as unknown as Memoria[]))
       setLoading(false)
     })
+    getProjectes(user.id).then(({ data }) => setProjectes((data as Projecte[]) ?? []))
   }, [user])
+
+  const handleAssign = async (memoriaId: string, projecteId: string) => {
+    try {
+      await assignDocToProjecte('memorias', memoriaId, projecteId)
+      setMemoriaAssigned(memoriaId)
+      toast.success('Memòria associada al projecte')
+      navigate(`/projectes/${projecteId}`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Error en assignar')
+    }
+  }
+
+  const setMemoriaAssigned = (id: string) => {
+    setMemorias((prev) => prev.filter((m) => m.id !== id))
+    setAssigning(null)
+  }
 
   const filtered = memorias.filter((m) =>
     !search ||
@@ -306,6 +326,33 @@ export function Dashboard() {
                     </div>
 
                     <div className="flex items-center gap-1">
+                      {/* Assignar a projecte */}
+                      {projectes.length > 0 && (
+                        assigning === m.id ? (
+                          <div className="flex items-center gap-1">
+                            <select
+                              className="bg-ink-800 border border-amber-500/40 text-[12px] text-slate-200 rounded px-2 py-1 focus:outline-none"
+                              autoFocus
+                              defaultValue=""
+                              onChange={(e) => { if (e.target.value) handleAssign(m.id, e.target.value) }}
+                            >
+                              <option value="" disabled>Tria un projecte…</option>
+                              {projectes.map((p) => (
+                                <option key={p.id} value={p.id}>{p.nom || 'Sense nom'}</option>
+                              ))}
+                            </select>
+                            <button onClick={() => setAssigning(null)} className="btn-ghost p-1 text-slate-500 text-[11px]">✕</button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setAssigning(m.id)}
+                            className="btn-ghost p-2 text-slate-500 hover:text-amber-400"
+                            title="Moure a un projecte"
+                          >
+                            <FolderInput className="w-4 h-4" />
+                          </button>
+                        )
+                      )}
                       <button
                         onClick={() => handleEdit(m)}
                         className="btn-ghost p-2"
