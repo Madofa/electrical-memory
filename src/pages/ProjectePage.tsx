@@ -93,6 +93,7 @@ export function ProjectePage() {
     const newData = { ...defaultWizardData(), ...storeData }
     const newId = await saveMemoria(user.id, newData, 'borrador', undefined, id)
     wizardStore.setMemoriaId(newId)
+    wizardStore.setProjecteId(id)
     navigate('/wizard')
   }
 

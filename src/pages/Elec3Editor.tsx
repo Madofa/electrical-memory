@@ -5,6 +5,8 @@ import { ArrowLeft, Zap, Cloud, FileDown, Plus, Trash2, Loader2 } from 'lucide-r
 import { pdf } from '@react-pdf/renderer'
 import { useAuthStore } from '../stores/authStore'
 import { getElec3Doc, updateElec3Doc, type Elec3Doc } from '../lib/supabase-elec3'
+import { getProjecte } from '../lib/supabase-projectes'
+import type { Projecte } from '../lib/supabase-projectes'
 import { calculaTrams, tramBuit, type Tram, type TramCalculat } from '../lib/elec3-calculs'
 import { Elec3PDF } from '../components/pdf/Elec3PDF'
 import toast from 'react-hot-toast'
@@ -21,14 +23,26 @@ export function Elec3Editor() {
   const [autoSaving, setAutoSaving] = useState(false)
   const [exporting, setExporting] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [projecteId, setProjecteId] = useState<string | null>(null)
+  const [projecteNom, setProjecteNom] = useState('')
 
   useEffect(() => {
     if (!id) return
+    let mounted = true
     getElec3Doc(id).then(({ data, error }) => {
+      if (!mounted) return
       if (error || !data) { toast.error('Document no trobat'); navigate('/elec3'); return }
       setDoc(data as Elec3Doc)
       setLoading(false)
+      const pid = (data as typeof data & { projecte_id?: string }).projecte_id ?? null
+      setProjecteId(pid)
+      if (pid) {
+        getProjecte(pid).then(({ data: p }) => {
+          if (p && mounted) setProjecteNom((p as Projecte).nom)
+        })
+      }
     })
+    return () => { mounted = false }
   }, [id, navigate])
 
   const save = (trams: Tram[]) => {
@@ -109,7 +123,14 @@ export function Elec3Editor() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-[#1e2d47] px-6 py-4 flex items-center gap-4 bg-[#0a0f1e]/90 backdrop-blur sticky top-0 z-50">
-        <button onClick={() => navigate('/elec3')} className="btn-ghost p-2"><ArrowLeft className="w-4 h-4" /></button>
+        {projecteId ? (
+          <button onClick={() => navigate(`/projectes/${projecteId}`)} className="btn-ghost text-sm gap-1.5">
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline text-amber-400/80 truncate max-w-[120px]">{projecteNom || 'Projecte'}</span>
+          </button>
+        ) : (
+          <button onClick={() => navigate('/elec3')} className="btn-ghost p-2"><ArrowLeft className="w-4 h-4" /></button>
+        )}
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div className="w-7 h-7 rounded-md bg-amber-500 flex items-center justify-center flex-shrink-0">
             <Zap className="w-4 h-4 text-ink-900" fill="currentColor" />

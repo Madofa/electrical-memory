@@ -33,7 +33,7 @@ const STEP_CALCULOS_IDX = 4
 export function Wizard() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const { data, memoriaId, setPasoActual, isDirty, markClean } = useWizardStore()
+  const { data, memoriaId, projecteId, setPasoActual, isDirty, markClean } = useWizardStore()
   const [step, setStep] = useState(data.paso_actual ?? 0)
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set())
   const [saving, setSaving] = useState(false)
@@ -82,7 +82,8 @@ export function Wizard() {
         store.loadMemoria(id, store.data)
       } catch { /* ignore */ }
     }
-    navigate('/')
+    if (projecteId) navigate(`/projectes/${projecteId}`)
+    else navigate('/dashboard')
   }
 
   const skipCalculos = data.ubicacion.instalacion_legalizada
@@ -135,9 +136,16 @@ export function Wizard() {
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="border-b border-[#1e2d47] px-6 py-4 flex items-center gap-4 bg-[#0a0f1e]/90 backdrop-blur sticky top-0 z-50">
-        <button onClick={handleBack} className="btn-ghost p-2 flex-shrink-0">
-          <ArrowLeft className="w-4 h-4" />
-        </button>
+        {projecteId ? (
+          <button onClick={handleBack} className="btn-ghost text-sm gap-1.5 flex-shrink-0">
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline text-amber-400/80 truncate max-w-[120px]">Projecte</span>
+          </button>
+        ) : (
+          <button onClick={handleBack} className="btn-ghost p-2 flex-shrink-0">
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+        )}
         <div className="flex items-center gap-3 flex-shrink-0">
           <div className="w-7 h-7 rounded-md bg-amber-500 flex items-center justify-center">
             <Zap className="w-4 h-4 text-ink-900" fill="currentColor" />
