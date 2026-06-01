@@ -1,5 +1,7 @@
 import { supabase } from './supabase'
 import type { Instalador } from '../types'
+import type { Projecte } from './supabase-projectes'
+import { prefillElec1 } from './supabase-projectes'
 
 const TABLE = 'certificats_elec1'
 
@@ -57,9 +59,21 @@ export async function getCertificatElec1(id: string) {
   return supabase.from(TABLE).select('*').eq('id', id).single()
 }
 
-export async function createCertificatElec1(instaladorId: string, instalador: Instalador | null): Promise<string> {
-  const { data, error } = await supabase.from(TABLE)
-    .insert({ instalador_id: instaladorId, ...emptyCertificat(instalador) })
+export async function createCertificatElec1(
+  instaladorId: string,
+  instalador: Instalador | null,
+  projecteId?: string,
+  projecte?: Projecte,
+): Promise<string> {
+  const prefill = projecte ? prefillElec1(projecte) : {}
+  const { data, error } = await supabase
+    .from(TABLE)
+    .insert({
+      instalador_id: instaladorId,
+      ...emptyCertificat(instalador),
+      ...prefill,
+      ...(projecteId ? { projecte_id: projecteId } : {}),
+    })
     .select('id')
   if (error) throw error
   return (data![0] as { id: string }).id

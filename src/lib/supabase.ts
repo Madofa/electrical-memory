@@ -99,7 +99,7 @@ export async function uploadFirma(userId: string, dataUrl: string): Promise<stri
 export async function getMemorias(instaladorId: string) {
   return supabase
     .from('memorias')
-    .select('id, referencia_interna, numero_expediente, estado, created_at, updated_at, wizard_data')
+    .select('id, referencia_interna, numero_expediente, estado, created_at, updated_at, wizard_data, projecte_id')
     .eq('instalador_id', instaladorId)
     .order('updated_at', { ascending: false })
 }
@@ -112,7 +112,8 @@ export async function saveMemoria(
   instaladorId: string,
   wizardData: WizardData,
   estado: EstadoMemoria = 'borrador',
-  id?: string
+  id?: string,
+  projecteId?: string,
 ): Promise<string> {
   const payload = {
     instalador_id: instaladorId,
@@ -120,6 +121,7 @@ export async function saveMemoria(
     estado,
     wizard_data: wizardData,
     updated_at: new Date().toISOString(),
+    ...(projecteId ? { projecte_id: projecteId } : {}),
   }
 
   if (id) {

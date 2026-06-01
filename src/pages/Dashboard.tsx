@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, FileText, Download, Pencil, Trash2, Zap, User, LogOut, Search, ChevronRight, Activity, BookOpen, ClipboardCheck, Calculator } from 'lucide-react'
+import { Plus, FileText, Download, Pencil, Trash2, Zap, User, LogOut, Search, ChevronRight, Activity, BookOpen, ClipboardCheck, Calculator, ArrowLeft } from 'lucide-react'
 import { getMemorias, deleteMemoria, signOut, formatDate } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
 import { useWizardStore } from '../stores/wizardStore'
@@ -21,7 +21,7 @@ export function Dashboard() {
   useEffect(() => {
     if (!user) return
     getMemorias(user.id).then(({ data }) => {
-      setMemorias((data as Memoria[]) ?? [])
+      setMemorias(((data ?? []) as unknown as Memoria[]))
       setLoading(false)
     })
   }, [user])
@@ -73,6 +73,10 @@ export function Dashboard() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button onClick={() => navigate('/')} className="btn-ghost text-sm gap-1.5 hidden sm:flex">
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Projectes
+          </button>
           <button onClick={() => navigate('/perfil')} className="btn-ghost">
             <User className="w-4 h-4" />
             <span className="hidden sm:inline">{instalador?.nombre_completo?.split(' ')[0] ?? 'Perfil'}</span>
@@ -181,7 +185,7 @@ export function Dashboard() {
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6"
         >
           <div>
-            <p className="section-sub mb-1">Les meves memòries</p>
+            <p className="section-sub mb-1">Documents sense projecte</p>
             <h2 className="font-display font-bold text-2xl tracking-wide uppercase text-slate-100">
               Memòria Tècnica Descriptiva
             </h2>

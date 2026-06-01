@@ -6,6 +6,7 @@ import { defaultWizardData } from '../types'
 interface WizardStore {
   data: WizardData
   memoriaId: string | null
+  projecteId: string | null
   isDirty: boolean
 
   // Setters por sección
@@ -27,6 +28,7 @@ interface WizardStore {
   // Helpers
   getPotenciaTotal: () => number
   setMemoriaId: (id: string) => void
+  setProjecteId: (id: string | null) => void
   loadMemoria: (id: string, data: WizardData) => void
   reset: () => void
   markClean: () => void
@@ -37,6 +39,7 @@ export const useWizardStore = create<WizardStore>()(
     (set, get) => ({
       data: defaultWizardData(),
       memoriaId: null,
+      projecteId: null,
       isDirty: false,
 
       setReferencia: (ref) =>
@@ -144,6 +147,8 @@ export const useWizardStore = create<WizardStore>()(
 
       setMemoriaId: (id) => set({ memoriaId: id }),
 
+      setProjecteId: (id) => set({ projecteId: id }),
+
       getPotenciaTotal: () => {
         const receptores = get().data.receptores
         return receptores.reduce((sum, r) => sum + (r.potencia_kw || 0), 0)
@@ -171,7 +176,7 @@ export const useWizardStore = create<WizardStore>()(
       },
 
       reset: () =>
-        set({ data: defaultWizardData(), memoriaId: null, isDirty: false }),
+        set({ data: defaultWizardData(), memoriaId: null, projecteId: null, isDirty: false }),
 
       markClean: () => set({ isDirty: false }),
     }),

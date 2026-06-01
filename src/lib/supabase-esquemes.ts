@@ -2,6 +2,8 @@ import { supabase } from './supabase'
 import type { EsquemaUnifilar, EstatEsquema } from '../types/esquemaUnifilar'
 import { defaultCapcalera } from '../types/esquemaUnifilar'
 import { instanciarPlantilla } from './plantilles-installacio'
+import type { Projecte } from './supabase-projectes'
+import { prefillEsquemaUnifilar } from './supabase-projectes'
 
 const TABLE = 'esquemes_unifilars'
 
@@ -25,17 +27,21 @@ export async function createEsquemaFromPlantilla(
   instaladorId: string,
   tipus: EsquemaUnifilar['tipus_installacio'],
   nom: string,
+  projecteId?: string,
+  projecte?: Projecte,
 ): Promise<string> {
   const { circuits, diferencials, iga_amperatge } = instanciarPlantilla(tipus)
+  const prefill = projecte ? prefillEsquemaUnifilar(projecte) : null
   const payload = {
     instalador_id: instaladorId,
-    nom,
+    nom: prefill?.nom || nom,
     tipus_installacio: tipus,
     circuits,
     diferencials,
     iga_amperatge,
-    capcalera: defaultCapcalera(),
+    capcalera: prefill?.capcalera ?? defaultCapcalera(),
     estat: 'esborrany' as EstatEsquema,
+    ...(projecteId ? { projecte_id: projecteId } : {}),
   }
   const { data, error } = await supabase.from(TABLE).insert(payload).select('id')
   if (error) throw error
