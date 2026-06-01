@@ -13,6 +13,8 @@ import { EsquemaUnifilarList } from './pages/EsquemaUnifilarList'
 import { MemoriaDescriptivaList } from './pages/MemoriaDescriptivaList'
 import { Elec1List } from './pages/Elec1List'
 import { Elec3List } from './pages/Elec3List'
+import { ProjecteList } from './pages/ProjecteList'
+const ProjectePage = lazy(() => import('./pages/ProjectePage').then((m) => ({ default: m.ProjectePage })))
 
 // El motor PDF (@react-pdf/renderer) pesa ~1.5 MB — lo cargamos sólo cuando
 // el usuario navega a la vista previa.
@@ -87,7 +89,19 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
+        <Route path="/" element={<RequireAuth><ProjecteList /></RequireAuth>} />
+        <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+        <Route path="/projectes" element={<RequireAuth><ProjecteList /></RequireAuth>} />
+        <Route
+          path="/projectes/:id"
+          element={
+            <RequireAuth>
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#1e2d47] border-t-amber-500 rounded-full animate-spin" /></div>}>
+                <ProjectePage />
+              </Suspense>
+            </RequireAuth>
+          }
+        />
         <Route path="/perfil" element={<RequireAuth><ProfileSetup /></RequireAuth>} />
         <Route path="/wizard" element={<RequireAuth><Wizard /></RequireAuth>} />
         <Route path="/unifilar" element={<RequireAuth><EsquemaUnifilarList /></RequireAuth>} />
