@@ -7,6 +7,7 @@ import { getElec3Doc, updateElec3Doc, type Elec3Doc } from '../lib/supabase-elec
 import { getProjecte, type Projecte } from '../lib/supabase-projectes'
 import { calculaTrams, migrateTrams, FIXED_SLOTS, type Tram, type TramCalculat } from '../lib/elec3-calculs'
 import { FormInput, FormSelect } from '../components/ui/FormField'
+import { generateElec3PDF } from '../lib/pdf-elec3'
 import toast from 'react-hot-toast'
 
 // FIXED_SLOTS imported to satisfy module dependency (used by migrateTrams internally)
@@ -15,15 +16,16 @@ void FIXED_SLOTS
 export function Elec3Editor() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  useAuthStore()
+  const { instalador } = useAuthStore()
   const [doc, setDoc] = useState<Elec3Doc | null>(null)
   const [loading, setLoading] = useState(true)
   const [dirty, setDirty] = useState(false)
   const [autoSaving, setAutoSaving] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [projecteId, setProjecteId] = useState<string | null>(null)
   const [projecteNom, setProjecteNom] = useState('')
-  const [_projecte, setProjecte] = useState<Projecte | null>(null)
+  const [projecte, setProjecte] = useState<Projecte | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -100,7 +102,22 @@ export function Elec3Editor() {
   }
 
   const handleExport = async () => {
-    toast('Exportació pendent d\'implementar')
+    if (!doc || !instalador) return
+    setExporting(true)
+    try {
+      const pdfBytes = await generateElec3PDF(doc, instalador, projecte ?? undefined)
+      const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `elec3_${(doc.nom || 'calculs').replace(/\s+/g, '_')}.pdf`
+      document.body.appendChild(a); a.click(); document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      toast.success('PDF descarregat')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error en exportar')
+    }
+    setExporting(false)
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 text-amber-500 animate-spin" /></div>
@@ -133,8 +150,8 @@ export function Elec3Editor() {
         <div className="flex items-center gap-2 flex-shrink-0">
           {autoSaving && <span className="text-[11px] text-slate-500 font-mono flex items-center gap-1"><Cloud className="w-3 h-3 animate-pulse" /> desant…</span>}
           {!autoSaving && !dirty && <span className="text-[11px] text-slate-600 font-mono flex items-center gap-1"><Cloud className="w-3 h-3" /> desat</span>}
-          <button onClick={handleExport} className="btn-primary">
-            <FileDown className="w-4 h-4" /> Exporta PDF
+          <button onClick={handleExport} disabled={exporting} className="btn-primary">
+            {exporting ? <><Loader2 className="w-4 h-4 animate-spin" /> Exportant…</> : <><FileDown className="w-4 h-4" /> Exporta PDF</>}
           </button>
         </div>
       </header>
