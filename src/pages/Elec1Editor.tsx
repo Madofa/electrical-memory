@@ -2,12 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Zap, Cloud, FileDown, Loader2 } from 'lucide-react'
-import { pdf } from '@react-pdf/renderer'
 import { useAuthStore } from '../stores/authStore'
 import { getCertificatElec1, updateCertificatElec1, type CertificatElec1 } from '../lib/supabase-elec1'
 import { getProjecte } from '../lib/supabase-projectes'
 import type { Projecte } from '../lib/supabase-projectes'
-import { CertificatElec1PDF } from '../components/pdf/CertificatElec1PDF'
+import { fillElec1Xfa } from '../lib/xfa-fill'
 import { FormInput, FormSelect } from '../components/ui/FormField'
 import toast from 'react-hot-toast'
 
@@ -77,11 +76,25 @@ export function Elec1Editor() {
     }, 2000)
   }
 
+  const updBool = (field: keyof CertificatElec1, value: boolean) => {
+    setCert((c) => c ? { ...c, [field]: value } : c)
+    setDirty(true)
+    if (timer.current) clearTimeout(timer.current)
+    timer.current = setTimeout(async () => {
+      if (!id) return
+      setAutoSaving(true)
+      try { await updateCertificatElec1(id, { [field]: value }); setDirty(false) }
+      catch { toast.error('Error desant') }
+      setAutoSaving(false)
+    }, 2000)
+  }
+
   const handleExport = async () => {
     if (!cert || !instalador) return
     setExporting(true)
     try {
-      const blob = await pdf(<CertificatElec1PDF cert={cert} instalador={instalador} />).toBlob()
+      const pdfBytes = await fillElec1Xfa(cert, instalador)
+      const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -89,7 +102,9 @@ export function Elec1Editor() {
       document.body.appendChild(a); a.click(); document.body.removeChild(a)
       URL.revokeObjectURL(url)
       toast.success('PDF descarregat')
-    } catch { toast.error('Error en exportar') }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error en exportar')
+    }
     setExporting(false)
   }
 
@@ -197,6 +212,37 @@ export function Elec1Editor() {
           <div className="grid grid-cols-2 gap-4">
             <FormInput label="Resistència a terra (Ω)" type="number" step="0.1" value={String(cert.resist_terra_ohm || '')} onChange={(e) => upd('resist_terra_ohm', parseFloat(e.target.value) || 0)} className="font-mono" />
             <FormInput label="Intensitat IGA (A)" type="number" value={String(cert.intensitat_iga_a || '')} onChange={(e) => upd('intensitat_iga_a', parseInt(e.target.value) || 0)} className="font-mono" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <FormInput
+              label="Ubicació de comptadors"
+              value={cert.ubicacio_comptadors}
+              onChange={(e) => upd('ubicacio_comptadors', e.target.value)}
+              placeholder="Armari, Escala, Altra..."
+            />
+            <div className="flex flex-col gap-1.5">
+              <label className="field-label">Subministrament complementari?</label>
+              <div className="flex gap-4 mt-1">
+                <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="subministrament"
+                    checked={cert.te_subministrament_complementari === true}
+                    onChange={() => updBool('te_subministrament_complementari', true)}
+                    className="accent-amber-500"
+                  /> Sí
+                </label>
+                <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="subministrament"
+                    checked={cert.te_subministrament_complementari === false}
+                    onChange={() => updBool('te_subministrament_complementari', false)}
+                    className="accent-amber-500"
+                  /> No
+                </label>
+              </div>
+            </div>
           </div>
         </motion.div>
 
