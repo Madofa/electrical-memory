@@ -1,30 +1,29 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Zap, Cloud, FileDown, Plus, Trash2, Loader2 } from 'lucide-react'
-import { pdf } from '@react-pdf/renderer'
+import { ArrowLeft, Zap, Cloud, FileDown, Loader2 } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import { getElec3Doc, updateElec3Doc, type Elec3Doc } from '../lib/supabase-elec3'
-import { getProjecte } from '../lib/supabase-projectes'
-import type { Projecte } from '../lib/supabase-projectes'
-import { calculaTrams, tramBuit, type Tram, type TramCalculat } from '../lib/elec3-calculs'
-import { Elec3PDF } from '../components/pdf/Elec3PDF'
+import { getProjecte, type Projecte } from '../lib/supabase-projectes'
+import { calculaTrams, migrateTrams, FIXED_SLOTS, type Tram, type TramCalculat } from '../lib/elec3-calculs'
+import { FormInput, FormSelect } from '../components/ui/FormField'
 import toast from 'react-hot-toast'
 
-const SECCIONS_STD = [1.5, 2.5, 4, 6, 10, 16, 25, 35, 50]
+// FIXED_SLOTS imported to satisfy module dependency (used by migrateTrams internally)
+void FIXED_SLOTS
 
 export function Elec3Editor() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { instalador } = useAuthStore()
+  useAuthStore()
   const [doc, setDoc] = useState<Elec3Doc | null>(null)
   const [loading, setLoading] = useState(true)
   const [dirty, setDirty] = useState(false)
   const [autoSaving, setAutoSaving] = useState(false)
-  const [exporting, setExporting] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [projecteId, setProjecteId] = useState<string | null>(null)
   const [projecteNom, setProjecteNom] = useState('')
+  const [_projecte, setProjecte] = useState<Projecte | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -32,13 +31,21 @@ export function Elec3Editor() {
     getElec3Doc(id).then(({ data, error }) => {
       if (!mounted) return
       if (error || !data) { toast.error('Document no trobat'); navigate('/elec3'); return }
-      setDoc(data as Elec3Doc)
+      const rawDoc = data as Elec3Doc
+      // Migrate old free-form trams to fixed slots if needed
+      if (rawDoc.trams.length !== 13 || rawDoc.trams[0]?.id !== 'derivacio_individual') {
+        rawDoc.trams = migrateTrams(rawDoc.trams)
+      }
+      setDoc(rawDoc)
       setLoading(false)
       const pid = (data as typeof data & { projecte_id?: string }).projecte_id ?? null
       setProjecteId(pid)
       if (pid) {
         getProjecte(pid).then(({ data: p }) => {
-          if (p && mounted) setProjecteNom((p as Projecte).nom)
+          if (p && mounted) {
+            setProjecteNom((p as Projecte).nom)
+            setProjecte(p as Projecte)
+          }
         })
       }
     })
@@ -56,7 +63,7 @@ export function Elec3Editor() {
     }, 2000)
   }
 
-  const updTram = (tramId: string, field: keyof Tram, value: string | number) => {
+  const updTram = (tramId: string, field: keyof Tram, value: string | number | null) => {
     setDoc((d) => {
       if (!d) return d
       const trams = d.trams.map((t) => t.id === tramId ? { ...t, [field]: value } : t)
@@ -66,24 +73,17 @@ export function Elec3Editor() {
     })
   }
 
-  const addTram = () => {
-    setDoc((d) => {
-      if (!d) return d
-      const trams = [...d.trams, tramBuit()]
-      save(trams)
-      setDirty(true)
-      return { ...d, trams }
-    })
-  }
-
-  const removeTram = (tramId: string) => {
-    setDoc((d) => {
-      if (!d) return d
-      const trams = d.trams.filter((t) => t.id !== tramId)
-      save(trams)
-      setDirty(true)
-      return { ...d, trams }
-    })
+  const updDoc = (field: keyof Elec3Doc, value: string | number | null) => {
+    setDoc((d) => d ? { ...d, [field]: value } : d)
+    setDirty(true)
+    if (timer.current) clearTimeout(timer.current)
+    timer.current = setTimeout(async () => {
+      if (!id) return
+      setAutoSaving(true)
+      try { await updateElec3Doc(id, { [field]: value as never }); setDirty(false) }
+      catch { toast.error('Error desant') }
+      setAutoSaving(false)
+    }, 2000)
   }
 
   const updNom = (nom: string) => {
@@ -100,19 +100,7 @@ export function Elec3Editor() {
   }
 
   const handleExport = async () => {
-    if (!doc || !instalador) return
-    setExporting(true)
-    try {
-      const blob = await pdf(<Elec3PDF doc={doc} instalador={instalador} />).toBlob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `elec3_${(doc.nom || 'calculs').replace(/\s+/g, '_')}.pdf`
-      document.body.appendChild(a); a.click(); document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      toast.success('PDF descarregat')
-    } catch { toast.error('Error en exportar') }
-    setExporting(false)
+    toast('Exportació pendent d\'implementar')
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 text-amber-500 animate-spin" /></div>
@@ -145,95 +133,228 @@ export function Elec3Editor() {
         <div className="flex items-center gap-2 flex-shrink-0">
           {autoSaving && <span className="text-[11px] text-slate-500 font-mono flex items-center gap-1"><Cloud className="w-3 h-3 animate-pulse" /> desant…</span>}
           {!autoSaving && !dirty && <span className="text-[11px] text-slate-600 font-mono flex items-center gap-1"><Cloud className="w-3 h-3" /> desat</span>}
-          <button onClick={handleExport} disabled={exporting} className="btn-primary">
-            {exporting ? <><Loader2 className="w-4 h-4 animate-spin" /> Exportant…</> : <><FileDown className="w-4 h-4" /> Exporta PDF</>}
+          <button onClick={handleExport} className="btn-primary">
+            <FileDown className="w-4 h-4" /> Exporta PDF
           </button>
         </div>
       </header>
 
       <main className="flex-1 px-4 py-6 overflow-x-auto">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <p className="section-sub">Caiguda de tensió · REBT ITC-BT-19</p>
-              <h2 className="font-display font-bold text-xl uppercase text-slate-100">Taula de càlculs</h2>
-            </div>
-            <button onClick={addTram} className="btn-ghost text-sm">
-              <Plus className="w-3.5 h-3.5" /> Afegir tram
-            </button>
+          <div className="mb-4">
+            <p className="section-sub">Caiguda de tensió · REBT ITC-BT-19</p>
+            <h2 className="font-display font-bold text-xl uppercase text-slate-100">Taula de càlculs</h2>
           </div>
 
-          {/* Taula */}
-          <div className="min-w-[1100px]">
-            {/* Capçalera */}
-            <div className="grid grid-cols-[2fr_0.6fr_0.8fr_0.6fr_0.8fr_0.9fr_0.8fr_0.8fr_1fr_1fr_1fr_0.4fr] text-[10px] font-display font-semibold tracking-widest uppercase text-amber-500/60 border-b border-amber-500/20 pb-1.5 mb-1">
+          {/* Table */}
+          <div className="min-w-[1600px]">
+            {/* Header */}
+            <div
+              className="grid text-[9px] font-display font-semibold tracking-widest uppercase text-amber-500/60 border-b border-amber-500/20 pb-1.5 mb-1"
+              style={{ gridTemplateColumns: '2fr 0.5fr 0.7fr 0.5fr 0.7fr 0.8fr 0.7fr 0.8fr 0.8fr 0.8fr 0.5fr 0.8fr 0.5fr 0.5fr 0.5fr 0.6fr 0.6fr 0.6fr' }}
+            >
               <span>Tram</span>
-              <span className="text-right">Càrg %</span>
+              <span className="text-right">Càrg%</span>
               <span className="text-right">Pot kW</span>
               <span className="text-right">cos φ</span>
               <span className="text-right">Int A</span>
-              <span>Secció</span>
+              <span>Secc mm²</span>
               <span className="text-right">Long m</span>
               <span className="text-right">Moment</span>
-              <span className="text-right">ΔU parc %</span>
-              <span className="text-right">ΔU total %</span>
-              <span>Tipus</span>
-              <span></span>
+              <span className="text-right">ΔU parc%</span>
+              <span className="text-right">ΔU tot%</span>
+              <span>Cond.</span>
+              <span>Tensió aïll.</span>
+              <span className="text-right">Enc mm</span>
+              <span className="text-right">S/enc mm</span>
+              <span className="text-right">Ent. m</span>
+              <span className="text-right">kΩ</span>
+              <span className="text-right">Neutre</span>
+              <span className="text-right">Protec</span>
             </div>
 
-            {trams.map((t, i) => (
+            {trams.map((t) => (
               <div
                 key={t.id}
-                className={`grid grid-cols-[2fr_0.6fr_0.8fr_0.6fr_0.8fr_0.9fr_0.8fr_0.8fr_1fr_1fr_1fr_0.4fr] items-center gap-1 py-1.5 border-b border-ink-600/30 ${!t.ok ? 'bg-red-950/20' : ''}`}
+                className={`grid items-center gap-0.5 py-1 border-b border-ink-600/30 ${!t.ok ? 'bg-red-950/20' : ''}`}
+                style={{ gridTemplateColumns: '2fr 0.5fr 0.7fr 0.5fr 0.7fr 0.8fr 0.7fr 0.8fr 0.8fr 0.8fr 0.5fr 0.8fr 0.5fr 0.5fr 0.5fr 0.6fr 0.6fr 0.6fr' }}
               >
-                {/* Nom */}
+                <div className="text-[11px] text-slate-300 px-1 truncate">{t.nom}</div>
                 <input
-                  className="bg-transparent text-[13px] text-slate-200 font-body focus:outline-none focus:bg-ink-800/50 rounded px-1 w-full"
-                  value={t.nom}
-                  onChange={(e) => updTram(t.id, 'nom', e.target.value)}
-                  placeholder={i === 0 ? 'Derivació individual A-B' : `Circuit ${i}`}
+                  type="number"
+                  className="bg-ink-800/50 text-[11px] text-right font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                  value={t.carrega_pct}
+                  onChange={(e) => updTram(t.id, 'carrega_pct', parseFloat(e.target.value) || 0)}
+                  min="0"
+                  max="100"
                 />
-                {/* Càrrega */}
-                <input type="number" className="bg-ink-800/50 text-[12px] text-right font-mono rounded px-1 py-0.5 w-full focus:outline-none" value={t.carrega_pct} onChange={(e) => updTram(t.id, 'carrega_pct', parseFloat(e.target.value) || 0)} min="0" max="100" />
-                {/* Potència */}
-                <input type="number" step="0.01" className="bg-ink-800/50 text-[12px] text-right font-mono rounded px-1 py-0.5 w-full focus:outline-none" value={t.potencia_kw || ''} onChange={(e) => updTram(t.id, 'potencia_kw', parseFloat(e.target.value) || 0)} />
-                {/* cos fi */}
-                <input type="number" step="0.01" min="0" max="1" className="bg-ink-800/50 text-[12px] text-right font-mono rounded px-1 py-0.5 w-full focus:outline-none" value={t.cos_fi} onChange={(e) => updTram(t.id, 'cos_fi', parseFloat(e.target.value) || 0)} />
-                {/* Intensitat (calculada) */}
-                <div className="text-[12px] text-amber-300/80 font-mono text-right pr-1">{t.intensitat_a}</div>
-                {/* Secció */}
-                <select className="bg-ink-800 border border-ink-600 text-[12px] font-mono rounded px-1 py-0.5 w-full focus:outline-none" value={t.seccio_mm2} onChange={(e) => updTram(t.id, 'seccio_mm2', parseFloat(e.target.value))}>
-                  {SECCIONS_STD.map((s) => <option key={s} value={s}>{s} mm²</option>)}
+                <input
+                  type="number"
+                  step="0.01"
+                  className="bg-ink-800/50 text-[11px] text-right font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                  value={t.potencia_kw || ''}
+                  onChange={(e) => updTram(t.id, 'potencia_kw', parseFloat(e.target.value) || 0)}
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="1"
+                  className="bg-ink-800/50 text-[11px] text-right font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                  value={t.cos_fi}
+                  onChange={(e) => updTram(t.id, 'cos_fi', parseFloat(e.target.value) || 0)}
+                />
+                <div className="text-[11px] text-amber-300/80 font-mono text-right pr-0.5">{t.intensitat_a}</div>
+                <select
+                  className="bg-ink-800 border border-ink-600 text-[11px] font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                  value={t.seccio_mm2}
+                  onChange={(e) => updTram(t.id, 'seccio_mm2', parseFloat(e.target.value))}
+                >
+                  {[1.5, 2.5, 4, 6, 10, 16, 25, 35, 50].map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
                 </select>
-                {/* Longitud */}
-                <input type="number" step="0.5" className="bg-ink-800/50 text-[12px] text-right font-mono rounded px-1 py-0.5 w-full focus:outline-none" value={t.longitud_m || ''} onChange={(e) => updTram(t.id, 'longitud_m', parseFloat(e.target.value) || 0)} />
-                {/* Moment (calculat) */}
-                <div className="text-[12px] text-slate-400 font-mono text-right pr-1">{t.moment_kwm}</div>
-                {/* ΔU parcial (calculat) */}
-                <div className="text-[12px] text-slate-400 font-mono text-right pr-1">{t.caiguda_parcial_pct.toFixed(2)}%</div>
-                {/* ΔU total (calculat) */}
-                <div className={`text-[13px] font-mono text-right pr-1 font-semibold ${t.ok ? 'text-emerald-400' : 'text-red-400'}`}>
+                <input
+                  type="number"
+                  step="0.5"
+                  className="bg-ink-800/50 text-[11px] text-right font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                  value={t.longitud_m || ''}
+                  onChange={(e) => updTram(t.id, 'longitud_m', parseFloat(e.target.value) || 0)}
+                />
+                <div className="text-[11px] text-slate-400 font-mono text-right pr-0.5">{t.moment_kwm}</div>
+                <div className="text-[11px] text-slate-400 font-mono text-right pr-0.5">{t.caiguda_parcial_pct.toFixed(2)}%</div>
+                <div className={`text-[11px] font-mono text-right pr-0.5 font-semibold ${t.ok ? 'text-emerald-400' : 'text-red-400'}`}>
                   {t.caiguda_total_pct.toFixed(2)}%
                 </div>
-                {/* Tipus */}
-                <select className="bg-ink-800 border border-ink-600 text-[11px] font-mono rounded px-1 py-0.5 w-full focus:outline-none" value={t.tipus} onChange={(e) => updTram(t.id, 'tipus', e.target.value as 'mono' | 'tri')}>
-                  <option value="mono">Mono</option>
-                  <option value="tri">Tri</option>
+                <select
+                  className="bg-ink-800 border border-ink-600 text-[10px] font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                  value={t.tipus_conductor}
+                  onChange={(e) => updTram(t.id, 'tipus_conductor', e.target.value as 'Cu' | 'Al')}
+                >
+                  <option value="Cu">Cu</option>
+                  <option value="Al">Al</option>
                 </select>
-                {/* Esborrar */}
-                <button onClick={() => removeTram(t.id)} className="text-slate-600 hover:text-red-400 flex justify-center">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                <select
+                  className="bg-ink-800 border border-ink-600 text-[10px] font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                  value={t.tensio_nominal_aillament}
+                  onChange={(e) => updTram(t.id, 'tensio_nominal_aillament', e.target.value)}
+                >
+                  <option value="0,45/0,75">0,45/0,75</option>
+                  <option value="0,6/1">0,6/1</option>
+                </select>
+                <input
+                  type="number"
+                  className="bg-ink-800/50 text-[11px] text-right font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                  value={t.canal_tub_encastat_mm ?? ''}
+                  onChange={(e) => updTram(t.id, 'canal_tub_encastat_mm', e.target.value ? parseFloat(e.target.value) : null)}
+                />
+                <input
+                  type="number"
+                  className="bg-ink-800/50 text-[11px] text-right font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                  value={t.canal_tub_sense_encas_mm ?? ''}
+                  onChange={(e) => updTram(t.id, 'canal_tub_sense_encas_mm', e.target.value ? parseFloat(e.target.value) : null)}
+                />
+                <input
+                  type="number"
+                  step="0.1"
+                  className="bg-ink-800/50 text-[11px] text-right font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                  value={t.canal_enterrat_prof_m ?? ''}
+                  onChange={(e) => updTram(t.id, 'canal_enterrat_prof_m', e.target.value ? parseFloat(e.target.value) : null)}
+                />
+                <input
+                  type="number"
+                  step="0.1"
+                  className="bg-ink-800/50 text-[11px] text-right font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                  value={t.aillament_instal_kohm ?? ''}
+                  onChange={(e) => updTram(t.id, 'aillament_instal_kohm', e.target.value ? parseFloat(e.target.value) : null)}
+                />
+                <input
+                  type="number"
+                  step="0.5"
+                  className="bg-ink-800/50 text-[11px] text-right font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                  value={t.conduc_neutre_mm2 ?? ''}
+                  onChange={(e) => updTram(t.id, 'conduc_neutre_mm2', e.target.value ? parseFloat(e.target.value) : null)}
+                />
+                <input
+                  type="number"
+                  step="0.5"
+                  className="bg-ink-800/50 text-[11px] text-right font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                  value={t.conduc_protec_mm2 ?? ''}
+                  onChange={(e) => updTram(t.id, 'conduc_protec_mm2', e.target.value ? parseFloat(e.target.value) : null)}
+                />
               </div>
             ))}
           </div>
 
-          {/* Llegenda */}
-          <div className="mt-6 flex flex-wrap gap-4 text-[11px] text-slate-500 font-mono">
-            <span>Columnes en ambre = calculades automàticament</span>
-            <span>✓ ≤5% (ITC-BT-19) · il·luminació ≤3%</span>
+          <div className="mt-4 flex flex-wrap gap-4 text-[11px] text-slate-500 font-mono">
+            <span>Ambre = calculat automàticament · ✓ ≤5% (ITC-BT-19) · il·luminació ≤3%</span>
             <span className="text-red-400">Vermell = supera el límit</span>
           </div>
+
+          {/* Page 2 data */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mt-8 card space-y-4"
+          >
+            <h3 className="font-display font-semibold text-xs tracking-widest uppercase text-amber-500/70">Dades resum (pàgina 2)</h3>
+            <div className="grid grid-cols-3 gap-4">
+              <FormInput
+                label="Ús de la instal·lació"
+                value={doc.us_installacio ?? ''}
+                onChange={(e) => updDoc('us_installacio', e.target.value)}
+                placeholder="Vivenda Elevada"
+              />
+              <FormInput
+                label="Empresa distribuïdora"
+                value={doc.empresa_distribuidora ?? ''}
+                onChange={(e) => updDoc('empresa_distribuidora', e.target.value)}
+              />
+              <FormSelect
+                label="Nova / Ampliació / Reforma"
+                value={doc.nova_ampliacio_reforma ?? 'nova'}
+                onChange={(e) => updDoc('nova_ampliacio_reforma', e.target.value)}
+                options={[
+                  { value: 'nova', label: 'Nova' },
+                  { value: 'ampliacio', label: 'Ampliació' },
+                  { value: 'reforma', label: 'Reforma' },
+                ]}
+              />
+            </div>
+            <div className="grid grid-cols-4 gap-4">
+              <FormInput
+                label="Resistència terra (Ω)"
+                type="number"
+                step="0.1"
+                value={String(doc.resist_terra_ohm ?? '')}
+                onChange={(e) => updDoc('resist_terra_ohm', e.target.value ? parseFloat(e.target.value) : null)}
+                className="font-mono"
+              />
+              <FormInput
+                label="Potència a instal·lar (kW)"
+                type="number"
+                step="0.01"
+                value={String(doc.potencia_instal_kw ?? '')}
+                onChange={(e) => updDoc('potencia_instal_kw', e.target.value ? parseFloat(e.target.value) : null)}
+                className="font-mono"
+              />
+              <FormInput
+                label="Intensitat IGA (A)"
+                type="number"
+                value={String(doc.intensitat_iga_a ?? '')}
+                onChange={(e) => updDoc('intensitat_iga_a', e.target.value ? parseFloat(e.target.value) : null)}
+                className="font-mono"
+              />
+              <FormInput
+                label="Superfície local (m²)"
+                type="number"
+                value={String(doc.superficie_local_m2 ?? '')}
+                onChange={(e) => updDoc('superficie_local_m2', e.target.value ? parseFloat(e.target.value) : null)}
+                className="font-mono"
+              />
+            </div>
+          </motion.div>
         </motion.div>
       </main>
     </div>
