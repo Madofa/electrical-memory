@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import type { Tram } from './elec3-calculs'
-import { tramDerivacioIndividual } from './elec3-calculs'
+import { initTrams } from './elec3-calculs'
 import type { Projecte } from './supabase-projectes'
 import { prefillElec3 } from './supabase-projectes'
 
@@ -12,6 +12,13 @@ export interface Elec3Doc {
   nom: string
   trams: Tram[]
   estat: 'esborrany' | 'finalitzat'
+  us_installacio: string
+  empresa_distribuidora: string
+  nova_ampliacio_reforma: 'nova' | 'ampliacio' | 'reforma'
+  resist_terra_ohm: number | null
+  potencia_instal_kw: number | null
+  intensitat_iga_a: number | null
+  superficie_local_m2: number | null
   created_at: string
   updated_at: string
 }
@@ -35,8 +42,15 @@ export async function createElec3Doc(
     .insert({
       instalador_id: instaladorId,
       nom: '',
-      trams: [tramDerivacioIndividual()],
+      trams: initTrams(),
       estat: 'esborrany',
+      us_installacio: 'Vivenda Elevada',
+      empresa_distribuidora: '',
+      nova_ampliacio_reforma: 'nova',
+      resist_terra_ohm: null,
+      potencia_instal_kw: null,
+      intensitat_iga_a: null,
+      superficie_local_m2: null,
       ...prefill,
       ...(projecteId ? { projecte_id: projecteId } : {}),
     })
