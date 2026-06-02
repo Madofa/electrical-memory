@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Zap, Save, FileDown, Cloud, Loader2 } from 'lucide-react'
-import { pdf } from '@react-pdf/renderer'
+import { generateElec2PDF } from '../lib/pdf-elec2'
 import { useAuthStore } from '../stores/authStore'
 import { useEsquemaStore } from '../stores/esquemaUnifilarStore'
 import { getEsquema, updateEsquema } from '../lib/supabase-esquemes'
@@ -13,7 +13,6 @@ import { CircuitTaula } from '../components/esquema-unifilar/CircuitTaula'
 import { DiferencialPanel } from '../components/esquema-unifilar/DiferencialPanel'
 import { CapcaleraForm } from '../components/esquema-unifilar/CapcaleraForm'
 import { UnifilarSVG } from '../components/esquema-unifilar/UnifilarSVG'
-import { EsquemaUnifilarPDF } from '../components/pdf/EsquemaUnifilarPDF'
 import { instanciarPlantilla } from '../lib/plantilles-installacio'
 import { LABELS_TIPUS_INSTALLACIO, type TipusInstallacio } from '../types/esquemaUnifilar'
 import toast from 'react-hot-toast'
@@ -85,27 +84,22 @@ export function EsquemaUnifilarEditor() {
   const handleExportPDF = async () => {
     setExporting(true)
     try {
-      const blob = await pdf(
-        <EsquemaUnifilarPDF
-          nom={store.nom}
-          circuits={store.circuits}
-          diferencials={store.diferencials}
-          iga={store.iga_amperatge}
-          capcalera={store.capcalera}
-        />,
-      ).toBlob()
+      const pdfBytes = await generateElec2PDF(
+        store.circuits,
+        store.diferencials,
+        store.iga_amperatge,
+        store.capcalera,
+      )
+      const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      const safe = (store.nom || 'esquema').replace(/[^a-zA-Z0-9_-]+/g, '_')
-      a.download = `unifilar_${safe}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
+      a.download = `elec2_${(store.nom || 'unifilar').replace(/\s+/g, '_')}.pdf`
+      document.body.appendChild(a); a.click(); document.body.removeChild(a)
       URL.revokeObjectURL(url)
       toast.success('PDF descarregat')
-    } catch (e) {
-      toast.error(`Error: ${e instanceof Error ? e.message : 'desconegut'}`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error en exportar')
     }
     setExporting(false)
   }
