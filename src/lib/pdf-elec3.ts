@@ -1,251 +1,145 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
-import type { PDFForm } from 'pdf-lib'
 import type { Elec3Doc } from './supabase-elec3'
 import type { Instalador } from '../types'
 import type { Projecte } from './supabase-projectes'
+import type { Diferencial, Circuit } from '../types/esquemaUnifilar'
 import { calculaTrams } from './elec3-calculs'
 
-// Page 1: calculation table — A4 landscape (842×595pt)
-// Rows: derivació individual at top, then C-D through Y-Z
-// These Y coordinates are approximate and may need calibration after first test
-const P1_FIRST_ROW_Y = 490   // y of first data row (derivació individual)
-const P1_ROW_H = 28           // vertical spacing between rows
-const P1_FS = 6.5             // font size
+const COL_X = [138.7,170.8,202.1,227.3,269,302.7,337.1,382.4,424.5,
+               464.9,500.2,552.8,584.5,620.6,661.6,699.6,733.6,770.7]
+const ROW_Y = [431.3,406.2,381.1,356,330.9,305.8,280.7,255.5,230.4,205.3,180.2,155.1,130]
 
-// Column X positions (left edge of each cell, landscape A4)
-const P1_COLS = {
-  carrega:     190,
-  potencia:    212,
-  cosfi:       238,
-  intensitat:  258,
-  seccio:      280,
-  longitud:    306,
-  moment:      328,
-  caiguda_p:   360,
-  caiguda_t:   390,
-  tipus:       420,
-  tensio_ail:  448,
-  tub_enc:     490,
-  tub_senc:    516,
-  enterrat:    540,
-  aillament:   562,
-  neutre:      588,
-  protec:      612,
-}
-
-// Page 2: summary — A4 portrait (595×842pt)
-// These coordinates are approximate, calibrate after first test
 const P2 = {
-  titular:         { x: 90,  y: 756 },
-  us_installacio:  { x: 295, y: 756 },
-  emplacament:     { x: 90,  y: 720 },
-  localitat:       { x: 90,  y: 690 },
-  cp:              { x: 200, y: 690 },
-  empresa_dist:    { x: 90,  y: 655 },
-  seccio_di:       { x: 500, y: 620 },
-  resist_terra:    { x: 500, y: 576 },
-  superficie:      { x: 395, y: 532 },
-  potencia_max:    { x: 290, y: 498 },
-  tensio:          { x: 500, y: 498 },
-  potencia_inst:   { x: 290, y: 464 },
-  iga:             { x: 500, y: 464 },
-  fs: 7.5,
+  titular_nom:              { x: 59.3,  y: 488   },
+  us_installacio:           { x: 430.7, y: 494   },
+  emplacament:              { x: 58,    y: 446   },
+  emplacament_num:          { x: 278,   y: 446   },
+  localitat:                { x: 111.3, y: 416   },
+  cp:                       { x: 296,   y: 419   },
+  nova:                     { x: 391.3, y: 428   },
+  ampliacio:                { x: 462,   y: 428   },
+  reforma:                  { x: 527.3, y: 428   },
+  empresa_distribuidora:    { x: 133.3, y: 373   },
+  dif1_circuit:             { x: 396,   y: 382   },
+  dif1_nombre:              { x: 430,   y: 382   },
+  dif1_in:                  { x: 456,   y: 382   },
+  dif1_sensibilitat:        { x: 494,   y: 382   },
+  dif2_circuit:             { x: 396,   y: 361   },
+  dif2_nombre:              { x: 430,   y: 361   },
+  dif2_in:                  { x: 456,   y: 361   },
+  dif2_sensibilitat:        { x: 494,   y: 361   },
+  dif3_circuit:             { x: 396,   y: 338   },
+  dif3_nombre:              { x: 430,   y: 338   },
+  dif3_in:                  { x: 456,   y: 338   },
+  dif3_sensibilitat:        { x: 494,   y: 338   },
+  resist_terra:             { x: 640.7, y: 338   },
+  seccio_di:                { x: 636.7, y: 387   },
+  tensio:                   { x: 665.3, y: 316   },
+  iga:                      { x: 666.7, y: 284   },
+  potencia_max:             { x: 504.7, y: 316   },
+  superficie:               { x: 304,   y: 287   },
+  potencia_instal:          { x: 504,   y: 284   },
+  data_signatura:           { x: 702.7, y: 215.3 },
+  caracteristiques_edifici: { x: 62.7,  y: 284.7 },
 }
 
 export async function generateElec3PDF(
   doc: Elec3Doc,
-  instalador: Instalador,
-  projecte?: Projecte,
-): Promise<Uint8Array> {
-  // Check if template exists; if not, generate a minimal placeholder PDF
-  let templateBytes: Uint8Array | null = null
-  try {
-    const response = await fetch('/templates/elec3-blank.pdf')
-    if (response.ok) {
-      templateBytes = new Uint8Array(await response.arrayBuffer())
-    }
-  } catch {
-    // template not available yet
-  }
-
-  if (!templateBytes) {
-    // Template not available — generate text-only fallback PDF
-    return generateElec3Fallback(doc, instalador, projecte)
-  }
-
-  // Try AcroForm fill first
-  try {
-    const pdfDoc = await PDFDocument.load(templateBytes, { ignoreEncryption: true })
-    const form = pdfDoc.getForm()
-    if (form.getFields().length > 0) {
-      return fillElec3AcroForm(pdfDoc, form, doc, instalador, projecte)
-    }
-  } catch {
-    // fall through to coordinate approach
-  }
-
-  return fillElec3Coordinates(templateBytes, doc, instalador, projecte)
-}
-
-async function fillElec3AcroForm(
-  pdfDoc: PDFDocument,
-  form: PDFForm,
-  doc: Elec3Doc,
   _instalador: Instalador,
   projecte?: Projecte,
+  diferencials?: Diferencial[],
+  _circuits?: Circuit[],
 ): Promise<Uint8Array> {
-  const trams = calculaTrams(doc.trams)
-  const ROWS = ['Derivaci_individual','C_D','E_F','G_H','I_J','K_L','M_N','O_P','Q_R','S_T','U_V','W_X','Y_Z']
+  const response = await fetch('/templates/elec3-blank.pdf')
+  if (!response.ok) throw new Error("No s'ha pogut carregar la plantilla ELEC-3")
+  const templateBytes = new Uint8Array(await response.arrayBuffer())
 
-  const trySet = (name: string, value: string) => {
-    try { form.getTextField(name).setText(value) } catch { /* field not found */ }
-  }
-
-  trams.forEach((t, i) => {
-    const p = ROWS[i] || `row${i}`
-    trySet(`${p}_carrega`, t.carrega_pct ? String(t.carrega_pct) : '')
-    trySet(`${p}_potencia`, t.potencia_kw ? String(t.potencia_kw) : '')
-    trySet(`${p}_cosfi`, String(t.cos_fi))
-    trySet(`${p}_intensitat`, t.intensitat_a ? String(t.intensitat_a) : '')
-    trySet(`${p}_seccio`, String(t.seccio_mm2))
-    trySet(`${p}_longitud`, t.longitud_m ? String(t.longitud_m) : '')
-    trySet(`${p}_moment`, t.moment_kwm ? String(t.moment_kwm) : '')
-    trySet(`${p}_caiguda_p`, t.caiguda_parcial_pct ? t.caiguda_parcial_pct.toFixed(2) : '')
-    trySet(`${p}_caiguda_t`, t.caiguda_total_pct ? t.caiguda_total_pct.toFixed(2) : '')
-    trySet(`${p}_tipus`, t.tipus_conductor)
-    trySet(`${p}_tensio_ail`, t.tensio_nominal_aillament)
-    trySet(`${p}_tub_enc`, t.canal_tub_encastat_mm ? String(t.canal_tub_encastat_mm) : '')
-    trySet(`${p}_tub_senc`, t.canal_tub_sense_encas_mm ? String(t.canal_tub_sense_encas_mm) : '')
-    trySet(`${p}_enterrat`, t.canal_enterrat_prof_m ? String(t.canal_enterrat_prof_m) : '')
-    trySet(`${p}_aillament`, t.aillament_instal_kohm ? String(t.aillament_instal_kohm) : '')
-    trySet(`${p}_neutre`, t.conduc_neutre_mm2 ? String(t.conduc_neutre_mm2) : '')
-    trySet(`${p}_protec`, t.conduc_protec_mm2 ? String(t.conduc_protec_mm2) : '')
-  })
-
-  trySet('TITULAR', projecte?.titular_nom || '')
-  trySet('US_INSTALLACIO', doc.us_installacio)
-  trySet('EMPLACAMENT', projecte ? `${projecte.inst_nom_via} ${projecte.inst_numero}`.trim() : '')
-  trySet('LOCALITAT', projecte?.inst_poblacio || '')
-  trySet('NCP', projecte?.inst_cp || '')
-  trySet('EMPRESA_DISTRIBUIDORA', doc.empresa_distribuidora)
-  trySet('RESIST_TERRA', doc.resist_terra_ohm ? String(doc.resist_terra_ohm) : '')
-  trySet('POTENCIA_MAX', trams[0]?.potencia_kw ? String(trams[0].potencia_kw) : '')
-  trySet('POTENCIA_INST', doc.potencia_instal_kw ? String(doc.potencia_instal_kw) : '')
-  trySet('TENSIO', trams[0]?.tensio_v ? String(trams[0].tensio_v) : '230')
-  trySet('IGA', doc.intensitat_iga_a ? String(doc.intensitat_iga_a) : '')
-  trySet('SECCIO_DI', String(trams[0]?.seccio_mm2 ?? ''))
-
-  form.flatten()
-  return pdfDoc.save()
-}
-
-async function fillElec3Coordinates(
-  templateBytes: Uint8Array,
-  doc: Elec3Doc,
-  _instalador: Instalador,
-  projecte?: Projecte,
-): Promise<Uint8Array> {
-  const trams = calculaTrams(doc.trams)
   const pdfDoc = await PDFDocument.create()
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const BLACK = rgb(0, 0, 0)
+  const [embP1, embP2] = await pdfDoc.embedPdf(templateBytes, [0, 1])
 
-  // Load template pages safely — template may have 1 or 2 pages
-  const templateDoc = await PDFDocument.load(templateBytes, { ignoreEncryption: true })
-  const templatePageCount = templateDoc.getPageCount()
-
-  const pageIndices: number[] = [0]
-  if (templatePageCount >= 2) pageIndices.push(1)
-
-  const embeddedPages = await pdfDoc.embedPdf(templateBytes, pageIndices)
-  const embP1 = embeddedPages[0]
-  const embP2 = embeddedPages.length >= 2 ? embeddedPages[1] : null
-
-  // Page 1: landscape
+  // PAGE 1
   const page1 = pdfDoc.addPage([842, 595])
   page1.drawPage(embP1, { x: 0, y: 0, width: 842, height: 595 })
-
-  trams.forEach((t, i) => {
-    const y = P1_FIRST_ROW_Y - i * P1_ROW_H
-    if (y < 40) return
-    const d = (text: string, x: number) => {
-      if (text) page1.drawText(text, { x, y, size: P1_FS, font, color: BLACK })
-    }
-    d(t.carrega_pct ? String(t.carrega_pct) : '', P1_COLS.carrega)
-    d(t.potencia_kw ? String(t.potencia_kw) : '', P1_COLS.potencia)
-    d(String(t.cos_fi), P1_COLS.cosfi)
-    d(t.intensitat_a ? String(t.intensitat_a) : '', P1_COLS.intensitat)
-    d(String(t.seccio_mm2), P1_COLS.seccio)
-    d(t.longitud_m ? String(t.longitud_m) : '', P1_COLS.longitud)
-    d(t.moment_kwm ? String(t.moment_kwm) : '', P1_COLS.moment)
-    d(t.caiguda_parcial_pct ? t.caiguda_parcial_pct.toFixed(2) : '', P1_COLS.caiguda_p)
-    d(t.caiguda_total_pct ? t.caiguda_total_pct.toFixed(2) : '', P1_COLS.caiguda_t)
-    d(t.tipus_conductor, P1_COLS.tipus)
-    d(t.tensio_nominal_aillament, P1_COLS.tensio_ail)
-    d(t.canal_tub_encastat_mm ? String(t.canal_tub_encastat_mm) : '', P1_COLS.tub_enc)
-    d(t.canal_tub_sense_encas_mm ? String(t.canal_tub_sense_encas_mm) : '', P1_COLS.tub_senc)
-    d(t.canal_enterrat_prof_m ? String(t.canal_enterrat_prof_m) : '', P1_COLS.enterrat)
-    d(t.aillament_instal_kohm ? String(t.aillament_instal_kohm) : '', P1_COLS.aillament)
-    d(t.conduc_neutre_mm2 ? String(t.conduc_neutre_mm2) : '', P1_COLS.neutre)
-    d(t.conduc_protec_mm2 ? String(t.conduc_protec_mm2) : '', P1_COLS.protec)
-  })
-
-  // Page 2: portrait (only if template has a second page)
-  const page2 = pdfDoc.addPage([595, 842])
-  if (embP2) {
-    page2.drawPage(embP2, { x: 0, y: 0, width: 595, height: 842 })
-  }
-
-  const d2 = (text: string, x: number, y: number) => {
-    if (text) page2.drawText(text, { x, y, size: P2.fs, font, color: BLACK })
-  }
-  d2(projecte?.titular_nom || '', P2.titular.x, P2.titular.y)
-  d2(doc.us_installacio, P2.us_installacio.x, P2.us_installacio.y)
-  d2(projecte ? `${projecte.inst_nom_via} ${projecte.inst_numero}`.trim() : '', P2.emplacament.x, P2.emplacament.y)
-  d2(projecte?.inst_poblacio || '', P2.localitat.x, P2.localitat.y)
-  d2(projecte?.inst_cp || '', P2.cp.x, P2.cp.y)
-  d2(doc.empresa_distribuidora, P2.empresa_dist.x, P2.empresa_dist.y)
-  d2(doc.resist_terra_ohm ? String(doc.resist_terra_ohm) : '', P2.resist_terra.x, P2.resist_terra.y)
-  d2(trams[0]?.potencia_kw ? String(trams[0].potencia_kw) : '', P2.potencia_max.x, P2.potencia_max.y)
-  d2(trams[0]?.tensio_v ? String(trams[0].tensio_v) : '230', P2.tensio.x, P2.tensio.y)
-  d2(doc.potencia_instal_kw ? String(doc.potencia_instal_kw) : '', P2.potencia_inst.x, P2.potencia_inst.y)
-  d2(doc.intensitat_iga_a ? String(doc.intensitat_iga_a) : '', P2.iga.x, P2.iga.y)
-  d2(String(trams[0]?.seccio_mm2 ?? ''), P2.seccio_di.x, P2.seccio_di.y)
-
-  return pdfDoc.save()
-}
-
-async function generateElec3Fallback(
-  doc: Elec3Doc,
-  instalador: Instalador,
-  _projecte?: Projecte,
-): Promise<Uint8Array> {
   const trams = calculaTrams(doc.trams)
-  const pdfDoc = await PDFDocument.create()
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
-  const BLACK = rgb(0, 0, 0)
-  const page = pdfDoc.addPage([842, 595])
+  trams.forEach((t, rowIdx) => {
+    if (rowIdx >= ROW_Y.length) return
+    // Skip completely empty rows (no power and no length entered)
+    const isEmpty = !t.potencia_kw && !t.longitud_m && rowIdx > 0
+    if (isEmpty) return
+    const y = ROW_Y[rowIdx]
+    const draw = (colIdx: number, val: string | number | null | undefined) => {
+      if (val === null || val === undefined || val === '' || val === 0) return
+      const text = String(val)
+      const textWidth = font.widthOfTextAtSize(text, 6.5)
+      // Center text on the calibrated column X coordinate
+      page1.drawText(text, { x: COL_X[colIdx] - textWidth / 2, y, size: 6.5, font, color: BLACK })
+    }
+    draw(0,t.carrega_pct||''); draw(1,t.potencia_kw||''); draw(2,t.cos_fi)
+    draw(3,t.intensitat_a||''); draw(4,t.seccio_mm2); draw(5,t.longitud_m||'')
+    draw(6,t.moment_kwm||'')
+    draw(7,t.caiguda_parcial_pct?t.caiguda_parcial_pct.toFixed(2):'')
+    draw(8,t.caiguda_total_pct?t.caiguda_total_pct.toFixed(2):'')
+    // Always draw TIPUS and tensió nominal (standard values)
+    draw(9,  t.tipus_conductor || 'Cu')
+    draw(10, t.tensio_nominal_aillament || '0,45/0,75')
+    draw(11, t.canal_sense_tub || '')
+    // Default tube: 60mm for DI, 20mm for circuits (ITC-BT-19)
+    draw(12, t.canal_tub_encastat_mm ?? (t.id === 'derivacio_individual' ? 60 : 20))
+    draw(13, t.canal_tub_sense_encas_mm ?? '')
+    draw(14, t.canal_enterrat_prof_m ?? '')
+    draw(15, t.aillament_instal_kohm ?? '')
+    // Default neutre/protec = seccio_mm2 if not set (use || to also catch 0)
+    draw(16, t.conduc_neutre_mm2 || t.seccio_mm2)
+    draw(17, t.conduc_protec_mm2 || t.seccio_mm2)
+  })
 
-  page.drawText('MEMORIA TECNICA - Caiguda de tensio (ELEC-3)', {
-    x: 200, y: 555, size: 11, font: fontBold, color: BLACK,
-  })
-  page.drawText(`${doc.nom} - ${instalador.nombre_completo}`, {
-    x: 200, y: 540, size: 8, font, color: BLACK,
-  })
-  page.drawText('NOTA: plantilla elec3-blank.pdf no disponible. Converteix MemoriaTecnicaELEC3.doc a PDF i desa-la a public/templates/elec3-blank.pdf', {
-    x: 50, y: 520, size: 7, font, color: rgb(0.8, 0, 0),
-  })
-
-  let y = 490
-  trams.forEach((t) => {
-    if (y < 50) return
-    const estat = t.ok ? 'OK' : 'ATENCIO'
-    page.drawText(`${t.nom}: ${t.potencia_kw}kW, ${t.seccio_mm2}mm2, ${t.longitud_m}m -> dU=${t.caiguda_total_pct.toFixed(2)}% [${estat}]`, {
-      x: 50, y, size: 7, font, color: BLACK,
+  // PAGE 2
+  const page2 = pdfDoc.addPage([842, 595])
+  page2.drawPage(embP2, { x: 0, y: 0, width: 842, height: 595 })
+  const p = projecte
+  const ncp = doc.nova_ampliacio_reforma||p?.nova_ampliacio_reforma||'nova'
+  const d2 = (coord:{x:number;y:number}, text:string) => {
+    if (!text||text==='0') return
+    page2.drawText(text, { x:coord.x, y:coord.y, size:7.5, font, color:BLACK })
+  }
+  d2(P2.titular_nom, p?.titular_nom||'')
+  d2(P2.us_installacio, p?.us_installacio||doc.us_installacio||'')
+  d2(P2.emplacament,     p?.inst_nom_via  || '')
+  d2(P2.emplacament_num, p?.inst_numero   || '')
+  d2(P2.localitat, p?.inst_poblacio||'')
+  d2(P2.cp, p?.inst_cp||'')
+  d2(P2.nova, ncp==='nova'?'X':'')
+  d2(P2.ampliacio, ncp==='ampliacio'?'X':'')
+  d2(P2.reforma, ncp==='reforma'?'X':'')
+  // Project is always source of truth for shared technical fields
+  d2(P2.empresa_distribuidora, p?.empresa_distribuidora || doc.empresa_distribuidora || '')
+  d2(P2.resist_terra,          p?.resist_terra_ohm       ? String(p.resist_terra_ohm)       : doc.resist_terra_ohm  ? String(doc.resist_terra_ohm)  : '')
+  d2(P2.seccio_di,             trams[0] ? String(trams[0].seccio_mm2) : '')
+  d2(P2.tensio,                p?.tensio_v || trams[0]?.tensio_v?.toString() || '230')
+  d2(P2.iga,                   p?.iga_amperatge           ? String(p.iga_amperatge)           : doc.intensitat_iga_a ? String(doc.intensitat_iga_a) : '')
+  d2(P2.potencia_max,          p?.potencia_kw             ? String(p.potencia_kw)             : '')
+  d2(P2.potencia_instal,       doc.potencia_instal_kw     ? String(doc.potencia_instal_kw)    : p?.potencia_kw ? String(p.potencia_kw) : '')
+  d2(P2.superficie,            p?.superficie_local_m2     ? String(p.superficie_local_m2)     : doc.superficie_local_m2 ? String(doc.superficie_local_m2) : '')
+  d2(P2.caracteristiques_edifici, p?.caracteristiques_edifici || '')
+  // Diferencials from ELEC-2 esquema
+  if (diferencials && diferencials.length > 0) {
+    const difCoords = [
+      { circuit: P2.dif1_circuit, nombre: P2.dif1_nombre, in_a: P2.dif1_in, sens: P2.dif1_sensibilitat },
+      { circuit: P2.dif2_circuit, nombre: P2.dif2_nombre, in_a: P2.dif2_in, sens: P2.dif2_sensibilitat },
+      { circuit: P2.dif3_circuit, nombre: P2.dif3_nombre, in_a: P2.dif3_in, sens: P2.dif3_sensibilitat },
+    ]
+    diferencials.slice(0, 3).forEach((dif, i) => {
+      const cc = difCoords[i]
+      d2(cc.circuit, String(i + 1))
+      d2(cc.nombre,  '1')  // 1 aparell diferencial per fila
+      d2(cc.in_a,    String(dif.amperatge))
+      d2(cc.sens,    String(dif.sensibilitat_ma))
     })
-    y -= 20
-  })
+  }
+
+  d2(P2.data_signatura, new Date().toLocaleDateString('ca-ES'))
 
   return pdfDoc.save()
 }

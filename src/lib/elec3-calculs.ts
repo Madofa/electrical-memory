@@ -54,17 +54,24 @@ export const FIXED_SLOTS = [
 export type SlotId = typeof FIXED_SLOTS[number]['id']
 
 function tramDefaults(id: string, label: string): Tram {
+  const isDI = id === 'derivacio_individual'
+  const seccio = isDI ? 10 : 2.5
   return {
     id, nom: label,
-    carrega_pct: 100, potencia_kw: 0, cos_fi: 0.9,
-    seccio_mm2: id === 'derivacio_individual' ? 10 : 2.5,
+    carrega_pct: 100, potencia_kw: 0,
+    cos_fi: isDI ? 1 : 0.9,           // cosfi=1 per DI, 0.9 per circuits
+    seccio_mm2: seccio,
     longitud_m: 0,
     material: 'coure', tipus: 'mono',
     tipus_conductor: 'Cu',
     tensio_nominal_aillament: '0,45/0,75',
-    canal_sense_tub: '', canal_tub_encastat_mm: null,
-    canal_tub_sense_encas_mm: null, canal_enterrat_prof_m: null,
-    aillament_instal_kohm: null, conduc_neutre_mm2: null, conduc_protec_mm2: null,
+    canal_sense_tub: '',
+    canal_tub_encastat_mm: isDI ? 60 : 20,   // 60mm DI, 20mm circuits (ITC-BT-19)
+    canal_tub_sense_encas_mm: null,
+    canal_enterrat_prof_m: null,
+    aillament_instal_kohm: null,
+    conduc_neutre_mm2: seccio,          // per defecte = mateixa secció
+    conduc_protec_mm2: seccio,          // per defecte = mateixa secció
   }
 }
 
@@ -75,8 +82,21 @@ export function initTrams(): Tram[] {
 export function migrateTrams(existing: Tram[]): Tram[] {
   return FIXED_SLOTS.map((s, i) => {
     const old = existing[i]
-    if (!old) return tramDefaults(s.id, s.label)
-    return { ...tramDefaults(s.id, s.label), ...old, id: s.id, nom: s.label }
+    const defaults = tramDefaults(s.id, s.label)
+    if (!old) return defaults
+    // Merge: keep user-entered values, fill nulls with sensible defaults
+    return {
+      ...defaults,
+      ...old,
+      id: s.id,
+      nom: s.label,
+      // Fill nulls with defaults so PDF always has Cu, 0,45/0,75, tub, neutre, protec
+      tipus_conductor:          old.tipus_conductor          || defaults.tipus_conductor,
+      tensio_nominal_aillament: old.tensio_nominal_aillament || defaults.tensio_nominal_aillament,
+      canal_tub_encastat_mm:    old.canal_tub_encastat_mm    ?? defaults.canal_tub_encastat_mm,
+      conduc_neutre_mm2:        old.conduc_neutre_mm2        ?? defaults.conduc_neutre_mm2,
+      conduc_protec_mm2:        old.conduc_protec_mm2        ?? defaults.conduc_protec_mm2,
+    }
   })
 }
 
@@ -84,28 +104,39 @@ const GAMMA: Record<Material, number> = { coure: 56, alumini: 35 }
 const LIMIT_PCT = 5
 
 export function calculaTrams(trams: Tram[]): TramCalculat[] {
-  let acumulat = 0
-  return trams.map((t) => {
+  // Topology: DI (tram 0) → main panel → each circuit branches in parallel.
+  // Total drop for each branch = DI_drop + branch_own_drop (NOT cumulative series).
+  let diDrop = 0
+
+  return trams.map((t, idx) => {
     const U = t.tensio_v ?? (t.tipus === 'mono' ? 230 : 400)
     const gamma = GAMMA[t.material]
     const cosfi = Math.max(t.cos_fi || 0.001, 0.001)
     const pot = t.potencia_kw * (t.carrega_pct / 100)
-    const I = t.tipus === 'mono'
+    const isEmpty = pot === 0 && t.longitud_m === 0
+
+    const I = isEmpty ? 0 : t.tipus === 'mono'
       ? (pot * 1000) / (U * cosfi)
       : (pot * 1000) / (Math.sqrt(3) * U * cosfi)
     const moment = pot * t.longitud_m
-    const dU = t.tipus === 'mono'
+    const dU = isEmpty ? 0 : t.tipus === 'mono'
       ? (200000 * pot * t.longitud_m) / (gamma * t.seccio_mm2 * U * U * cosfi)
       : (100000 * pot * t.longitud_m) / (gamma * t.seccio_mm2 * U * U * cosfi)
-    acumulat += dU
+
+    // DI (tram 0): its own drop is the shared drop for all branches
+    if (idx === 0) diDrop = dU
+
+    // Total: DI drop + own drop. Empty rows: show 0.
+    const total = isEmpty ? 0 : (idx === 0 ? dU : diDrop + dU)
+
     return {
       ...t,
       potencia_demanada_kw: round2(pot),
       intensitat_a: round2(I),
       moment_kwm: round2(moment),
       caiguda_parcial_pct: round2(dU),
-      caiguda_total_pct: round2(acumulat),
-      ok: acumulat <= LIMIT_PCT,
+      caiguda_total_pct: round2(total),
+      ok: isEmpty ? true : total <= LIMIT_PCT,
     }
   })
 }
