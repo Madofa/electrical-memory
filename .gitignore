@@ -34,3 +34,10 @@ Referencias nuevas Herramietnas/
 
 .env.supabase
 supabase/.temp/
+
+# Claude Code project settings
+.claude/
+
+# Backup files
+*.backup.json
+esquema_backup_*.json
