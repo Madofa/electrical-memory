@@ -147,7 +147,14 @@ export function ProjectePage() {
     id: d.id,
     estat: d.estado === 'finalizada' ? 'finalitzat' : 'esborrany',
     nom: d.referencia_interna || (d.wizard_data?.ubicacion?.municipio) || 'MTD',
-    route: `/pdf/${d.id}`,
+    route: `/wizard`,
+    onOpen: () => {
+      if (d.wizard_data) {
+        wizardStore.loadMemoria(d.id, d.wizard_data)
+        if (id) wizardStore.setProjecteId(id)
+      }
+      navigate('/wizard')
+    },
   }))
 
   return (

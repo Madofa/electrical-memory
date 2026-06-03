@@ -8,6 +8,7 @@ export type DocStatus = {
   estat: 'esborrany' | 'finalitzat'
   nom?: string
   route: string
+  onOpen?: () => void
 }
 
 interface Props {
@@ -45,7 +46,7 @@ export function DocumentCard({ icon, label, sublabel, docs, onCreate }: Props) {
         {docs.map((d) => (
           <button
             key={d.id}
-            onClick={() => navigate(d.route)}
+            onClick={() => d.onOpen ? d.onOpen() : navigate(d.route)}
             className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg border border-ink-500 bg-ink-800/40 hover:border-amber-500/30 hover:bg-amber-500/5 transition-all text-left"
           >
             <span className={`text-[10px] font-mono font-semibold ${d.estat === 'finalitzat' ? 'text-emerald-400' : 'text-slate-500'}`}>
