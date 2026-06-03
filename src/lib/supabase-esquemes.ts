@@ -19,6 +19,16 @@ export async function getEsquema(id: string) {
   return supabase.from(TABLE).select('*').eq('id', id).single()
 }
 
+export async function getEsquemaByProjecte(projecteId: string) {
+  return supabase
+    .from(TABLE)
+    .select('id,diferencials,circuits,iga_amperatge')
+    .eq('projecte_id', projecteId)
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .single()
+}
+
 export async function deleteEsquema(id: string) {
   return supabase.from(TABLE).delete().eq('id', id)
 }

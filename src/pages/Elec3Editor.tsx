@@ -5,6 +5,8 @@ import { ArrowLeft, Zap, Cloud, FileDown, Loader2 } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import { getElec3Doc, updateElec3Doc, type Elec3Doc } from '../lib/supabase-elec3'
 import { getProjecte, type Projecte } from '../lib/supabase-projectes'
+import { getEsquemaByProjecte } from '../lib/supabase-esquemes'
+import type { Diferencial, Circuit } from '../types/esquemaUnifilar'
 import { calculaTrams, migrateTrams, FIXED_SLOTS, type Tram, type TramCalculat } from '../lib/elec3-calculs'
 import { FormInput, FormSelect } from '../components/ui/FormField'
 import { generateElec3PDF } from '../lib/pdf-elec3'
@@ -26,6 +28,8 @@ export function Elec3Editor() {
   const [projecteId, setProjecteId] = useState<string | null>(null)
   const [projecteNom, setProjecteNom] = useState('')
   const [projecte, setProjecte] = useState<Projecte | null>(null)
+  const [esquemaDifs, setEsquemaDifs] = useState<Diferencial[]>([])
+  const [esquemaCircuits, setEsquemaCircuits] = useState<Circuit[]>([])
 
   useEffect(() => {
     if (!id) return
@@ -44,15 +48,104 @@ export function Elec3Editor() {
       setProjecteId(pid)
       if (pid) {
         getProjecte(pid).then(({ data: p }) => {
-          if (p && mounted) {
-            setProjecteNom((p as Projecte).nom)
-            setProjecte(p as Projecte)
-          }
+          if (!p || !mounted) return
+          const proj = p as Projecte
+          setProjecteNom(proj.nom)
+          setProjecte(proj)
+          // Load circuits + differentials from linked ELEC-2 and prefill trams
+          getEsquemaByProjecte(pid).then(({ data: esq }) => {
+            if (!esq || !mounted) return
+            const difs = (esq as { diferencials: Diferencial[] }).diferencials || []
+            const circs = (esq as { circuits: Circuit[] }).circuits || []
+            setEsquemaDifs(difs)
+            setEsquemaCircuits(circs)
+
+            // Prefill trams from ELEC-2 circuit data if tram has no power yet
+            setDoc(d => {
+              if (!d) return d
+              const trams = d.trams.map((t, idx) => {
+                // Tram 0 = DI: use project power + LGA section
+                if (idx === 0) {
+                  const seccio = parseFloat(proj.seccio_lga_mm2) || t.seccio_mm2
+                  const potencia = proj.potencia_kw || t.potencia_kw
+                  if (t.potencia_kw && t.seccio_mm2 === seccio) return t // already set
+                  return {
+                    ...t,
+                    potencia_kw: t.potencia_kw || potencia,
+                    cos_fi: t.cos_fi === 0.9 ? 1 : t.cos_fi,  // DI cosfi=1
+                    seccio_mm2: seccio,
+                    conduc_neutre_mm2: t.conduc_neutre_mm2 ?? seccio,
+                    conduc_protec_mm2: t.conduc_protec_mm2 ?? seccio,
+                    canal_tub_encastat_mm: t.canal_tub_encastat_mm ?? (seccio <= 6 ? 25 : 32),
+                  }
+                }
+                // Trams 1-12 = C-D through Y-Z: map from ELEC-2 circuits[idx-1]
+                const circ = circs[idx - 1]
+                if (!circ) return t
+                if (t.potencia_kw !== 0) return t  // already has data
+                // Parse section from "2×1,5+1,5" → 1.5
+                const seccioMatch = circ.seccio.replace(',', '.').match(/[×x]\s*(\d+\.?\d*)/)
+                const seccio = seccioMatch ? parseFloat(seccioMatch[1]) : t.seccio_mm2
+                return {
+                  ...t,
+                  potencia_kw: circ.potencia_kw || t.potencia_kw,
+                  seccio_mm2: seccio || t.seccio_mm2,
+                  conduc_neutre_mm2: t.conduc_neutre_mm2 ?? seccio,
+                  conduc_protec_mm2: t.conduc_protec_mm2 ?? seccio,
+                  canal_tub_encastat_mm: t.canal_tub_encastat_mm ?? 20,
+                }
+              })
+              const changed = trams.some((t, i) => t !== d.trams[i])
+              if (changed && id) updateElec3Doc(id, { trams }).catch(() => {})
+              return changed ? { ...d, trams } : d
+            })
+          }).catch(() => {})
+          // Merge project technical data into doc if fields are empty
+          setDoc(d => {
+            if (!d) return d
+            const patch: Partial<Elec3Doc> = {}
+            if (!d.us_installacio)          patch.us_installacio          = proj.us_installacio || ''
+            if (!d.empresa_distribuidora)   patch.empresa_distribuidora   = proj.empresa_distribuidora || ''
+            if (!d.resist_terra_ohm   && proj.resist_terra_ohm)    patch.resist_terra_ohm   = proj.resist_terra_ohm
+            if (!d.potencia_instal_kw && proj.potencia_kw)         patch.potencia_instal_kw = proj.potencia_kw
+            if (!d.intensitat_iga_a   && proj.iga_amperatge)       patch.intensitat_iga_a   = proj.iga_amperatge
+            if (!d.superficie_local_m2 && proj.superficie_local_m2) patch.superficie_local_m2 = proj.superficie_local_m2
+            if (Object.keys(patch).length > 0 && id) updateElec3Doc(id, patch).catch(() => {})
+            return { ...d, ...patch }
+          })
         })
       }
     })
     return () => { mounted = false }
   }, [id, navigate])
+
+  // Refresh project data when user returns to this tab — always overwrites doc fields
+  useEffect(() => {
+    const onFocus = () => {
+      if (!projecteId) return
+      getProjecte(projecteId).then(({ data: p }) => {
+        if (!p) return
+        const proj = p as Projecte
+        setProjecte(proj)
+        // Force-update doc fields from project (project is source of truth)
+        if (id) {
+          const patch: Partial<Elec3Doc> = {
+            us_installacio:        proj.us_installacio        || '',
+            empresa_distribuidora: proj.empresa_distribuidora || '',
+            resist_terra_ohm:      proj.resist_terra_ohm      ?? null,
+            potencia_instal_kw:    proj.potencia_kw           || null,
+            intensitat_iga_a:      proj.iga_amperatge         || null,
+            superficie_local_m2:   proj.superficie_local_m2  ?? null,
+            nova_ampliacio_reforma: proj.nova_ampliacio_reforma || 'nova',
+          }
+          setDoc(d => d ? { ...d, ...patch } : d)
+          updateElec3Doc(id, patch).catch(() => {})
+        }
+      })
+    }
+    document.addEventListener('visibilitychange', onFocus)
+    return () => document.removeEventListener('visibilitychange', onFocus)
+  }, [projecteId, id])
 
   const save = (trams: Tram[]) => {
     if (timer.current) clearTimeout(timer.current)
@@ -105,7 +198,13 @@ export function Elec3Editor() {
     if (!doc || !instalador) return
     setExporting(true)
     try {
-      const pdfBytes = await generateElec3PDF(doc, instalador, projecte ?? undefined)
+      // Refresh project data to get latest changes
+      let freshProjecte = projecte
+      if (projecteId) {
+        const { data: p } = await getProjecte(projecteId)
+        if (p) { freshProjecte = p as Projecte; setProjecte(p as Projecte) }
+      }
+      const pdfBytes = await generateElec3PDF(doc, instalador, freshProjecte ?? undefined, esquemaDifs, esquemaCircuits)
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
