@@ -20,7 +20,7 @@ import toast from 'react-hot-toast'
 export function EsquemaUnifilarEditor() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { user } = useAuthStore()
+  const { user, instalador } = useAuthStore()
   const store = useEsquemaStore()
   const [loading, setLoading] = useState(true)
   const [autoSaving, setAutoSaving] = useState(false)
@@ -46,13 +46,50 @@ export function EsquemaUnifilarEditor() {
       setProjecteId(pid)
       if (pid) {
         getProjecte(pid).then(({ data: p }) => {
-          if (p && mounted) setProjecteNom((p as Projecte).nom)
+          if (!p || !mounted) return
+          const proj = p as Projecte
+          setProjecteNom(proj.nom)
+          // Merge project technical data into capcalera if fields are empty
+          const cap = store.capcalera
+          const patch: Partial<typeof cap> = {}
+          if (!cap.empresa_distribuidora && proj.empresa_distribuidora) patch.empresa_distribuidora = proj.empresa_distribuidora
+          if (!cap.seccio_connexio || cap.seccio_connexio === '10mm²') {
+            if (proj.seccio_lga_mm2) patch.seccio_connexio = `${proj.seccio_lga_mm2}mm²`
+          }
+          if (!cap.tensio || cap.tensio === '230V') {
+            if (proj.tensio_v) patch.tensio = `${proj.tensio_v}V`
+          }
+          if (Object.keys(patch).length > 0) store.setCapcalera(patch)
+          // Also merge IGA if default
+          if (!store.iga_amperatge || store.iga_amperatge === 40) {
+            if (proj.iga_amperatge) store.setIga(proj.iga_amperatge)
+          }
         })
       }
     })
     return () => { mounted = false; store.reset() }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
+
+  // Refresh project data when user returns to this tab
+  useEffect(() => {
+    const onFocus = () => {
+      if (!projecteId) return
+      getProjecte(projecteId).then(({ data: p }) => {
+        if (!p) return
+        const proj = p as Projecte
+        store.setCapcalera({
+          empresa_distribuidora: proj.empresa_distribuidora || store.capcalera.empresa_distribuidora,
+          seccio_connexio: proj.seccio_lga_mm2 ? `${proj.seccio_lga_mm2}mm²` : store.capcalera.seccio_connexio,
+          tensio: proj.tensio_v ? `${proj.tensio_v}V` : store.capcalera.tensio,
+          emplacament: [proj.inst_nom_via, proj.inst_numero, proj.inst_cp, proj.inst_poblacio].filter(Boolean).join(', ') || store.capcalera.emplacament,
+          titular: proj.titular_nom || store.capcalera.titular,
+        })
+      })
+    }
+    document.addEventListener('visibilitychange', onFocus)
+    return () => document.removeEventListener('visibilitychange', onFocus)
+  }, [projecteId])
 
   // Autoguardado con debounce de 2 s
   useEffect(() => {
@@ -84,11 +121,27 @@ export function EsquemaUnifilarEditor() {
   const handleExportPDF = async () => {
     setExporting(true)
     try {
+      // Refresh project capcalera before export
+      if (projecteId) {
+        const { data: p } = await getProjecte(projecteId)
+        if (p) {
+          const proj = p as Projecte
+          const emplacament = [proj.inst_nom_via, proj.inst_numero, proj.inst_cp, proj.inst_poblacio].filter(Boolean).join(', ')
+          store.setCapcalera({
+            empresa_distribuidora: proj.empresa_distribuidora || store.capcalera.empresa_distribuidora,
+            seccio_connexio: proj.seccio_lga_mm2 ? `${proj.seccio_lga_mm2}mm²` : store.capcalera.seccio_connexio,
+            tensio: proj.tensio_v ? `${proj.tensio_v}V` : store.capcalera.tensio,
+            emplacament: emplacament || store.capcalera.emplacament,
+            titular: proj.titular_nom || store.capcalera.titular,
+          })
+        }
+      }
       const pdfBytes = await generateElec2PDF(
         store.circuits,
         store.diferencials,
         store.iga_amperatge,
         store.capcalera,
+        instalador,
       )
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)

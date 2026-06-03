@@ -21,13 +21,13 @@ const CLASSIFICACIO_OPT = [
   { value: 'p2', label: 'Classe P2' },
 ]
 const US_INSTALLACIO_OPT = [
-  { value: "a) Instal·lacions industrials", label: "a) Industrial" },
-  { value: "b) Instal·lacions comercials i oficines", label: "b) Comercial / Oficina" },
-  { value: "c) Instal·lacions d'ús públic i espectacles", label: "c) Ús públic" },
+  { value: "a) Instal·lacions industrials", label: "a) Industrial / Taller (fàbrica, producció)" },
+  { value: "b) Instal·lacions comercials i oficines", label: "b) Local comercial / Oficina / Magatzem comercial" },
+  { value: "c) Instal·lacions d'ús públic i espectacles", label: "c) Ús públic / Espectacles" },
   { value: "d) Garatges i aparcaments", label: "d) Garatge / Aparcament" },
   { value: "e) Piscines i fonts", label: "e) Piscines / Fonts" },
-  { value: "f) Instal·lacions d'habitatges", label: "f) Habitatge" },
-  { value: "g) Instal·lacions en locals amb risc d'incendi o explosió", label: "g) Local amb risc" },
+  { value: "f) Instal·lacions d'habitatges", label: "f) Habitatge (unifamiliar / bloc)" },
+  { value: "g) Instal·lacions en locals amb risc d'incendi o explosió", label: "g) Local amb risc d'incendi o explosió" },
   { value: "h) Altres", label: "h) Altres" },
 ]
 
@@ -56,12 +56,64 @@ export function Elec1Editor() {
       setProjecteId(pid)
       if (pid) {
         getProjecte(pid).then(({ data: p }) => {
-          if (p && mounted) setProjecteNom((p as Projecte).nom)
+          if (!p || !mounted) return
+          const proj = p as Projecte
+          setProjecteNom(proj.nom)
+          // Merge project technical data into cert if fields are empty/zero
+          setCert(c => {
+            if (!c) return c
+            const patch: Partial<CertificatElec1> = {}
+            if (!c.tensio_v)                  patch.tensio_v                  = proj.tensio_v || '230'
+            if (!c.seccio_lga_mm2)            patch.seccio_lga_mm2            = proj.seccio_lga_mm2 || ''
+            if (!c.potencia_kw)               patch.potencia_kw               = proj.potencia_kw || 0
+            if (!c.calibre_fusibles_cgp_a)    patch.calibre_fusibles_cgp_a    = proj.calibre_fusibles_cgp_a || 0
+            if (!c.material_conductor || c.material_conductor === 'Coure')
+              if (proj.material_conductor)     patch.material_conductor        = proj.material_conductor
+            if (!c.intensitat_iga_a)          patch.intensitat_iga_a          = proj.iga_amperatge || 0
+            if (!c.resist_terra_ohm && proj.resist_terra_ohm) patch.resist_terra_ohm = proj.resist_terra_ohm
+            if (!c.us_installacio || c.us_installacio === "f) Instal·lacions d'habitatges")
+              if (proj.us_installacio)         patch.us_installacio            = proj.us_installacio
+            if (!c.cups)                      patch.cups                      = proj.cups || ''
+            if (proj.classificacio)           patch.classificacio             = proj.classificacio
+            if (proj.nova_ampliacio_reforma)  patch.tipus_actuacio            =
+              proj.nova_ampliacio_reforma === 'nova' ? 'nova' :
+              proj.nova_ampliacio_reforma === 'ampliacio' ? 'ampliacio' : 'modificacio'
+            if (Object.keys(patch).length > 0 && id) updateCertificatElec1(id, patch).catch(() => {})
+            return { ...c, ...patch }
+          })
         })
       }
     })
     return () => { mounted = false; if (timer.current) clearTimeout(timer.current) }
   }, [id, navigate])
+
+  // Refresh project data when user returns to this tab
+  useEffect(() => {
+    const onFocus = () => {
+      if (!projecteId) return
+      getProjecte(projecteId).then(({ data: p }) => {
+        if (!p) return
+        const proj = p as Projecte
+        setCert(c => {
+          if (!c) return c
+          return {
+            ...c,
+            tensio_v:              proj.tensio_v              || c.tensio_v,
+            seccio_lga_mm2:        proj.seccio_lga_mm2        || c.seccio_lga_mm2,
+            potencia_kw:           proj.potencia_kw            || c.potencia_kw,
+            calibre_fusibles_cgp_a:proj.calibre_fusibles_cgp_a || c.calibre_fusibles_cgp_a,
+            material_conductor:    proj.material_conductor     || c.material_conductor,
+            intensitat_iga_a:      proj.iga_amperatge          || c.intensitat_iga_a,
+            resist_terra_ohm:      proj.resist_terra_ohm       ?? c.resist_terra_ohm,
+            us_installacio:        proj.us_installacio         || c.us_installacio,
+            cups:                  proj.cups                   || c.cups,
+          }
+        })
+      })
+    }
+    document.addEventListener('visibilitychange', onFocus)
+    return () => document.removeEventListener('visibilitychange', onFocus)
+  }, [projecteId])
 
   const upd = (field: keyof CertificatElec1, value: string | number) => {
     setCert((c) => c ? { ...c, [field]: value } : c)
