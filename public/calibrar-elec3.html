@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<title>Calibrador ELEC-3 — Pàgina 1</title>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:#0a0f1e; color:#e2e8f0; font-family:Arial,sans-serif; display:flex; flex-direction:column; height:100vh; }
+  #bar { background:#0f1729; border-bottom:1px solid #1e2d47; padding:10px 16px; display:flex; align-items:center; gap:12px; flex-shrink:0; }
+  h1 { font-size:12px; font-weight:bold; color:#f59e0b; letter-spacing:2px; text-transform:uppercase; }
+  .btn { background:#1e2d47; border:1px solid #334155; color:#e2e8f0; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; }
+  .btn:hover { background:#2d3f5e; }
+  .btn-blue { background:#1d4ed8; border-color:#3b82f6; color:#fff; }
+  .btn-green { background:#15803d; border-color:#22c55e; color:#fff; font-weight:bold; }
+  .btn-green:disabled { opacity:0.4; cursor:default; }
+  #main { display:flex; flex:1; overflow:hidden; }
+  #cv-area { flex:1; overflow:auto; padding:16px; background:#060c1a; }
+  #cv-wrap { position:relative; display:inline-block; }
+  canvas { display:block; border:1px solid #1e2d47; }
+  .dot { position:absolute; pointer-events:none; }
+  .dot-circle { width:14px; height:14px; border-radius:50%; border:2px solid #fff; position:absolute; transform:translate(-50%,-50%); }
+  .dot-label { position:absolute; left:10px; top:-7px; color:#fff; font-size:9px; padding:1px 5px; border-radius:3px; white-space:nowrap; font-family:monospace; font-weight:bold; }
+  #panel { width:260px; border-left:1px solid #1e2d47; background:#0f1729; padding:16px; display:flex; flex-direction:column; gap:12px; flex-shrink:0; }
+  .step { padding:12px; border-radius:8px; border:1px solid #1e2d47; }
+  .step.active { border-color:#3b82f6; background:rgba(59,130,246,0.08); }
+  .step.done { border-color:#22c55e; background:rgba(34,197,94,0.06); }
+  .step-num { font-size:10px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
+  .step-desc { font-size:11px; color:#94a3b8; line-height:1.5; }
+  .step.active .step-num { color:#60a5fa; }
+  .step.done .step-num { color:#4ade80; }
+  .coords { font-size:10px; font-family:monospace; color:#4ade80; margin-top:4px; }
+</style>
+</head>
+<body>
+<div id="bar">
+  <h1>Calibrador · ELEC-3 · Pàgina 1</h1>
+  <div style="display:flex;align-items:center;gap:6px;margin-left:8px">
+    <button class="btn" onclick="setScale(1)">1×</button>
+    <button class="btn" id="z15" style="background:#334155" onclick="setScale(1.5)">1.5×</button>
+    <button class="btn" onclick="setScale(2)">2×</button>
+  </div>
+  <div style="margin-left:auto">
+    <button class="btn btn-green" id="exp" onclick="exportJSON()" disabled>⬇ Exportar JSON</button>
+  </div>
+</div>
+<div id="main">
+  <div id="cv-area">
+    <div id="cv-wrap">
+      <canvas id="canvas"></canvas>
+    </div>
+  </div>
+  <div id="panel">
+    <p style="font-size:11px;color:#64748b">Fes clic al document en l'ordre indicat:</p>
+
+    <div class="step active" id="s1">
+      <div class="step-num">Clic 1</div>
+      <div class="step-desc">Primera cel·la de dades de la fila <b>"Derivació individual"</b><br>(columna <b>Càrrega %</b>, la primera columna de dades)</div>
+      <div class="coords" id="c1"></div>
+    </div>
+
+    <div class="step" id="s2">
+      <div class="step-num">Clic 2</div>
+      <div class="step-desc">Última cel·la de la mateixa fila<br>(columna <b>Conduc. Protec.</b>, l'última a la dreta)</div>
+      <div class="coords" id="c2"></div>
+    </div>
+
+    <div class="step" id="s3">
+      <div class="step-num">Clic 3</div>
+      <div class="step-desc">Primera cel·la de la fila <b>"Y — Z"</b><br>(última fila, columna Càrrega %)</div>
+      <div class="coords" id="c3"></div>
+    </div>
+
+    <div id="result" style="display:none;padding:12px;border-radius:8px;background:rgba(34,197,94,0.08);border:1px solid #22c55e">
+      <p style="font-size:11px;color:#4ade80;font-weight:bold">✓ Grid generat!</p>
+      <p style="font-size:10px;color:#94a3b8;margin-top:4px" id="result-info"></p>
+    </div>
+  </div>
+</div>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'
+
+let pdf=null, scale=1.5, step=1
+const pts=[]
+const canvas=document.getElementById('canvas')
+const ctx=canvas.getContext('2d')
+const wrap=document.getElementById('cv-wrap')
+
+pdfjsLib.getDocument({url:'/templates/elec3-blank.pdf'}).promise.then(p=>{
+  pdf=p; renderPage(1)
+}).catch(e=>alert('Error: '+e.message))
+
+async function renderPage(n){
+  const page=await pdf.getPage(n)
+  const vp=page.getViewport({scale})
+  canvas.width=vp.width; canvas.height=vp.height
+  await page.render({canvasContext:ctx,viewport:vp}).promise
+  drawDots()
+}
+
+function setScale(s){
+  scale=s
+  if(pdf) renderPage(1)
+}
+
+canvas.onclick=function(e){
+  if(step>3) return
+  const r=canvas.getBoundingClientRect()
+  const sx=e.clientX-r.left, sy=e.clientY-r.top
+  const px=Math.round(sx/scale*10)/10
+  const py=Math.round((canvas.height/scale-sy/scale)*10)/10
+  pts[step-1]={px,py,sx,sy}
+  document.getElementById('c'+step).textContent='x='+px+' y='+py
+  document.getElementById('s'+step).classList.remove('active')
+  document.getElementById('s'+step).classList.add('done')
+  if(step<3){ step++; document.getElementById('s'+step).classList.add('active') }
+  else { generateGrid() }
+  drawDots()
+}
+
+function drawDots(){
+  wrap.querySelectorAll('.dot').forEach(d=>d.remove())
+  const colors=['#3b82f6','#f59e0b','#ef4444']
+  const labels=['Clic 1','Clic 2','Clic 3']
+  pts.forEach((p,i)=>{
+    const d=document.createElement('div'); d.className='dot'
+    d.style.cssText=`left:${p.sx}px;top:${p.sy}px`
+    d.innerHTML=`<div class="dot-circle" style="background:${colors[i]}80;border-color:${colors[i]}"></div><div class="dot-label" style="background:${colors[i]}">${labels[i]}</div>`
+    wrap.appendChild(d)
+  })
+}
+
+const COL_NAMES=['carrega','potencia','cosfi','intensitat','seccio','longitud','moment',
+  'caiguda_p','caiguda_t','tipus','tensio_ail','canal_notub','tub_enc','tub_senc',
+  'enterrat','aillament','neutre','protec']
+const ROW_IDS=['derivacio_individual','C_D','E_F','G_H','I_J','K_L','M_N',
+  'O_P','Q_R','S_T','U_V','W_X','Y_Z']
+const COL_PROPS=[0.055,0.055,0.045,0.055,0.06,0.055,0.065,0.055,0.055,
+  0.05,0.07,0.06,0.055,0.055,0.07,0.055,0.055,0.055]
+
+let gridMarkers=[]
+
+function generateGrid(){
+  const x0=pts[0].px, y0=pts[0].py, x1=pts[1].px, yLast=pts[2].py
+  const W=x1-x0, rowH=(y0-yLast)/(ROW_IDS.length-1)
+  const total=COL_PROPS.reduce((a,b)=>a+b,0)
+  const colCx=[]
+  let cur=x0
+  COL_PROPS.forEach(p=>{ const w=W*p/total; colCx.push(cur+w/2); cur+=w })
+  gridMarkers=[]
+  ROW_IDS.forEach((row,r)=>{
+    const y=y0-r*rowH
+    colCx.forEach((cx,c)=>{
+      gridMarkers.push({name:`tram_${row}_${COL_NAMES[c]}`,x:Math.round(cx*10)/10,y:Math.round(y*10)/10,page:1})
+    })
+  })
+  document.getElementById('result').style.display='block'
+  document.getElementById('result-info').textContent=gridMarkers.length+' coordenades generades ('+ROW_IDS.length+' files × '+COL_NAMES.length+' columnes)'
+  document.getElementById('exp').disabled=false
+}
+
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(gridMarkers,null,2)],{type:'application/json'})
+  const url=URL.createObjectURL(blob)
+  const a=document.createElement('a'); a.href=url; a.download='elec3-page1-grid.json'
+  document.body.appendChild(a); a.click(); document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+</script>
+</body>
+</html>

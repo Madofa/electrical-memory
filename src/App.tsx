@@ -15,6 +15,7 @@ import { MemoriaDescriptivaList } from './pages/MemoriaDescriptivaList'
 import { Elec1List } from './pages/Elec1List'
 import { Elec3List } from './pages/Elec3List'
 import { ProjecteList } from './pages/ProjecteList'
+import { CalibrateElec3 } from './pages/CalibrateElec3'
 const ProjectePage = lazy(() => import('./pages/ProjectePage').then((m) => ({ default: m.ProjectePage })))
 
 // El motor PDF (@react-pdf/renderer) pesa ~1.5 MB — lo cargamos sólo cuando
@@ -148,6 +149,7 @@ export default function App() {
             </RequireAuth>
           }
         />
+        <Route path="/dev/calibrar-elec3" element={<CalibrateElec3 />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
