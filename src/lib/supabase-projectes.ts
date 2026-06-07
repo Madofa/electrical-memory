@@ -59,7 +59,7 @@ export function emptyProjecte(): ProjecteForm {
     material_conductor: 'Coure',
     resist_terra_ohm: null,
     nova_ampliacio_reforma: 'nova',
-    us_installacio: 'f) Instal·lacions d\'habitatges',
+    us_installacio: 'Habitatge',
     caracteristiques_edifici: '',
     superficie_local_m2: null,
     cups: '',
@@ -172,7 +172,7 @@ export function prefillElec1(p: Projecte) {
     material_conductor: p.material_conductor || 'Coure',
     intensitat_iga_a: p.iga_amperatge || 0,
     resist_terra_ohm: p.resist_terra_ohm || 0,
-    us_installacio: p.us_installacio || 'f) Instal·lacions d\'habitatges',
+    us_installacio: p.us_installacio || 'Habitatge',
     cups: p.cups || '',
     classificacio: p.classificacio || 'mtd',
     tipus_actuacio: p.nova_ampliacio_reforma === 'nova' ? 'nova'

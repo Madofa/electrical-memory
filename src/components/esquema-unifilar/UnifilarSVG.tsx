@@ -1,279 +1,184 @@
 import type { Circuit, Diferencial } from '../../types/esquemaUnifilar'
 
-// Matches the official ELEC-2 form layout:
-// 12 fixed column slots (C-D … Y-Z), outer panel rectangle,
-// dashed differential groups, dashed trunk lines, IGA symbol, ICP box, kWh rectangle, terra.
+interface Props { circuits: Circuit[]; diferencials: Diferencial[]; iga: number }
 
-interface Props {
-  circuits: Circuit[]
-  diferencials: Diferencial[]
-  iga: number
-}
+// ── SVG dimensions ─────────────────────────────────────────────────────────────
+const VB_W = 480        // Extended right to accommodate circuit labels
+const VB_H = 505.19
+const BASE_W = 322.51   // Width of esquema-elec2.svg
+const CUADRO_Y = 3.2, CUADRO_H = 491.82
+const MM = VB_H / 297   // SVG units per mm (≈ 1.70)
 
-const NUM_COLS   = 12
-const COL_W      = 46
-const LEFT_M     = 130   // row-label band width
-const RIGHT_M    = 40
-const SVG_W      = LEFT_M + NUM_COLS * COL_W + RIGHT_M  // 730
-const SVG_H      = 690
+// ── Calibrated positions ───────────────────────────────────────────────────────
+// +2mm right from calibrated point so it doesn't look too tight against the bus
+const DIF_X = 206.76 + 2 * (505.19 / 297)  // ≈ 210.16
 
-// Column slot X-center (0-indexed)
-const cx = (i: number) => LEFT_M + COL_W * i + COL_W / 2
-const CENTER_X   = SVG_W / 2
+// ── Diferencial symbol (viewBox 20.42 × 30.93) ────────────────────────────────
+const DIF_VB_W = 20.42, DIF_VB_H = 30.93
+const DIF_W = 20, DIF_H = DIF_VB_H * (DIF_W / DIF_VB_W)
+const DIF_END_X = DIF_X + DIF_W
+const DIF_CONN_X = DIF_X + DIF_W * (10.88 / DIF_VB_W)
+const DIF_CONN_Y_FRAC = 29.33 / DIF_VB_H
 
-// Row Y positions (top-down; origin top-left in SVG)
-const Y = {
-  colTop:    18,   // top of dashed column lines + top labels
-  colBot:    235,  // bottom of column lines + bottom labels
-  potencia:  28,
-  receptor:  80,
-  seccio:    200,
-  // outer panel rectangle
-  panelTop:  242,
-  panelBot:  340,
-  // differential boxes (inside panel, dashed border)
-  difTop:    248,
-  difBot:    332,
-  // trunk below panel
-  trunk1:    340,
-  trunk2:    378,
-  // IGA
-  igaTop:    378,
-  igaBot:    420,
-  // ICP
-  icpTop:    432,
-  icpBot:    454,
-  // kWh
-  kwhTop:    468,
-  kwhBot:    520,
-  // terra
-  terraBase: 545,
-}
+// ── Thermic symbol (viewBox 33.68 × 16.63) ────────────────────────────────────
+const TERM_VB_W = 33.68, TERM_VB_H = 16.63
+const TERM_W = 28, TERM_H = TERM_VB_H * (TERM_W / TERM_VB_W)
+const TERM_CIRC_Y_FRAC = 15.33 / TERM_VB_H  // circuit Y inside thermic symbol
 
+// Thermic line: 5mm gap after DIF_END_X, then line; symbol 2mm after line ends
+const TERM_LINE_START = DIF_END_X + 5 * MM   // ≈ 235.3
+const TERM_X = 278                            // thermic symbol start (close to cuadro right)
+const TERM_LINE_END = TERM_X - 2 * MM        // line ends 2mm before symbol
+
+// IGA potencia text position (calibrated)
+const IGA_TEXT_X = 140.01
+const IGA_TEXT_Y = 245
+
+// External circuit line: starts OUTSIDE the cuadro (calibrated)
+const EXT_LINE_START = 320.92 + 20 * MM  // +2cm a la dreta
+const EXT_LINE_LEN   = 70             // long enough for cable info text
+const EXT_LINE_END   = EXT_LINE_START + EXT_LINE_LEN  // 390.92
+
+// Earth protection line: same span as external circuit line
+const EARTH_START_X = EXT_LINE_START
+const EARTH_END_X   = EXT_LINE_END
+
+// Column letter pairs
 const BOT_LABELS = ['C','E','G','I','K','M','O','Q','S','U','W','Y']
 const TOP_LABELS = ['D','F','H','J','L','N','P','R','T','V','X','Z']
 
-const LAYER_LABELS = [
-  { y: (Y.colTop + Y.colBot) / 2 - 80, label: 'POTÈNCIA kW' },
-  { y: (Y.colTop + Y.colBot) / 2 - 20, label: 'RECEPTORS' },
-  { y: Y.seccio + 8,                   label: 'SECCIONS mm²' },
-  { y: (Y.panelTop + Y.panelBot) / 2,  label: 'PIA / DIFERENCIALS' },
-  { y: (Y.igaTop + Y.igaBot) / 2,      label: 'INT. GENERAL' },
-  { y: (Y.icpTop + Y.icpBot) / 2,      label: 'CAIXA ICP' },
-  { y: (Y.kwhTop + Y.kwhBot) / 2,      label: 'COMPTADORS' },
-]
-
 export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
-  const fg     = '#e2e8f0'
-  const muted  = '#94a3b8'
-  const stroke = '#cbd5e1'
-  const dash   = '#60a5fa'   // blue for dashed lines (preview only)
-  const bg     = '#0f1729'
+  const N = diferencials.filter(d => circuits.some(c => c.diferencial_grup === d.id)).length || 1
+  const activeDifs = diferencials.filter(d => circuits.some(c => c.diferencial_grup === d.id))
+  const spacing = CUADRO_H / N
 
-  const slotCount = Math.min(circuits.length, NUM_COLS)
-
-  type Grupo = { dif: Diferencial; idxs: number[] }
-  const grupos: Grupo[] = diferencials
-    .map((d) => ({
-      dif: d,
-      idxs: circuits.map((c, i) => c.diferencial_grup === d.id ? i : -1).filter((i) => i >= 0),
-    }))
-    .filter((g) => g.idxs.length > 0)
-
-  const igaH  = Y.igaBot - Y.igaTop
-  const igaCy = Y.igaTop + igaH / 2
+  const groups = activeDifs.map((dif, gi) => {
+    const allocStart = CUADRO_Y + gi * spacing
+    const difY = allocStart + spacing / 2
+    const difConnY = (difY - DIF_H / 2) + DIF_H * DIF_CONN_Y_FRAC
+    const difCircuits = circuits.filter(c => c.diferencial_grup === dif.id)
+    const Nc = difCircuits.length || 1
+    const cSpacing = spacing / Nc
+    return {
+      dif, difY, difConnY,
+      circuitRows: difCircuits.map((circ, ci) => ({
+        circ,
+        circY: allocStart + (ci + 0.5) * cSpacing,
+        globalIdx: circuits.indexOf(circ),
+      })),
+    }
+  })
 
   return (
-    <svg
-      viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-      width="100%"
-      style={{ background: bg, display: 'block', borderRadius: '6px' }}
-      fontFamily="Arial, sans-serif"
-      fontSize="10"
-    >
-      {/* Row labels */}
-      {LAYER_LABELS.map(({ y, label }) => (
-        <text key={label} x={LEFT_M - 6} y={y} textAnchor="end" fill={muted} fontSize="8" fontWeight="bold">
-          {label}
+    <svg viewBox={`0 0 ${VB_W} ${VB_H}`} width="100%"
+      style={{ display: 'block', background: '#fff' }}
+      fontFamily="Verdana, Arial, sans-serif">
+
+      {/* Base schematic (occupies left BASE_W units) */}
+      <image href="/svg/esquema-elec2.svg" x={0} y={0} width={BASE_W} height={VB_H} />
+
+      {/* Short horizontal connector: main bus → spine (shows the split) */}
+      <line x1={206.76} y1={236} x2={DIF_X} y2={236}
+        stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
+
+      {/* IGA potencia label */}
+      {iga > 0 && (
+        <text x={IGA_TEXT_X} y={IGA_TEXT_Y}
+          textAnchor="middle" fontSize="6" fontWeight="bold" fill="#000">
+          {iga}A
         </text>
-      ))}
+      )}
 
-      {/* ── 1. Dashed vertical column lines + labels — only active circuits ── */}
-      {Array.from({ length: slotCount }, (_, i) => {
-        const x = cx(i)
-        return (
-          <g key={`col-${i}`}>
-            {/* Two segments — gap at D label (Y.seccio) and at C label (Y.panelTop) */}
-            <line x1={x} y1={Y.colTop + 2} x2={x} y2={Y.seccio - 7}
-              stroke={dash} strokeWidth="0.7" strokeDasharray="4 3" />
-            <line x1={x} y1={Y.seccio + 12} x2={x} y2={Y.panelTop - 10}
-              stroke={dash} strokeWidth="0.7" strokeDasharray="4 3" />
-            {/* C, E, G... — bottom of SECCIONS zone (= panel top level) */}
-            <text x={x} y={Y.panelTop - 2} textAnchor="middle" fill={fg} fontSize="8" fontWeight="bold">
-              {BOT_LABELS[i]}
-            </text>
-            {/* D, F, H... — top of SECCIONS zone (= seccio level) */}
-            <text x={x} y={Y.seccio - 2} textAnchor="middle" fill={fg} fontSize="8" fontWeight="bold">
-              {TOP_LABELS[i]}
-            </text>
-          </g>
-        )
-      })}
+      {/* Differential vertical spine */}
+      {groups.length > 0 && (
+        <line x1={DIF_X} y1={groups[0].difY} x2={DIF_X} y2={groups[groups.length - 1].difY}
+          stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
+      )}
+      <circle cx={DIF_X} cy={236} r={1.8} fill="#000" />
 
-      {/* ── 2. Data in active columns (Can Manel layout) ── */}
-      {/* Potència: top zone | Receptor: RECEPTORS zone (above D labels) | Seccio: SECCIONS zone (D-C band) */}
-      {circuits.slice(0, slotCount).map((c, i) => {
-        const x = cx(i)
-        return (
-          <g key={c.id}>
-            {/* POTÈNCIA — toFixed(2) per alineació uniforme, baixat 5px */}
-            {c.potencia_kw > 0 && (
-              <text
-                x={x - 4} y={Y.potencia + 19}
-                textAnchor="start" fill={fg} fontSize="10"
-                transform={`rotate(-90 ${x - 4} ${Y.potencia + 19})`}
-              >
-                {c.potencia_kw.toFixed(2).replace('.', ',')} kW
-              </text>
-            )}
-            {/* RECEPTOR NAME — propera a la línia */}
-            <text
-              x={x - 4} y={Y.seccio - 2}
-              textAnchor="start" fill={fg} fontSize="10"
-              transform={`rotate(-90 ${x - 4} ${Y.seccio - 2})`}
-            >
-              {c.nom}
-            </text>
-            {/* SECCIÓ — mateixa alineació que nom i potència */}
-            <text
-              x={x - 4} y={Y.panelTop - 12}
-              textAnchor="start" fill={muted} fontSize="10"
-              transform={`rotate(-90 ${x - 4} ${Y.panelTop - 12})`}
-            >
-              {c.seccio}
-            </text>
-            {/* PIA symbol + amperaje between column bottom and panel */}
-            {(() => {
-              const piaYBot = Y.panelTop + 22   // below C/E/G labels
-              const piaYTop = piaYBot + 18
-              const r = 3
-              return (
-                <g key={`pia-sym-${c.id}`}>
-                  {/* Line from column to PIA top */}
-                  <line x1={x} y1={Y.colBot} x2={x} y2={piaYTop} stroke={stroke} strokeWidth="1" />
-                  {/* Top terminal circle */}
-                  <circle cx={x} cy={piaYTop} r={r} fill={bg} stroke={stroke} strokeWidth="0.9" />
-                  {/* Diagonal blade */}
-                  <line x1={x-4} y1={piaYBot+5} x2={x+4} y2={piaYTop-5} stroke={fg} strokeWidth="1.2" />
-                  {/* Bottom terminal circle */}
-                  <circle cx={x} cy={piaYBot} r={r} fill={bg} stroke={stroke} strokeWidth="0.9" />
-                  {/* Amperaje */}
-                  {c.pia_amperatge > 0 && (
-                    <text x={x+5} y={piaYBot+8} fill={fg} fontSize="8" fontWeight="bold">
-                      {c.pia_amperatge}A
-                    </text>
-                  )}
-                  {/* Line from PIA into panel */}
-                  <line x1={x} y1={piaYBot} x2={x} y2={Y.panelTop} stroke={stroke} strokeWidth="1" />
-                </g>
-              )
-            })()}
-          </g>
-        )
-      })}
+      {groups.map(({ dif, difY, difConnY, circuitRows }) => (
+        <g key={dif.id}>
+          <circle cx={DIF_X} cy={difY} r={1.5} fill="#000" />
+          {/* Differential symbol starts at DIF_X */}
+          <image href="/svg/simbolo-diferencial.svg"
+            x={DIF_X} y={difY - DIF_H / 2} width={DIF_W} height={DIF_H} />
+          <text x={DIF_X + DIF_W / 2} y={difY + DIF_H / 2 + 6}
+            textAnchor="middle" fontSize="5" fontWeight="bold" fill="#000">
+            {dif.amperatge}A / {dif.sensibilitat_ma} mA
+          </text>
 
-      {/* ── 3. Outer panel rectangle ── */}
-      <rect x={LEFT_M} y={Y.panelTop} width={NUM_COLS * COL_W} height={Y.panelBot - Y.panelTop}
-        fill="none" stroke={stroke} strokeWidth="1.4" />
+          {/* Vertical thermic bus from DIF_END_X */}
+          {circuitRows.length > 0 && (() => {
+            const ys = [difConnY, ...circuitRows.map(r => r.circY)]
+            return <line x1={DIF_END_X} y1={Math.min(...ys)} x2={DIF_END_X} y2={Math.max(...ys)}
+              stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
+          })()}
+          {/* Differential → bus connector */}
+          <line x1={DIF_CONN_X} y1={difConnY} x2={DIF_END_X} y2={difConnY}
+            stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
+          <circle cx={DIF_END_X} cy={difConnY} r={1.2} fill="#000" />
 
-      {/* ── 5. Differential groups — dashed boxes inside panel ── */}
-      {grupos.map((g, gi) => {
-        const xs    = g.idxs.map(cx)
-        const xMin  = Math.min(...xs) - COL_W / 2
-        const xMax  = Math.max(...xs) + COL_W / 2
-        const xCtr  = (xMin + xMax) / 2
-        return (
-          <g key={g.dif.id || gi}>
-            <rect x={xMin + 2} y={Y.difTop} width={xMax - xMin - 4} height={Y.difBot - Y.difTop}
-              fill="none" stroke={dash} strokeWidth="0.9" strokeDasharray="4 3" />
-            <text x={xCtr} y={(Y.difTop + Y.difBot) / 2 + 4}
-              textAnchor="middle" fill={fg} fontSize="9" fontWeight="bold">
-              {g.dif.amperatge}A/{g.dif.sensibilitat_ma}mA
-            </text>
-            {/* Line from dif center to panel bottom */}
-            <line x1={xCtr} y1={Y.difBot} x2={xCtr} y2={Y.panelBot}
-              stroke={stroke} strokeWidth="1.2" />
-          </g>
-        )
-      })}
+          {/* Per-circuit thermic elements */}
+          {circuitRows.map(({ circ, circY, globalIdx }) => {
+            // Align thermic symbol so its internal circuit Y aligns with circY
+            const termSymY = circY - TERM_H * TERM_CIRC_Y_FRAC
+            const labelBot = BOT_LABELS[globalIdx] ?? `${globalIdx + 1}`
+            const labelTop = TOP_LABELS[globalIdx] ?? `${globalIdx + 1}`
 
-      {/* Bus inside panel bottom */}
-      {grupos.length > 0 && (() => {
-        const centers = grupos.map((g) => {
-          const xs = g.idxs.map(cx)
-          return (Math.min(...xs) + Math.max(...xs)) / 2
-        })
-        return (
-          <line x1={Math.min(...centers, CENTER_X)} y1={Y.panelBot}
-            x2={Math.max(...centers, CENTER_X)} y2={Y.panelBot}
-            stroke={stroke} strokeWidth="1.4" />
-        )
-      })()}
+            return (
+              <g key={circ.id}>
+                <circle cx={DIF_END_X} cy={circY} r={1.2} fill="#000" />
 
-      {/* ── 6. Dashed trunk: panel → IGA ── */}
-      <line x1={CENTER_X} y1={Y.trunk1} x2={CENTER_X} y2={Y.trunk2}
-        stroke={dash} strokeWidth="1.4" strokeDasharray="5 3" />
+                {/* Horizontal branch: 5mm gap then line to symbol */}
+                <line x1={TERM_LINE_START} y1={circY} x2={TERM_LINE_END} y2={circY}
+                  stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
 
-      {/* ── 7. IGA box with switch symbol ── */}
-      <rect x={CENTER_X - 13} y={Y.igaTop} width={26} height={igaH}
-        fill={bg} stroke={stroke} strokeWidth="1.4" />
-      {/* Top terminal circle */}
-      <circle cx={CENTER_X} cy={Y.igaTop + 5} r="2.5" fill={bg} stroke={stroke} strokeWidth="1.1" />
-      {/* Diagonal switch blade */}
-      <line x1={CENTER_X - 4} y1={igaCy + 3} x2={CENTER_X + 3} y2={Y.igaTop + 8}
-        stroke={fg} strokeWidth="1.3" />
-      {/* Bottom terminal circle */}
-      <circle cx={CENTER_X} cy={Y.igaBot - 5} r="2.5" fill={bg} stroke={stroke} strokeWidth="1.1" />
-      <text x={CENTER_X + 17} y={igaCy + 4} fill={fg} fontSize="9" fontWeight="bold">
-        {iga}A
-      </text>
+                {/* Thermic symbol — 2mm after line */}
+                <image href="/svg/simbolo-termico.svg"
+                  x={TERM_X} y={termSymY} width={TERM_W} height={TERM_H} />
 
-      {/* ── 8. Dashed trunk: IGA → ICP ── */}
-      <line x1={CENTER_X} y1={Y.igaBot} x2={CENTER_X} y2={Y.icpTop}
-        stroke={dash} strokeWidth="1.4" strokeDasharray="5 3" />
+                {/* Amperage below thermic */}
+                {circ.pia_amperatge > 0 && (
+                  <text x={TERM_X + TERM_W / 2} y={termSymY + TERM_H + 5}
+                    textAnchor="middle" fontSize="5" fontWeight="bold" fill="#000">
+                    {circ.pia_amperatge}A
+                  </text>
+                )}
 
-      {/* ── 9. ICP — small solid box ── */}
-      <rect x={CENTER_X - 9} y={Y.icpTop} width={18} height={Y.icpBot - Y.icpTop}
-        fill={bg} stroke={stroke} strokeWidth="1.2" />
+                {/* Internal circuit line: base image edge → EXT_LINE_START (visible connection from thermic) */}
+                <line x1={BASE_W} y1={circY} x2={EXT_LINE_START} y2={circY}
+                  stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
 
-      {/* ── 10. Dashed trunk: ICP → kWh ── */}
-      <line x1={CENTER_X} y1={Y.icpBot} x2={CENTER_X} y2={Y.kwhTop}
-        stroke={dash} strokeWidth="1.4" strokeDasharray="5 3" />
+                {/* External circuit line: EXT_LINE_START → EXT_LINE_END (outside cuadro) */}
+                <line x1={EXT_LINE_START} y1={circY} x2={EXT_LINE_END} y2={circY}
+                  stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
 
-      {/* ── 11. kWh meter — large rectangle ── */}
-      <rect x={CENTER_X - 23} y={Y.kwhTop} width={46} height={Y.kwhBot - Y.kwhTop}
-        fill={bg} stroke={stroke} strokeWidth="1.2" />
-      <text x={CENTER_X} y={(Y.kwhTop + Y.kwhBot) / 2 + 4}
-        textAnchor="middle" fill={fg} fontSize="11" fontWeight="bold">
-        kWh
-      </text>
+                {/* Earth protection line (1pt) — same span as external line */}
+                <line x1={EARTH_START_X} y1={circY + 4} x2={EARTH_END_X} y2={circY + 4}
+                  stroke="#000" strokeWidth="0.7" strokeDasharray="1 1" />
 
-      {/* ── 12. Terra symbol (bottom-right) ── */}
-      {/* Dashed line from kWh to terra */}
-      <line x1={CENTER_X} y1={Y.kwhBot} x2={CENTER_X} y2={Y.terraBase - 8}
-        stroke={dash} strokeWidth="1.4" strokeDasharray="5 3" />
-      <line x1={CENTER_X} y1={Y.terraBase - 8} x2={SVG_W - RIGHT_M - 10} y2={Y.terraBase - 8}
-        stroke={dash} strokeWidth="1.4" strokeDasharray="5 3" />
-      <line x1={SVG_W - RIGHT_M - 10} y1={Y.terraBase - 8} x2={SVG_W - RIGHT_M - 10} y2={Y.terraBase}
-        stroke={dash} strokeWidth="1.4" strokeDasharray="5 3" />
-      {/* Three terra lines */}
-      {[0, 5, 10].map((offset, j) => (
-        <line key={j}
-          x1={SVG_W - RIGHT_M - 10 - (12 - j * 4)}
-          y1={Y.terraBase + offset}
-          x2={SVG_W - RIGHT_M - 10 + (12 - j * 4)}
-          y2={Y.terraBase + offset}
-          stroke={stroke} strokeWidth={1.6 - j * 0.3} />
+                {/* Letter at START of external line */}
+                <text x={EXT_LINE_START - 1} y={circY + 2}
+                  textAnchor="end" fontSize="5" fontWeight="bold" fill="#000">{labelBot}</text>
+
+                {/* Letter at END of external line */}
+                <text x={EXT_LINE_END + 1} y={circY + 2}
+                  textAnchor="start" fontSize="5" fontWeight="bold" fill="#000">{labelTop}</text>
+
+                {/* Cable section + kW above the external line */}
+                <text x={EXT_LINE_START + 2} y={circY - 3}
+                  fontSize="5.5" fill="#000">
+                  {[circ.seccio, circ.potencia_kw > 0 ? `${circ.potencia_kw.toFixed(2).replace('.', ',')} kW` : '']
+                    .filter(Boolean).join('   ')}
+                </text>
+
+                {/* Circuit name: after end letter, centered on line */}
+                <text x={EXT_LINE_END + 8} y={circY + 2}
+                  fontSize="5.5" fontWeight="bold" fill="#000">{circ.nom}</text>
+              </g>
+            )
+          })}
+        </g>
       ))}
     </svg>
   )

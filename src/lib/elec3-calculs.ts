@@ -32,6 +32,7 @@ export interface TramCalculat extends Tram {
   moment_kwm: number
   caiguda_parcial_pct: number
   caiguda_total_pct: number
+  limit_pct: number
   ok: boolean
 }
 
@@ -101,9 +102,34 @@ export function migrateTrams(existing: Tram[]): Tram[] {
 }
 
 const GAMMA: Record<Material, number> = { coure: 56, alumini: 35 }
-const LIMIT_PCT = 5
 
-export function calculaTrams(trams: Tram[]): TramCalculat[] {
+function limitPct(nom: string): number {
+  const n = nom.toLowerCase()
+  return /llum|alumb|il·lum|il\.lum|light|lamp/.test(n) ? 3 : 5
+}
+
+// Factor de càrrega per al prefill inicial des de l'ELEC-2.
+// Valors orientatius per a instal·lacions residencials; l'instalador els pot modificar manualment.
+// Per a instal·lacions no residencials, cal ajustar-los manualment.
+export function carregaPctFromNom(nom: string): number {
+  const n = nom.toLowerCase()
+  // Endoll de bany: ús molt esporàdic
+  if (/endoll|presa/.test(n) && /bany|lavabo|wc/.test(n)) return 20
+  // Circuits de bany (llum, extractor): ús breu i intermitent
+  if (/bany|lavabo|wc/.test(n)) return 30
+  // Il·luminació general / principal
+  if (/general|principal/.test(n) && /llum|iluminac|il·lum|enll|light|led|fluoresc/.test(n)) return 75
+  // Aire condicionat: compressor tot o res (ITC-BT-47: 100% quan funciona)
+  if (/aire|clima|a\.c\./.test(n)) return 100
+  // Il·luminació no general
+  if (/llum|iluminac|il·lum|enll|light|led|fluoresc/.test(n)) return 75
+  // Endolls generals
+  if (/endoll|presa/.test(n)) return 25
+  return 50
+}
+
+// circuitNoms: optional ELEC-2 circuit names indexed by circuit slot (0 = first circuit after DI)
+export function calculaTrams(trams: Tram[], circuitNoms?: string[]): TramCalculat[] {
   // Topology: DI (tram 0) → main panel → each circuit branches in parallel.
   // Total drop for each branch = DI_drop + branch_own_drop (NOT cumulative series).
   let diDrop = 0
@@ -128,6 +154,9 @@ export function calculaTrams(trams: Tram[]): TramCalculat[] {
 
     // Total: DI drop + own drop. Empty rows: show 0.
     const total = isEmpty ? 0 : (idx === 0 ? dU : diDrop + dU)
+    // Use ELEC-2 circuit name for limit detection if available, otherwise tram nom
+    const nomForLimit = (idx > 0 && circuitNoms?.[idx - 1]) ? circuitNoms[idx - 1] : t.nom
+    const limit = limitPct(nomForLimit)
 
     return {
       ...t,
@@ -136,7 +165,8 @@ export function calculaTrams(trams: Tram[]): TramCalculat[] {
       moment_kwm: round2(moment),
       caiguda_parcial_pct: round2(dU),
       caiguda_total_pct: round2(total),
-      ok: isEmpty ? true : total <= LIMIT_PCT,
+      limit_pct: limit,
+      ok: isEmpty ? true : total <= limit,
     }
   })
 }

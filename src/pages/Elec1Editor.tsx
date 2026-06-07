@@ -6,8 +6,8 @@ import { useAuthStore } from '../stores/authStore'
 import { getCertificatElec1, updateCertificatElec1, type CertificatElec1 } from '../lib/supabase-elec1'
 import { getProjecte } from '../lib/supabase-projectes'
 import type { Projecte } from '../lib/supabase-projectes'
-import { fillElec1Xfa } from '../lib/xfa-fill'
-import { FormInput, FormSelect } from '../components/ui/FormField'
+import { generateElec1PDF } from '../lib/pdf-elec1'
+import { FormInput } from '../components/ui/FormField'
 import toast from 'react-hot-toast'
 
 const TIPUS_ACTUACIO_OPT = [
@@ -142,10 +142,11 @@ export function Elec1Editor() {
   }
 
   const handleExport = async () => {
-    if (!cert || !instalador) return
+    if (!cert) return
+    if (!instalador) { toast.error('Cal completar el perfil d\'instal·lador abans d\'exportar'); return }
     setExporting(true)
     try {
-      const pdfBytes = await fillElec1Xfa(cert, instalador)
+      const pdfBytes = await generateElec1PDF(cert, instalador)
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -236,12 +237,45 @@ export function Elec1Editor() {
         {/* Característiques */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card space-y-4">
           <h3 className="font-display font-semibold text-xs tracking-widest uppercase text-amber-500/70">Característiques</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <FormSelect label="Tipus d'actuació" value={cert.tipus_actuacio} onChange={(e) => upd('tipus_actuacio', e.target.value)} options={TIPUS_ACTUACIO_OPT} />
-            {fi('cups', 'CUPS', 'ES0021...')}
-            <FormSelect label="Classificació" value={cert.classificacio} onChange={(e) => upd('classificacio', e.target.value)} options={CLASSIFICACIO_OPT} />
+
+          <div className="space-y-1.5">
+            <span className="field-label">Tipus d'actuació</span>
+            <div className="flex gap-2 flex-wrap">
+              {TIPUS_ACTUACIO_OPT.map(o => (
+                <button key={o.value} onClick={() => upd('tipus_actuacio', o.value)}
+                  className={`px-3 py-1.5 rounded-lg text-sm border transition-all ${cert.tipus_actuacio === o.value ? 'bg-amber-500 border-amber-500 text-black font-semibold' : 'border-ink-500 text-slate-400 hover:border-amber-500/40'}`}>
+                  {o.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <FormSelect label="Ús de la instal·lació" value={cert.us_installacio} onChange={(e) => upd('us_installacio', e.target.value)} options={US_INSTALLACIO_OPT} />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <span className="field-label">Classificació</span>
+              <div className="flex gap-2">
+                {CLASSIFICACIO_OPT.map(o => (
+                  <button key={o.value} onClick={() => upd('classificacio', o.value)}
+                    className={`px-3 py-1.5 rounded-lg text-sm border transition-all ${cert.classificacio === o.value ? 'bg-amber-500 border-amber-500 text-black font-semibold' : 'border-ink-500 text-slate-400 hover:border-amber-500/40'}`}>
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {fi('cups', 'CUPS', 'ES0021...')}
+          </div>
+
+          <div className="space-y-1.5">
+            <span className="field-label">Ús de la instal·lació</span>
+            <div className="flex gap-2 flex-wrap">
+              {US_INSTALLACIO_OPT.map(o => (
+                <button key={o.value} onClick={() => upd('us_installacio', o.value)}
+                  className={`px-3 py-1.5 rounded-lg text-sm border transition-all ${cert.us_installacio === o.value ? 'bg-amber-500 border-amber-500 text-black font-semibold' : 'border-ink-500 text-slate-400 hover:border-amber-500/40'}`}>
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </motion.div>
 
         {/* Dades tècniques */}

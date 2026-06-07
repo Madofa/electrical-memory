@@ -13,6 +13,7 @@ export interface Elec3Doc {
   trams: Tram[]
   estat: 'esborrany' | 'finalitzat'
   us_installacio: string
+  caracteristiques_edifici: string
   empresa_distribuidora: string
   nova_ampliacio_reforma: 'nova' | 'ampliacio' | 'reforma'
   resist_terra_ohm: number | null
@@ -45,6 +46,7 @@ export async function createElec3Doc(
       trams: initTrams(),
       estat: 'esborrany',
       us_installacio: 'Vivenda Elevada',
+      caracteristiques_edifici: '',
       empresa_distribuidora: '',
       nova_ampliacio_reforma: 'nova',
       resist_terra_ohm: null,

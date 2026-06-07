@@ -12,16 +12,7 @@ interface Props {
   onClose: () => void
 }
 
-const US_OPTIONS = [
-  { value: 'a) Instal·lacions industrials', label: 'a) Industrial / Taller (fàbrica, producció)' },
-  { value: 'b) Instal·lacions comercials i oficines', label: 'b) Local comercial / Oficina / Magatzem comercial' },
-  { value: 'c) Instal·lacions d\'ús públic i espectacles', label: 'c) Ús públic / Espectacles' },
-  { value: 'd) Garatges i aparcaments', label: 'd) Garatge / Aparcament' },
-  { value: 'e) Piscines i fonts', label: 'e) Piscines / Fonts' },
-  { value: 'f) Instal·lacions d\'habitatges', label: 'f) Habitatge (unifamiliar / bloc)' },
-  { value: 'g) Instal·lacions en locals amb risc d\'incendi o explosió', label: 'g) Local amb risc d\'incendi o explosió' },
-  { value: 'h) Altres', label: 'h) Altres' },
-]
+const US_SUGGESTIONS = ['Habitatge', 'Magatzem', 'Local comercial', 'Oficina', 'Taller', 'Garatge', 'Piscina', 'Restaurant', 'Bar']
 
 const NCP_OPTIONS = [
   { value: 'nova', label: 'Nova instal·lació' },
@@ -92,10 +83,10 @@ export function ProjecteForm({ initial, onSave, onClose }: Props) {
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <FormInput label="Nom del projecte" value={form.nom} onChange={set('nom')} placeholder="Ex: Can Manel" required autoFocus />
             <FormInput
-              label="Tipus d'edifici / Característiques"
+              label="Característiques de l'edifici (descripció física)"
               value={form.caracteristiques_edifici}
               onChange={set('caracteristiques_edifici')}
-              placeholder="ex: Magatzem, Local comercial, Casa unifamiliar..."
+              placeholder="ex: Nau industrial PB. Estructura metàl·lica. 350 m²."
             />
 
             {/* Titular */}
@@ -140,7 +131,7 @@ export function ProjecteForm({ initial, onSave, onClose }: Props) {
                 <FormInput label="CUPS" value={form.cups} onChange={set('cups')} placeholder="ES0021..." />
               </div>
               <div className="grid grid-cols-1 gap-4">
-                <FormInput label="Característiques de l'edifici" value={form.caracteristiques_edifici} onChange={set('caracteristiques_edifici')} placeholder="ex: Casa unifamiliar aïllada, Local comercial, Taller..." />
+                <FormInput label="Característiques de l'edifici (descripció física)" value={form.caracteristiques_edifici} onChange={set('caracteristiques_edifici')} placeholder="ex: Nau industrial PB. Estructura metàl·lica. 350 m²." />
               </div>
 
               <div className="grid grid-cols-3 gap-4">
@@ -163,7 +154,18 @@ export function ProjecteForm({ initial, onSave, onClose }: Props) {
               <div className="grid grid-cols-3 gap-4">
                 <FormSelect label="Nova / Ampliació / Reforma" value={form.nova_ampliacio_reforma} onChange={set('nova_ampliacio_reforma')} options={NCP_OPTIONS} />
                 <FormSelect label="Classificació" value={form.classificacio} onChange={set('classificacio')} options={CLASSIF_OPTIONS} />
-                <FormSelect label="Ús de la instal·lació" value={form.us_installacio} onChange={set('us_installacio')} options={US_OPTIONS} />
+                <div className="flex flex-col gap-1">
+                  <FormInput
+                    label="Ús de la instal·lació (PDF)"
+                    value={form.us_installacio}
+                    onChange={set('us_installacio')}
+                    placeholder="ex: Habitatge, Magatzem, Local comercial..."
+                    list="us-suggestions"
+                  />
+                  <datalist id="us-suggestions">
+                    {US_SUGGESTIONS.map(s => <option key={s} value={s} />)}
+                  </datalist>
+                </div>
               </div>
             </div>
 

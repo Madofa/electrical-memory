@@ -7,13 +7,26 @@ import { getElec3Doc, updateElec3Doc, type Elec3Doc } from '../lib/supabase-elec
 import { getProjecte, type Projecte } from '../lib/supabase-projectes'
 import { getEsquemaByProjecte } from '../lib/supabase-esquemes'
 import type { Diferencial, Circuit } from '../types/esquemaUnifilar'
-import { calculaTrams, migrateTrams, FIXED_SLOTS, type Tram, type TramCalculat } from '../lib/elec3-calculs'
+import { calculaTrams, migrateTrams, carregaPctFromNom, FIXED_SLOTS, type Tram, type TramCalculat } from '../lib/elec3-calculs'
 import { FormInput, FormSelect } from '../components/ui/FormField'
 import { generateElec3PDF } from '../lib/pdf-elec3'
 import toast from 'react-hot-toast'
 
 // FIXED_SLOTS imported to satisfy module dependency (used by migrateTrams internally)
 void FIXED_SLOTS
+
+function Tip({ children, tip }: { children: React.ReactNode; tip: string }) {
+  return (
+    <div className="relative group cursor-help w-full">
+      {children}
+      <div className="pointer-events-none absolute bottom-full right-0 mb-1.5 z-50 hidden group-hover:flex">
+        <div className="bg-[#0f1729] border border-amber-500/30 rounded-lg px-3 py-2 text-[10px] text-slate-300 font-mono whitespace-pre-line shadow-xl w-52 leading-relaxed">
+          {tip}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export function Elec3Editor() {
   const { id } = useParams<{ id: string }>()
@@ -22,6 +35,11 @@ export function Elec3Editor() {
   const [doc, setDoc] = useState<Elec3Doc | null>(null)
   const [loading, setLoading] = useState(true)
   const [dirty, setDirty] = useState(false)
+  const [numDiferencials, setNumDiferencials] = useState<number | null>(() => {
+    if (!id) return null
+    const v = localStorage.getItem(`elec3_numdifs_${id}`)
+    return v ? parseInt(v) : null
+  })
   const [autoSaving, setAutoSaving] = useState(false)
   const [exporting, setExporting] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -82,6 +100,12 @@ export function Elec3Editor() {
                 // Trams 1-12 = C-D through Y-Z: map from ELEC-2 circuits[idx-1]
                 const circ = circs[idx - 1]
                 if (!circ) return t
+                // Revert bad migration: if carrega_pct was set to 100 by a previous bug,
+                // restore the correct value from carregaPctFromNom
+                const correctCarrega = carregaPctFromNom(circ.nom)
+                if (t.potencia_kw !== 0 && t.carrega_pct === 100 && correctCarrega !== 100) {
+                  return { ...t, carrega_pct: correctCarrega }
+                }
                 if (t.potencia_kw !== 0) return t  // already has data
                 // Parse section from "2×1,5+1,5" → 1.5
                 const seccioMatch = circ.seccio.replace(',', '.').match(/[×x]\s*(\d+\.?\d*)/)
@@ -89,6 +113,7 @@ export function Elec3Editor() {
                 return {
                   ...t,
                   potencia_kw: circ.potencia_kw || t.potencia_kw,
+                  carrega_pct: carregaPctFromNom(circ.nom),
                   seccio_mm2: seccio || t.seccio_mm2,
                   conduc_neutre_mm2: t.conduc_neutre_mm2 ?? seccio,
                   conduc_protec_mm2: t.conduc_protec_mm2 ?? seccio,
@@ -104,7 +129,8 @@ export function Elec3Editor() {
           setDoc(d => {
             if (!d) return d
             const patch: Partial<Elec3Doc> = {}
-            if (!d.us_installacio)          patch.us_installacio          = proj.us_installacio || ''
+            if (!d.us_installacio)           patch.us_installacio           = proj.us_installacio || ''
+            if (!d.caracteristiques_edifici) patch.caracteristiques_edifici = proj.caracteristiques_edifici || ''
             if (!d.empresa_distribuidora)   patch.empresa_distribuidora   = proj.empresa_distribuidora || ''
             if (!d.resist_terra_ohm   && proj.resist_terra_ohm)    patch.resist_terra_ohm   = proj.resist_terra_ohm
             if (!d.potencia_instal_kw && proj.potencia_kw)         patch.potencia_instal_kw = proj.potencia_kw
@@ -153,7 +179,7 @@ export function Elec3Editor() {
       if (!id) return
       setAutoSaving(true)
       try { await updateElec3Doc(id, { trams }); setDirty(false) }
-      catch { toast.error('Error desant') }
+      catch (e) { toast.error(`Error desant trams: ${e instanceof Error ? e.message : String(e)}`) }
       setAutoSaving(false)
     }, 2000)
   }
@@ -176,7 +202,7 @@ export function Elec3Editor() {
       if (!id) return
       setAutoSaving(true)
       try { await updateElec3Doc(id, { [field]: value as never }); setDirty(false) }
-      catch { toast.error('Error desant') }
+      catch (e) { toast.error(`Error desant ${String(field)}: ${e instanceof Error ? e.message : String(e)}`) }
       setAutoSaving(false)
     }, 2000)
   }
@@ -204,7 +230,7 @@ export function Elec3Editor() {
         const { data: p } = await getProjecte(projecteId)
         if (p) { freshProjecte = p as Projecte; setProjecte(p as Projecte) }
       }
-      const pdfBytes = await generateElec3PDF(doc, instalador, freshProjecte ?? undefined, esquemaDifs, esquemaCircuits)
+      const pdfBytes = await generateElec3PDF(doc, instalador, freshProjecte ?? undefined, esquemaDifs, esquemaCircuits, numDiferencials)
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -222,7 +248,7 @@ export function Elec3Editor() {
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 text-amber-500 animate-spin" /></div>
   if (!doc) return null
 
-  const trams: TramCalculat[] = calculaTrams(doc.trams)
+  const trams: TramCalculat[] = calculaTrams(doc.trams, esquemaCircuits.map(c => c.nom))
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -320,7 +346,9 @@ export function Elec3Editor() {
                   value={t.cos_fi}
                   onChange={(e) => updTram(t.id, 'cos_fi', parseFloat(e.target.value) || 0)}
                 />
-                <div className="text-[11px] text-amber-300/80 font-mono text-right pr-0.5">{t.intensitat_a}</div>
+                <Tip tip={`I = P·càrrega% × 1000 / (U × cosφ)\n= ${t.potencia_kw}×${t.carrega_pct/100} × 1000\n  / (${t.tensio_v ?? 230} × ${t.cos_fi})\n= ${t.intensitat_a} A`}>
+                  <div className="text-[11px] text-amber-300/80 font-mono text-right pr-0.5">{t.intensitat_a}</div>
+                </Tip>
                 <select
                   className="bg-ink-800 border border-ink-600 text-[11px] font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
                   value={t.seccio_mm2}
@@ -337,11 +365,17 @@ export function Elec3Editor() {
                   value={t.longitud_m || ''}
                   onChange={(e) => updTram(t.id, 'longitud_m', parseFloat(e.target.value) || 0)}
                 />
-                <div className="text-[11px] text-slate-400 font-mono text-right pr-0.5">{t.moment_kwm}</div>
-                <div className="text-[11px] text-slate-400 font-mono text-right pr-0.5">{t.caiguda_parcial_pct.toFixed(2)}%</div>
-                <div className={`text-[11px] font-mono text-right pr-0.5 font-semibold ${t.ok ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {t.caiguda_total_pct.toFixed(2)}%
-                </div>
+                <Tip tip={`Moment = P·càrrega% × L\n= ${t.potencia_kw}×${t.carrega_pct/100} × ${t.longitud_m} m\n= ${t.moment_kwm} kW·m`}>
+                  <div className="text-[11px] text-slate-400 font-mono text-right pr-0.5">{t.moment_kwm}</div>
+                </Tip>
+                <Tip tip={`ΔU% = 200000×P×L / (γ×S×U²×cosφ)\nγ(Cu)=56 · S=${t.seccio_mm2}mm² · U=${t.tensio_v ?? 230}V\n= ${t.caiguda_parcial_pct.toFixed(2)}%`}>
+                  <div className="text-[11px] text-slate-400 font-mono text-right pr-0.5">{t.caiguda_parcial_pct.toFixed(2)}%</div>
+                </Tip>
+                <Tip tip={`Total = caig. DI + caig. pròpia\nLímit: ${t.limit_pct}% (${t.limit_pct === 3 ? 'llum' : 'força'})\n${t.ok ? '✓ OK' : `✗ Supera el límit!`}\n= ${t.caiguda_total_pct.toFixed(2)}%`}>
+                  <div className={`text-[11px] font-mono text-right pr-0.5 font-semibold ${t.ok ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {t.caiguda_total_pct.toFixed(2)}%
+                  </div>
+                </Tip>
                 <select
                   className="bg-ink-800 border border-ink-600 text-[10px] font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
                   value={t.tipus_conductor}
@@ -415,13 +449,21 @@ export function Elec3Editor() {
             className="mt-8 card space-y-4"
           >
             <h3 className="font-display font-semibold text-xs tracking-widest uppercase text-amber-500/70">Dades resum (pàgina 2)</h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormInput
+                label="Característiques de l'edifici"
+                value={doc.caracteristiques_edifici ?? ''}
+                onChange={(e) => updDoc('caracteristiques_edifici', e.target.value)}
+                placeholder="ex: Nau industrial PB. Estructura metàl·lica. 350 m²."
+              />
               <FormInput
                 label="Ús de la instal·lació"
                 value={doc.us_installacio ?? ''}
                 onChange={(e) => updDoc('us_installacio', e.target.value)}
-                placeholder="Vivenda Elevada"
+                placeholder="Habitatge, Magatzem, Local comercial..."
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <FormInput
                 label="Empresa distribuïdora"
                 value={doc.empresa_distribuidora ?? ''}
@@ -468,6 +510,26 @@ export function Elec3Editor() {
                 value={String(doc.superficie_local_m2 ?? '')}
                 onChange={(e) => updDoc('superficie_local_m2', e.target.value ? parseFloat(e.target.value) : null)}
                 className="font-mono"
+              />
+            </div>
+            <div className="grid grid-cols-4 gap-4">
+              <FormSelect
+                label="Diferencials al PDF"
+                value={String(numDiferencials ?? '')}
+                onChange={(e) => {
+                  const v = e.target.value ? parseInt(e.target.value) : null
+                  setNumDiferencials(v)
+                  if (id) {
+                    if (v === null) localStorage.removeItem(`elec3_numdifs_${id}`)
+                    else localStorage.setItem(`elec3_numdifs_${id}`, String(v))
+                  }
+                }}
+                options={[
+                  { value: '', label: 'Auto (des d\'ELEC-2)' },
+                  { value: '1', label: '1 diferencial' },
+                  { value: '2', label: '2 diferencials' },
+                  { value: '3', label: '3 diferencials' },
+                ]}
               />
             </div>
           </motion.div>

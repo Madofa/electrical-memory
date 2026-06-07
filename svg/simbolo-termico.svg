@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 33.68 16.63">
+  <!-- Generator: Adobe Illustrator 30.4.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 226)  -->
+  <defs>
+    <style>
+      .st0 {
+        stroke-width: .4px;
+      }
+
+      .st0, .st1 {
+        fill: #010101;
+      }
+
+      .st0, .st2, .st3 {
+        stroke: #010101;
+        stroke-miterlimit: 10;
+      }
+
+      .st2 {
+        stroke-width: .51px;
+      }
+
+      .st2, .st3 {
+        fill: none;
+      }
+
+      .st3 {
+        stroke-width: .51px;
+      }
+    </style>
+  </defs>
+  <line class="st3" y1="15.7" x2="20.44" y2="15.7"/>
+  <ellipse class="st0" cx="20.58" cy="15.7" rx=".86" ry=".73"/>
+  <line class="st3" x1="21.02" y1="15.72" x2="33.53" y2="6.34"/>
+  <g>
+    <line class="st2" x1="17.25" y1="5.21" x2="24.6" y2="12.94"/>
+    <polygon class="st1" points="17.02 6.26 15.39 3.26 18.31 5.04 17.02 6.26"/>
+  </g>
+  <line class="st3" x1="25.04" y1=".52" x2="28.88" y2="4.81"/>
+  <line class="st3" x1="25.34" y1="6.95" x2="28.31" y2="10.17"/>
+  <line class="st3" x1="18.95" y1=".17" x2="21.87" y2="3.26"/>
+  <line class="st3" x1="25.37" y1=".52" x2="21.54" y2="3.26"/>
+  <line class="st3" x1="28.85" y1="4.49" x2="25.33" y2="7.26"/>
+</svg>

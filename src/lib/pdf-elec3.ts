@@ -5,8 +5,8 @@ import type { Projecte } from './supabase-projectes'
 import type { Diferencial, Circuit } from '../types/esquemaUnifilar'
 import { calculaTrams } from './elec3-calculs'
 
-const COL_X = [138.7,170.8,202.1,227.3,269,302.7,337.1,382.4,424.5,
-               464.9,500.2,552.8,584.5,620.6,661.6,699.6,733.6,770.7]
+const COL_X = [133,170.8,202.1,227.3,269,302.7,337.1,382.4,424.5,
+               464.9,500.2,552.8,590,620.6,661.6,733.6,770.7,805.7]
 const ROW_Y = [431.3,406.2,381.1,356,330.9,305.8,280.7,255.5,230.4,205.3,180.2,155.1,130]
 
 const P2 = {
@@ -49,6 +49,7 @@ export async function generateElec3PDF(
   projecte?: Projecte,
   diferencials?: Diferencial[],
   _circuits?: Circuit[],
+  numDiferencialsOverride?: number | null,
 ): Promise<Uint8Array> {
   const response = await fetch('/templates/elec3-blank.pdf')
   if (!response.ok) throw new Error("No s'ha pogut carregar la plantilla ELEC-3")
@@ -89,7 +90,8 @@ export async function generateElec3PDF(
     draw(12, t.canal_tub_encastat_mm ?? (t.id === 'derivacio_individual' ? 60 : 20))
     draw(13, t.canal_tub_sense_encas_mm ?? '')
     draw(14, t.canal_enterrat_prof_m ?? '')
-    draw(15, t.aillament_instal_kohm ?? '')
+    // Aïllament instal·lació: si no s'ha mesurat, mínim REBT ITC-BT-19 = 500 kΩ (0.5 MΩ)
+    draw(15, t.aillament_instal_kohm ?? 500)
     // Default neutre/protec = seccio_mm2 if not set (use || to also catch 0)
     draw(16, t.conduc_neutre_mm2 || t.seccio_mm2)
     draw(17, t.conduc_protec_mm2 || t.seccio_mm2)
@@ -105,7 +107,11 @@ export async function generateElec3PDF(
     page2.drawText(text, { x:coord.x, y:coord.y, size:7.5, font, color:BLACK })
   }
   d2(P2.titular_nom, p?.titular_nom||'')
-  d2(P2.us_installacio, p?.us_installacio||doc.us_installacio||'')
+  // Migra format antic del dropdown ("b) Instal·lacions...") → elimina el prefix "x) "
+  const usRaw = p?.us_installacio || doc.us_installacio || ''
+  const usToShow = usRaw.replace(/^[a-h]\)\s*/i, '')
+  d2(P2.us_installacio, usToShow)
+  d2(P2.caracteristiques_edifici, doc.caracteristiques_edifici || p?.caracteristiques_edifici || '')
   d2(P2.emplacament,     p?.inst_nom_via  || '')
   d2(P2.emplacament_num, p?.inst_numero   || '')
   d2(P2.localitat, p?.inst_poblacio||'')
@@ -122,18 +128,20 @@ export async function generateElec3PDF(
   d2(P2.potencia_max,          p?.potencia_kw             ? String(p.potencia_kw)             : '')
   d2(P2.potencia_instal,       doc.potencia_instal_kw     ? String(doc.potencia_instal_kw)    : p?.potencia_kw ? String(p.potencia_kw) : '')
   d2(P2.superficie,            p?.superficie_local_m2     ? String(p.superficie_local_m2)     : doc.superficie_local_m2 ? String(doc.superficie_local_m2) : '')
-  d2(P2.caracteristiques_edifici, p?.caracteristiques_edifici || '')
+  // caracteristiques_edifici already written above (with old-dropdown migration logic)
   // Diferencials from ELEC-2 esquema
   if (diferencials && diferencials.length > 0) {
+    const limit = numDiferencialsOverride ?? diferencials.length
+    const difsToShow = diferencials.slice(0, Math.min(limit, 3))
     const difCoords = [
       { circuit: P2.dif1_circuit, nombre: P2.dif1_nombre, in_a: P2.dif1_in, sens: P2.dif1_sensibilitat },
       { circuit: P2.dif2_circuit, nombre: P2.dif2_nombre, in_a: P2.dif2_in, sens: P2.dif2_sensibilitat },
       { circuit: P2.dif3_circuit, nombre: P2.dif3_nombre, in_a: P2.dif3_in, sens: P2.dif3_sensibilitat },
     ]
-    diferencials.slice(0, 3).forEach((dif, i) => {
+    difsToShow.slice(0, 3).forEach((dif, i) => {
       const cc = difCoords[i]
       d2(cc.circuit, String(i + 1))
-      d2(cc.nombre,  '1')  // 1 aparell diferencial per fila
+      d2(cc.nombre,  '1')
       d2(cc.in_a,    String(dif.amperatge))
       d2(cc.sens,    String(dif.sensibilitat_ma))
     })

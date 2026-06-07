@@ -2,374 +2,195 @@ import { PDFDocument, rgb, StandardFonts, degrees } from 'pdf-lib'
 import type { Circuit, Diferencial, DadesCapcalera } from '../types/esquemaUnifilar'
 import type { Instalador } from '../types'
 
-// ── Footer field positions (A4 portrait 595×842pt, origin bottom-left) ──────
-// Each footer row is ~25pt tall. From bottom up:
-//   NOTES: 18-42 | ESQUEMA UNIFILAR: 42-68 | TITULAR: 68-93
-//   INSTAL·LADOR: 93-118 | EMPLAÇAMENT: 118-143 | EMPRESA/SECCIO/TENSIÓ: 143-190
-const FOOTER = {
-  empresaDist:    { x: 54,  y: 181, maxW: 140 },
-  seccioConnexio: { x: 217, y: 181, maxW: 100 },
-  tensio:         { x: 354, y: 181, maxW: 55  },
-  emplacament:    { x: 170, y: 154, maxW: 260 },
-  installador:    { x: 170, y: 122, maxW: 260 },
-  titular:        { x: 170, y: 93,  maxW: 260 },
-}
+// ── Same constants as UnifilarSVG.tsx ────────────────────────────────────────
+const VB_W = 480, VB_H = 505.19
+const BASE_W = 322.51
+const CUADRO_Y = 3.2, CUADRO_H = 491.82
+const MM = VB_H / 297
+const DIF_X = 206.76 + 2 * MM  // +2mm right from calibrated point
+const DIF_VB_W = 20.42, DIF_VB_H = 30.93
+const DIF_W = 20, DIF_H = DIF_VB_H * (DIF_W / DIF_VB_W)
+const DIF_END_X = DIF_X + DIF_W
+const DIF_CONN_X = DIF_X + DIF_W * (10.88 / DIF_VB_W)
+const DIF_CONN_Y_FRAC = 29.33 / DIF_VB_H
+const TERM_VB_W = 33.68, TERM_VB_H = 16.63
+const TERM_W = 28, TERM_H = TERM_VB_H * (TERM_W / TERM_VB_W)
+const TERM_CIRC_Y_FRAC = 15.33 / TERM_VB_H
+const TERM_LINE_START = DIF_END_X + 5 * MM
+const TERM_X = 278
+const TERM_LINE_END = TERM_X - 2 * MM
 
-// ── Column grid ──────────────────────────────────────────────────────────────
-const NUM_COLS  = 12
-const XCOL_LEFT  = 83    // left edge of drawing area (after row labels)
-const XCOL_RIGHT = 573   // right edge of drawing area
-const COL_W      = (XCOL_RIGHT - XCOL_LEFT) / NUM_COLS  // ≈ 40.8pt
-
+const EXT_LINE_START = 320.92 + 20 * MM  // +2cm a la dreta
+const EXT_LINE_LEN   = 70
+const EXT_LINE_END   = EXT_LINE_START + EXT_LINE_LEN
+const IGA_TEXT_X = 140.01, IGA_TEXT_Y = 245
 const BOT_LABELS = ['C','E','G','I','K','M','O','Q','S','U','W','Y']
 const TOP_LABELS = ['D','F','H','J','L','N','P','R','T','V','X','Z']
 
-function cx(i: number) { return XCOL_LEFT + COL_W * i + COL_W / 2 }
+// ── Build full diagram SVG string (base + all overlays) ───────────────────────
+async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[], iga: number): Promise<string> {
+  const [baseTxt, difTxt, termTxt] = await Promise.all([
+    fetch('/svg/esquema-elec2.svg').then(r => r.text()),
+    fetch('/svg/simbolo-diferencial.svg').then(r => r.text()),
+    fetch('/svg/simbolo-termico.svg').then(r => r.text()),
+  ])
+  const enc = (t: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(t)}`
+  const baseUrl = enc(baseTxt), difUrl = enc(difTxt), termUrl = enc(termTxt)
 
-// ── Row heights (pt from bottom of page) ────────────────────────────────────
-const R = {
-  colTop:    805,   // top of dashed column lines = POTÈNCIA row top
-  colBot:    548,   // bottom of column lines = where letters C,E,G... sit
-  potencia:  793,   // y of POTÈNCIA values
-  receptor:  700,   // y of RECEPTOR names
-  seccio:    620,   // y of SECCIONS values
-  // Large outer panel rectangle (quadre)
-  panelTop:  545,   // = colBot − 3
-  panelBot:  440,
-  // Differential group boxes inside the panel (dashed)
-  difTop:    535,
-  difBot:    450,
-  // Trunk below panel
-  trunkExit: 440,   // exits bottom of panel
-  // IGA
-  igaTop:    415,
-  igaBot:    375,
-  // ICP
-  icpTop:    352,
-  icpBot:    328,
-  // kWh meter
-  kwhTop:    302,
-  kwhBot:    250,
-  // Terra
-  terraBase: 238,
+  const activeDifs = diferencials.filter(d => circuits.some(c => c.diferencial_grup === d.id))
+  const N = activeDifs.length || 1
+  const spacing = CUADRO_H / N
+
+  const groups = activeDifs.map((dif, gi) => {
+    const allocStart = CUADRO_Y + gi * spacing
+    const difY = allocStart + spacing / 2
+    const difConnY = (difY - DIF_H / 2) + DIF_H * DIF_CONN_Y_FRAC
+    const difCircuits = circuits.filter(c => c.diferencial_grup === dif.id)
+    const Nc = difCircuits.length || 1
+    const cSpacing = spacing / Nc
+    const circuitRows = difCircuits.map((circ, ci) => ({
+      circ, globalIdx: circuits.indexOf(circ),
+      circY: allocStart + (ci + 0.5) * cSpacing,
+    }))
+    return { dif, difY, difConnY, circuitRows }
+  })
+
+  let els = `<image href="${baseUrl}" x="0" y="0" width="${BASE_W}" height="${VB_H}"/>
+  ${iga > 0 ? `<text x="${IGA_TEXT_X}" y="${IGA_TEXT_Y}" text-anchor="middle" font-size="6" font-weight="bold" fill="#000">${iga}A</text>` : ''}`
+
+  // Differential spine
+  if (groups.length > 0) {
+    const y1 = groups[0].difY, y2 = groups[groups.length - 1].difY
+    els += `<line x1="${DIF_X}" y1="${y1}" x2="${DIF_X}" y2="${y2}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
+  }
+  els += `<circle cx="${DIF_X}" cy="236" r="1.8" fill="#000"/>`
+
+  for (const { dif, difY, difConnY, circuitRows } of groups) {
+    els += `<circle cx="${DIF_X}" cy="${difY}" r="1.5" fill="#000"/>`
+    els += `<image href="${difUrl}" x="${DIF_X}" y="${difY - DIF_H / 2}" width="${DIF_W}" height="${DIF_H}"/>`
+    els += `<text x="${DIF_X + DIF_W / 2}" y="${difY + DIF_H / 2 + 6}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${dif.amperatge}A / ${dif.sensibilitat_ma} mA</text>`
+
+    if (circuitRows.length > 0) {
+      const ys = [difConnY, ...circuitRows.map(r => r.circY)]
+      els += `<line x1="${DIF_END_X}" y1="${Math.min(...ys)}" x2="${DIF_END_X}" y2="${Math.max(...ys)}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
+    }
+    els += `<line x1="${DIF_CONN_X}" y1="${difConnY}" x2="${DIF_END_X}" y2="${difConnY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
+    els += `<circle cx="${DIF_END_X}" cy="${difConnY}" r="1.2" fill="#000"/>`
+
+    for (const { circ, circY, globalIdx } of circuitRows) {
+      const termSymY = circY - TERM_H * TERM_CIRC_Y_FRAC
+      const labelA = BOT_LABELS[globalIdx] ?? String(globalIdx + 1)
+      const labelB = TOP_LABELS[globalIdx] ?? String(globalIdx + 1)
+
+      els += `<circle cx="${DIF_END_X}" cy="${circY}" r="1.2" fill="#000"/>`
+      // Thermic line with 5mm gap, symbol 2mm after line
+      els += `<line x1="${TERM_LINE_START}" y1="${circY}" x2="${TERM_LINE_END}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
+      els += `<image href="${termUrl}" x="${TERM_X}" y="${termSymY}" width="${TERM_W}" height="${TERM_H}"/>`
+      if (circ.pia_amperatge) els += `<text x="${TERM_X + TERM_W / 2}" y="${termSymY + TERM_H + 5}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${circ.pia_amperatge}A</text>`
+      // Internal line: base image edge → EXT_LINE_START (visible from thermic)
+      els += `<line x1="${BASE_W}" y1="${circY}" x2="${EXT_LINE_START}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
+      // External line: EXT_LINE_START → EXT_LINE_END (outside cuadro)
+      els += `<line x1="${EXT_LINE_START}" y1="${circY}" x2="${EXT_LINE_END}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
+      // Earth protection: same span as external line
+      els += `<line x1="${EXT_LINE_START}" y1="${circY + 4}" x2="${EXT_LINE_END}" y2="${circY + 4}" stroke="#000" stroke-width="0.7" stroke-dasharray="1 1"/>`
+      // Letter at START of external line
+      els += `<text x="${EXT_LINE_START - 1}" y="${circY + 2}" text-anchor="end" font-size="5" font-weight="bold" fill="#000">${labelA}</text>`
+      // Letter at END of external line
+      els += `<text x="${EXT_LINE_END + 1}" y="${circY + 2}" font-size="5" font-weight="bold" fill="#000">${labelB}</text>`
+      // Cable section + kW above external line
+      const cableKw = [circ.seccio, circ.potencia_kw > 0 ? `${circ.potencia_kw.toFixed(2).replace('.', ',')} kW` : ''].filter(Boolean).join('   ')
+      if (cableKw) els += `<text x="${EXT_LINE_START + 2}" y="${circY - 3}" font-size="5.5" fill="#000">${cableKw}</text>`
+      // Circuit name after end letter, centered on line
+      els += `<text x="${EXT_LINE_END + 8}" y="${circY + 2}" font-size="5.5" font-weight="bold" fill="#000">${circ.nom}</text>`
+    }
+  }
+
+  return `<svg viewBox="0 0 ${VB_W} ${VB_H}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Verdana,Arial,sans-serif">${els}</svg>`
 }
 
-const CENTER_X = (XCOL_LEFT + XCOL_RIGHT) / 2
+// ── Rasterize SVG string → PNG ────────────────────────────────────────────────
+async function svgToPng(svgStr: string, w: number, h: number): Promise<Uint8Array> {
+  const blob = new Blob([svgStr], { type: 'image/svg+xml' })
+  const url = URL.createObjectURL(blob)
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const c = document.createElement('canvas')
+      c.width = Math.round(w * 2); c.height = Math.round(h * 2)
+      const ctx = c.getContext('2d')!
+      ctx.scale(2, 2)
+      ctx.drawImage(img, 0, 0, w, h)
+      URL.revokeObjectURL(url)
+      c.toBlob(b => b!.arrayBuffer().then(buf => resolve(new Uint8Array(buf))), 'image/png')
+    }
+    img.onerror = reject
+    img.src = url
+  })
+}
 
+// ── PDF generation — official elec2-blank.pdf template ───────────────────────
 export async function generateElec2PDF(
   circuits: Circuit[],
   diferencials: Diferencial[],
-  iga: number,
+  _iga: number,
   capcalera: DadesCapcalera,
   instalador?: Instalador | null,
 ): Promise<Uint8Array> {
-  const response = await fetch('/templates/elec2-blank.pdf')
-  if (!response.ok) throw new Error("No s'ha pogut carregar la plantilla ELEC-2")
-  const templateBytes = new Uint8Array(await response.arrayBuffer())
+  // 1. Official blank form as background
+  const templateResp = await fetch('/templates/elec2-blank.pdf')
+  if (!templateResp.ok) throw new Error("No s'ha pogut carregar la plantilla ELEC-2")
+  const templateBytes = new Uint8Array(await templateResp.arrayBuffer())
 
   const pdfDoc = await PDFDocument.create()
-  const [embeddedPage] = await pdfDoc.embedPdf(templateBytes, [0])
-  const page = pdfDoc.addPage([595, 842])
-  page.drawPage(embeddedPage, { x: 0, y: 0, width: 595, height: 842 })
-
-  const font     = await pdfDoc.embedFont(StandardFonts.Helvetica)
-  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+  const [embPage] = await pdfDoc.embedPdf(templateBytes, [0])
+  const font  = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  const fontB = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
   const BLACK = rgb(0, 0, 0)
-  const DGRAY = rgb(0.35, 0.35, 0.35)
 
-  // ── Footer ───────────────────────────────────────────────────────────────
-  const tf = (text: string, x: number, y: number, maxW: number, bold = false) => {
+  // Template is 586×836 (portrait A4)
+  const page = pdfDoc.addPage([586, 836])
+  page.drawPage(embPage, { x: 0, y: 0, width: 586, height: 836 })
+
+  // 2. Build and rasterize the complete diagram
+  const svgStr = await buildDiagramSVG(circuits, diferencials, _iga)
+
+  // Diagram area: x=20..566 (546pt wide), y=196..816 (620pt tall)
+  // Diagram is HORIZONTAL → rotate 90° CCW to fit in portrait form
+  // After 90° CCW: rotated width = diagH, rotated height = diagW
+  const areaW = 546, areaH = 620
+  // Scale so that: diagH ≤ areaW AND diagW ≤ areaH (0.82 = reduce to fit with margin)
+  const scale = Math.min(areaW / VB_H, areaH / VB_W) * 0.92
+  const diagW = VB_W * scale   // becomes rotated HEIGHT
+  const diagH = VB_H * scale   // becomes rotated WIDTH
+
+  // Center rotated image, shifted down 20pt
+  const leftX   = 20 + (areaW - diagH) / 2 + 24   // +6pt
+  const bottomY = 196 + (areaH - diagW) / 2 - 49  // +1.5cm (+42pt)
+
+  // Anchor for 90° CCW: anchorX = leftX + diagH, anchorY = bottomY
+  const anchorX = leftX + diagH
+  const anchorY = bottomY
+
+  const diagPng = await svgToPng(svgStr, diagW * 2, diagH * 2)  // 2× quality
+  const diagImg = await pdfDoc.embedPng(diagPng)
+  page.drawImage(diagImg, {
+    x: anchorX, y: anchorY,
+    width: diagW, height: diagH,
+    rotate: degrees(90),
+  })
+
+  // 3. Data fields at official calibrated positions
+  const tf = (text: string, x: number, y: number, bold = false) => {
     if (!text) return
-    page.drawText(text.slice(0, 60), { x, y, size: 7.5, font: bold ? fontBold : font, color: BLACK, maxWidth: maxW })
+    page.drawText(text.slice(0, 60), { x, y, size: 7.5, font: bold ? fontB : font, color: BLACK })
   }
-  tf(capcalera.empresa_distribuidora, FOOTER.empresaDist.x, FOOTER.empresaDist.y, FOOTER.empresaDist.maxW)
-  tf(capcalera.seccio_connexio,       FOOTER.seccioConnexio.x, FOOTER.seccioConnexio.y, FOOTER.seccioConnexio.maxW)
-  tf(capcalera.tensio,                FOOTER.tensio.x,    FOOTER.tensio.y,    FOOTER.tensio.maxW)
-  tf(capcalera.emplacament,           FOOTER.emplacament.x, FOOTER.emplacament.y, FOOTER.emplacament.maxW)
-  // Instal·lador autoritzat: from instalador profile
+  tf(capcalera.empresa_distribuidora, 54,  181)
+  tf(capcalera.emplacament,           170, 154)
+  tf(capcalera.titular,               170, 93, true)
   if (instalador) {
-    const nomInstalador = instalador.nombre_completo || ''
-    const rasic = instalador.numero_carnet ? ` (RASIC ${instalador.numero_carnet})` : ''
-    page.drawText((nomInstalador + rasic).slice(0, 60), {
-      x: FOOTER.installador.x, y: FOOTER.installador.y,
-      size: 8.5, font: fontBold, color: BLACK, maxWidth: FOOTER.installador.maxW,
-    })
+    const nom = `${instalador.nombre_completo || ''}${instalador.numero_carnet ? ` (RASIC ${instalador.numero_carnet})` : ''}`
+    page.drawText(nom.slice(0, 60), { x: 170, y: 122, size: 8.5, font: fontB, color: BLACK })
   }
-  tf(capcalera.titular,               FOOTER.titular.x,   FOOTER.titular.y,   FOOTER.titular.maxW)
-
-  // Layout follows Can Manel example exactly:
-  //   colTop(805) ← POTÈNCIA values (top)
-  //   RECEPTORS zone: R.seccio+15(635) → R.colTop → receptor names rotated, left of line
-  //   TOP labels (D,F,H...): at R.seccio+3 = 623   ← top of SECCIONS band
-  //   SECCIONS zone: R.panelTop+5(550) → R.seccio → seccio values rotated, left of line
-  //   BOT labels (C,E,G...): at R.panelTop+3 = 548 ← bottom of SECCIONS band / panel top
-
-  // ── 1. Dashed vertical column lines + labels — only for active circuits ──────
-  const slotCount = Math.min(circuits.length, NUM_COLS)
-  for (let i = 0; i < slotCount; i++) {
-    const x = cx(i)
-    // Two segments with gaps at letter positions (no line over the letters)
-    // Segment 1: SECCIONS zone (between C and D labels)
-    page.drawLine({
-      start: { x, y: R.panelTop + 12 },
-      end:   { x, y: R.seccio - 7 },
-      thickness: 0.7, color: DGRAY, dashArray: [4, 3],
-    })
-    // Segment 2: RECEPTORS + POTÈNCIA zone (above D labels)
-    page.drawLine({
-      start: { x, y: R.seccio + 12 },
-      end:   { x, y: R.colTop },
-      thickness: 0.7, color: DGRAY, dashArray: [4, 3],
-    })
-    // C, E, G... — bottom of SECCIONS band (panel top level)
-    page.drawText(BOT_LABELS[i], { x: x - 3, y: R.panelTop + 3, size: 7, font: fontBold, color: BLACK })
-    // D, F, H... — top of SECCIONS band (seccio level)
-    page.drawText(TOP_LABELS[i], { x: x - 3, y: R.seccio + 3,  size: 7, font: fontBold, color: BLACK })
-  }
-
-  // ── 2. Circuit data: potència (top), receptor name (receptors zone), seccio (seccions zone) ──
-  for (let i = 0; i < slotCount; i++) {
-    const c = circuits[i]
-    const x = cx(i)
-
-    // POTÈNCIA — rotated, toFixed(2) per alineació uniforme, baixat 15pt
-    if (c.potencia_kw > 0) {
-      page.drawText(`${c.potencia_kw.toFixed(2).replace('.', ',')} kW`, {
-        x: x - 4, y: R.potencia - 15,
-        size: 6.5, font, color: BLACK,
-        rotate: degrees(90),
-      })
-    }
-
-    // RECEPTOR NAME — RECEPTORS zone (above D labels), rotated vertical, left of line
-    page.drawText(c.nom, {
-      x: x - 4, y: R.seccio + 12,
-      size: 7, font, color: BLACK,
-      rotate: degrees(90),
-    })
-
-    // SECCIÓ DEL CABLE — pujada per separar-la de les lletres C/E/G
-    page.drawText(c.seccio, {
-      x: x - 4, y: R.panelTop + 15,
-      size: 7, font, color: BLACK,
-      rotate: degrees(90),
-    })
-  }
-
-  // ── 3. Large outer panel rectangle (quadre) ───────────────────────────────
-  page.drawRectangle({
-    x: XCOL_LEFT, y: R.panelBot,
-    width: XCOL_RIGHT - XCOL_LEFT,
-    height: R.panelTop - R.panelBot,
-    borderColor: BLACK, borderWidth: 1.4,
-    color: rgb(1, 1, 1),
-  })
-
-  // ── PIA symbols + amperaje for each active circuit ──────────────────────────
-  // Drawn between column bottom and panel top, matching Can Manel style
-  const PIA_H = 18  // height of PIA symbol
-  const PIA_Y_BOT = R.panelTop + 22               // bottom of PIA — clear of C/E/G labels
-  const PIA_Y_TOP = PIA_Y_BOT + PIA_H             // top of PIA symbol
-
-  for (let i = 0; i < slotCount; i++) {
-    const c = circuits[i]
-    const x = cx(i)
-
-    // Line from column bottom to PIA top
-    page.drawLine({ start: { x, y: R.colBot }, end: { x, y: PIA_Y_TOP }, thickness: 1, color: BLACK })
-
-    // PIA symbol: circle (top terminal) + diagonal blade + circle (bottom terminal)
-    const circR = 2
-    page.drawCircle({ x, y: PIA_Y_TOP, size: circR, borderColor: BLACK, borderWidth: 0.9, color: rgb(1,1,1) })
-    page.drawLine({
-      start: { x: x - 3, y: PIA_Y_BOT + 4 },
-      end:   { x: x + 3, y: PIA_Y_TOP - 4 },
-      thickness: 1.1, color: BLACK,
-    })
-    page.drawCircle({ x, y: PIA_Y_BOT, size: circR, borderColor: BLACK, borderWidth: 0.9, color: rgb(1,1,1) })
-
-    // Amperaje value to the right of the symbol
-    if (c.pia_amperatge) {
-      page.drawText(`${c.pia_amperatge}A`, {
-        x: x + 4, y: PIA_Y_BOT + 6,
-        size: 6, font: fontBold, color: BLACK,
-      })
-    }
-
-    // Line from PIA bottom into panel
-    page.drawLine({ start: { x, y: PIA_Y_BOT }, end: { x, y: R.panelTop }, thickness: 1, color: BLACK })
-  }
-
-  // ── 4. Differential group boxes inside the panel (dashed border) ──────────
-  type GrupDif = { dif: Diferencial; idxs: number[] }
-  const grups: GrupDif[] = diferencials
-    .map((d) => ({
-      dif: d,
-      idxs: circuits.map((c, i) => c.diferencial_grup === d.id ? i : -1).filter((i) => i >= 0),
-    }))
-    .filter((g) => g.idxs.length > 0)
-
-  for (const g of grups) {
-    const xs     = g.idxs.map(cx)
-    const xMin   = Math.min(...xs) - COL_W / 2
-    const xMax   = Math.max(...xs) + COL_W / 2
-    const xCtr   = (xMin + xMax) / 2
-    const difH   = R.difTop - R.difBot
-
-    // Dashed rectangle for this differential group
-    page.drawRectangle({
-      x: xMin + 2, y: R.difBot,
-      width: xMax - xMin - 4, height: difH,
-      borderColor: DGRAY, borderWidth: 0.8,
-      color: rgb(1, 1, 1),
-      // pdf-lib drawRectangle supports borderDashArray in some versions;
-      // fallback: draw dashed border manually with 4 drawLine calls
-    })
-    // Overwrite border with dashed lines manually
-    const bx = xMin + 2, by = R.difBot, bw = xMax - xMin - 4, bh = difH
-    const dash = [4, 3]
-    page.drawLine({ start: { x: bx,      y: by      }, end: { x: bx + bw, y: by      }, thickness: 0.8, color: DGRAY, dashArray: dash })
-    page.drawLine({ start: { x: bx + bw, y: by      }, end: { x: bx + bw, y: by + bh }, thickness: 0.8, color: DGRAY, dashArray: dash })
-    page.drawLine({ start: { x: bx + bw, y: by + bh }, end: { x: bx,      y: by + bh }, thickness: 0.8, color: DGRAY, dashArray: dash })
-    page.drawLine({ start: { x: bx,      y: by + bh }, end: { x: bx,      y: by      }, thickness: 0.8, color: DGRAY, dashArray: dash })
-
-    // Label
-    page.drawText(`${g.dif.amperatge}A / ${g.dif.sensibilitat_ma}mA`, {
-      x: xCtr - 18, y: R.difBot + difH / 2 - 3,
-      size: 6, font: fontBold, color: BLACK,
-    })
-
-    // Solid lines from column inside panel down to each differential box
-    for (const i of g.idxs) {
-      const x = cx(i)
-      page.drawLine({
-        start: { x, y: R.panelTop },
-        end:   { x, y: R.difTop   },
-        thickness: 1, color: BLACK,
-      })
-      page.drawLine({
-        start: { x, y: R.difBot    },
-        end:   { x, y: R.panelBot  },
-        thickness: 0.8, color: BLACK, dashArray: [3, 3],
-      })
-    }
-
-    // Line from differential box center down to panel exit point
-    page.drawLine({
-      start: { x: xCtr, y: R.difBot   },
-      end:   { x: xCtr, y: R.panelBot },
-      thickness: 1.2, color: BLACK,
-    })
-  }
-
-  // Bus horizontal inside panel (connects all differential centers)
-  if (grups.length > 0) {
-    const centers = grups.map((g) => {
-      const xs = g.idxs.map(cx)
-      return (Math.min(...xs) + Math.max(...xs)) / 2
-    })
-    page.drawLine({
-      start: { x: Math.min(...centers, CENTER_X), y: R.panelBot },
-      end:   { x: Math.max(...centers, CENTER_X), y: R.panelBot },
-      thickness: 1.4, color: BLACK,
-    })
-  }
-
-  // ── 5. Dashed trunk: panel exit → IGA ────────────────────────────────────
-  page.drawLine({
-    start: { x: CENTER_X, y: R.trunkExit },
-    end:   { x: CENTER_X, y: R.igaTop    },
-    thickness: 1.4, color: BLACK, dashArray: [5, 3],
-  })
-
-  // ── 6. IGA box with official circuit-breaker switch symbol ──────────────────
-  // Official symbol: circle (top terminal) + diagonal blade line + circle (bottom terminal)
-  // Matches IEC/UNE standard for "interruptor automàtic"
-  const igaH = R.igaTop - R.igaBot
-  const igaW = 26
-  const igaCy = R.igaBot + igaH / 2
-
-  page.drawRectangle({
-    x: CENTER_X - igaW / 2, y: R.igaBot,
-    width: igaW, height: igaH,
-    borderColor: BLACK, borderWidth: 1.4,
-    color: rgb(1, 1, 1),
-  })
-  // Top terminal circle (input)
-  const topTermY = R.igaTop - 5
-  const botTermY = R.igaBot + 5
-  page.drawCircle({ x: CENTER_X, y: topTermY, size: 2.8, borderColor: BLACK, borderWidth: 1.2, color: rgb(1,1,1) })
-  // Bottom terminal circle (output)
-  page.drawCircle({ x: CENTER_X, y: botTermY, size: 2.8, borderColor: BLACK, borderWidth: 1.2, color: rgb(1,1,1) })
-  // Switch blade: diagonal from bottom-left to upper-right (open position)
-  // In official form: the blade goes from ~bottom-center up-right, like a "/" at ~60°
-  page.drawLine({
-    start: { x: CENTER_X - 3, y: botTermY + 2 },
-    end:   { x: CENTER_X + 4, y: topTermY - 2  },
-    thickness: 1.3, color: BLACK,
-  })
-  // IGA label
-  page.drawText(`${iga}A`, { x: CENTER_X + igaW / 2 + 3, y: igaCy - 3, size: 7, font: fontBold, color: BLACK })
-
-  // ── 7. Dashed trunk: IGA → ICP ───────────────────────────────────────────
-  page.drawLine({
-    start: { x: CENTER_X, y: R.igaBot  },
-    end:   { x: CENTER_X, y: R.icpTop  },
-    thickness: 1.4, color: BLACK, dashArray: [5, 3],
-  })
-
-  // ── 8. ICP box ───────────────────────────────────────────────────────────
-  const icpW = 18
-  const icpH = R.icpTop - R.icpBot
-  page.drawRectangle({
-    x: CENTER_X - icpW / 2, y: R.icpBot,
-    width: icpW, height: icpH,
-    borderColor: BLACK, borderWidth: 1.2,
-    color: rgb(1, 1, 1),
-  })
-
-  // ── 9. Dashed trunk: ICP → kWh ───────────────────────────────────────────
-  page.drawLine({
-    start: { x: CENTER_X, y: R.icpBot  },
-    end:   { x: CENTER_X, y: R.kwhTop  },
-    thickness: 1.4, color: BLACK, dashArray: [5, 3],
-  })
-
-  // ── 10. kWh meter box ────────────────────────────────────────────────────
-  const kwhW = 46
-  const kwhH = R.kwhTop - R.kwhBot
-  const kwhCy = R.kwhBot + kwhH / 2
-  page.drawRectangle({
-    x: CENTER_X - kwhW / 2, y: R.kwhBot,
-    width: kwhW, height: kwhH,
-    borderColor: BLACK, borderWidth: 1.2,
-    color: rgb(1, 1, 1),
-  })
-  page.drawText('kWh', { x: CENTER_X - 9, y: kwhCy - 3, size: 8, font: fontBold, color: BLACK })
-
-  // ── 11. Terra symbol (bottom-right of diagram) ────────────────────────────
-  const tx = XCOL_RIGHT - 18
-  const ty = R.terraBase
-  page.drawLine({ start: { x: tx - 12, y: ty      }, end: { x: tx + 12, y: ty      }, thickness: 1.6, color: BLACK })
-  page.drawLine({ start: { x: tx - 8,  y: ty -  5 }, end: { x: tx + 8,  y: ty -  5 }, thickness: 1.3, color: BLACK })
-  page.drawLine({ start: { x: tx - 4,  y: ty - 10 }, end: { x: tx + 4,  y: ty - 10 }, thickness: 1.0, color: BLACK })
-  // Short vertical connecting to kWh bottom
-  page.drawLine({
-    start: { x: CENTER_X, y: R.kwhBot },
-    end:   { x: CENTER_X, y: ty + 5   },
-    thickness: 1.4, color: BLACK, dashArray: [5, 3],
-  })
-  // Horizontal line from trunk to terra symbol
-  page.drawLine({
-    start: { x: CENTER_X, y: ty + 5 },
-    end:   { x: tx,       y: ty + 5 },
-    thickness: 1.4, color: BLACK, dashArray: [5, 3],
-  })
-  page.drawLine({
-    start: { x: tx, y: ty + 5 },
-    end:   { x: tx, y: ty     },
-    thickness: 1.4, color: BLACK, dashArray: [5, 3],
-  })
 
   return pdfDoc.save()
 }
