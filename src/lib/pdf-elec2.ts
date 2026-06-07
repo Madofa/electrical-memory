@@ -3,7 +3,7 @@ import type { Circuit, Diferencial, DadesCapcalera } from '../types/esquemaUnifi
 import type { Instalador } from '../types'
 
 // ── Same constants as UnifilarSVG.tsx ────────────────────────────────────────
-const VB_W = 480, VB_H = 505.19
+const VB_W = 520, VB_H = 505.19
 const BASE_W = 322.51
 const CUADRO_Y = 3.2, CUADRO_H = 491.82
 const MM = VB_H / 297
@@ -11,8 +11,10 @@ const DIF_X = 206.76 + 2 * MM  // +2mm right from calibrated point
 const DIF_VB_W = 20.42, DIF_VB_H = 30.93
 const DIF_W = 20, DIF_H = DIF_VB_H * (DIF_W / DIF_VB_W)
 const DIF_END_X = DIF_X + DIF_W
-const DIF_CONN_X = DIF_X + DIF_W * (10.88 / DIF_VB_W)
-const DIF_CONN_Y_FRAC = 29.33 / DIF_VB_H
+// Punt de connexió de sortida real: extrem de la línia diagonal de l'interruptor
+// (cantonada superior-dreta del símbol, x≈20.22 y≈17.71 al viewBox original)
+const DIF_CONN_X = DIF_X + DIF_W * (20.22 / DIF_VB_W)
+const DIF_CONN_Y_FRAC = 17.71 / DIF_VB_H
 const TERM_VB_W = 33.68, TERM_VB_H = 16.63
 const TERM_W = 28, TERM_H = TERM_VB_H * (TERM_W / TERM_VB_W)
 const TERM_CIRC_Y_FRAC = 15.33 / TERM_VB_H
@@ -93,15 +95,15 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
       els += `<line x1="${EXT_LINE_START}" y1="${circY}" x2="${EXT_LINE_END}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
       // Earth protection: same span as external line
       els += `<line x1="${EXT_LINE_START}" y1="${circY + 4}" x2="${EXT_LINE_END}" y2="${circY + 4}" stroke="#000" stroke-width="0.7" stroke-dasharray="1 1"/>`
-      // Letter at START of external line
-      els += `<text x="${EXT_LINE_START - 1}" y="${circY + 2}" text-anchor="end" font-size="5" font-weight="bold" fill="#000">${labelA}</text>`
-      // Letter at END of external line
-      els += `<text x="${EXT_LINE_END + 1}" y="${circY + 2}" font-size="5" font-weight="bold" fill="#000">${labelB}</text>`
+      // Letter at START of external line — white halo so the dashed line doesn't cross through it
+      els += `<text x="${EXT_LINE_START - 1}" y="${circY + 2}" text-anchor="end" font-size="5" font-weight="bold" stroke="#fff" stroke-width="2.5" paint-order="stroke" fill="#000">${labelA}</text>`
+      // Letter at END of external line — white halo, same reason
+      els += `<text x="${EXT_LINE_END + 1}" y="${circY + 2}" font-size="5" font-weight="bold" stroke="#fff" stroke-width="2.5" paint-order="stroke" fill="#000">${labelB}</text>`
       // Cable section + kW above external line
       const cableKw = [circ.seccio, circ.potencia_kw > 0 ? `${circ.potencia_kw.toFixed(2).replace('.', ',')} kW` : ''].filter(Boolean).join('   ')
       if (cableKw) els += `<text x="${EXT_LINE_START + 2}" y="${circY - 3}" font-size="5.5" fill="#000">${cableKw}</text>`
-      // Circuit name after end letter, centered on line
-      els += `<text x="${EXT_LINE_END + 8}" y="${circY + 2}" font-size="5.5" font-weight="bold" fill="#000">${circ.nom}</text>`
+      // Circuit name after end letter, with extra gap so it doesn't crowd the letter
+      els += `<text x="${EXT_LINE_END + 14}" y="${circY + 2}" font-size="5.5" font-weight="bold" fill="#000">${circ.nom}</text>`
     }
   }
 
