@@ -3,7 +3,7 @@ import type { Circuit, Diferencial } from '../../types/esquemaUnifilar'
 interface Props { circuits: Circuit[]; diferencials: Diferencial[]; iga: number }
 
 // ── SVG dimensions ─────────────────────────────────────────────────────────────
-const VB_W = 480        // Extended right to accommodate circuit labels
+const VB_W = 520        // Extended right to accommodate circuit labels (incl. long names)
 const VB_H = 505.19
 const BASE_W = 322.51   // Width of esquema-elec2.svg
 const CUADRO_Y = 3.2, CUADRO_H = 491.82
@@ -17,8 +17,10 @@ const DIF_X = 206.76 + 2 * (505.19 / 297)  // ≈ 210.16
 const DIF_VB_W = 20.42, DIF_VB_H = 30.93
 const DIF_W = 20, DIF_H = DIF_VB_H * (DIF_W / DIF_VB_W)
 const DIF_END_X = DIF_X + DIF_W
-const DIF_CONN_X = DIF_X + DIF_W * (10.88 / DIF_VB_W)
-const DIF_CONN_Y_FRAC = 29.33 / DIF_VB_H
+// Punt de connexió de sortida real: extrem de la línia diagonal de l'interruptor
+// (cantonada superior-dreta del símbol, x≈20.22 y≈17.71 al viewBox original)
+const DIF_CONN_X = DIF_X + DIF_W * (20.22 / DIF_VB_W)
+const DIF_CONN_Y_FRAC = 17.71 / DIF_VB_H
 
 // ── Thermic symbol (viewBox 33.68 × 16.63) ────────────────────────────────────
 const TERM_VB_W = 33.68, TERM_VB_H = 16.63
@@ -157,13 +159,13 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
                 <line x1={EARTH_START_X} y1={circY + 4} x2={EARTH_END_X} y2={circY + 4}
                   stroke="#000" strokeWidth="0.7" strokeDasharray="1 1" />
 
-                {/* Letter at START of external line */}
-                <text x={EXT_LINE_START - 1} y={circY + 2}
-                  textAnchor="end" fontSize="5" fontWeight="bold" fill="#000">{labelBot}</text>
+                {/* Letter at START of external line — white halo so the dashed line doesn't cross through it */}
+                <text x={EXT_LINE_START - 1} y={circY + 2} textAnchor="end" fontSize="5" fontWeight="bold"
+                  stroke="#fff" strokeWidth="2.5" paintOrder="stroke" fill="#000">{labelBot}</text>
 
-                {/* Letter at END of external line */}
-                <text x={EXT_LINE_END + 1} y={circY + 2}
-                  textAnchor="start" fontSize="5" fontWeight="bold" fill="#000">{labelTop}</text>
+                {/* Letter at END of external line — white halo, same reason */}
+                <text x={EXT_LINE_END + 1} y={circY + 2} textAnchor="start" fontSize="5" fontWeight="bold"
+                  stroke="#fff" strokeWidth="2.5" paintOrder="stroke" fill="#000">{labelTop}</text>
 
                 {/* Cable section + kW above the external line */}
                 <text x={EXT_LINE_START + 2} y={circY - 3}
@@ -172,8 +174,8 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
                     .filter(Boolean).join('   ')}
                 </text>
 
-                {/* Circuit name: after end letter, centered on line */}
-                <text x={EXT_LINE_END + 8} y={circY + 2}
+                {/* Circuit name: after end letter, with extra gap so it doesn't crowd the letter */}
+                <text x={EXT_LINE_END + 14} y={circY + 2}
                   fontSize="5.5" fontWeight="bold" fill="#000">{circ.nom}</text>
               </g>
             )
