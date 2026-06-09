@@ -202,8 +202,8 @@ export async function generateElec2PDF(
     if (!text) return
     page.drawText(text.slice(0, 60), { x, y, size: 7.5, font: bold ? fontB : font, color: BLACK })
   }
-  tf(capcalera.seccio_connexio,        85,  210)
-  tf(capcalera.tensio,                380,  210)
+  tf(capcalera.seccio_connexio,       204,  181)
+  tf(capcalera.tensio,               339,  181)
   tf(capcalera.empresa_distribuidora, 54,  181)
   tf(capcalera.emplacament,           170, 154)
   tf(capcalera.titular,               170, 93, true)
