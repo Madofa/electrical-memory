@@ -68,7 +68,8 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
       dif, difY, difInputY, difConnY,
       circuitRows: difCircuits.map((circ, ci) => ({
         circ,
-        circY: allocStart + (ci + 0.5) * cSpacing,
+        // Single circuit: align to difConnY so the line from differential goes straight
+        circY: Nc === 1 ? difConnY : allocStart + (ci + 0.5) * cSpacing,
         globalIdx: circuits.indexOf(circ),
       })),
     }
@@ -117,16 +118,19 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
             {dif.amperatge}A / {dif.sensibilitat_ma} mA
           </text>
 
-          {/* Vertical thermic bus at TERM_LINE_START — connecting difConnY to all circuit branches */}
-          {circuitRows.length > 0 && (() => {
+          {/* Vertical thermic bus — only when multiple circuits */}
+          {circuitRows.length > 1 && (() => {
             const ys = [difConnY, ...circuitRows.map(r => r.circY)]
             return <line x1={TERM_LINE_START} y1={Math.min(...ys)} x2={TERM_LINE_START} y2={Math.max(...ys)}
               stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
           })()}
-          {/* Differential → thermic bus horizontal connector (now visible: DIF_CONN_X → TERM_LINE_START) */}
+          {/* Differential → thermic bus horizontal connector */}
           <line x1={DIF_CONN_X} y1={difConnY} x2={TERM_LINE_START} y2={difConnY}
             stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
-          <circle cx={TERM_LINE_START} cy={difConnY} r={1.2} fill="#000" />
+          {/* Junction circle only needed when multiple circuits branch off */}
+          {circuitRows.length > 1 && (
+            <circle cx={TERM_LINE_START} cy={difConnY} r={1.2} fill="#000" />
+          )}
 
           {/* Per-circuit thermic elements */}
           {circuitRows.map(({ circ, circY, globalIdx }) => {

@@ -59,7 +59,8 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
     const cSpacing = spacing / Nc
     const circuitRows = difCircuits.map((circ, ci) => ({
       circ, globalIdx: circuits.indexOf(circ),
-      circY: allocStart + (ci + 0.5) * cSpacing,
+      // Single circuit: align to difConnY so the line from differential goes straight
+      circY: Nc === 1 ? difConnY : allocStart + (ci + 0.5) * cSpacing,
     }))
     return { dif, difY, difInputY, difConnY, circuitRows }
   })
@@ -80,12 +81,14 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
     els += `<image href="${difUrl}" x="${DIF_SYMBOL_X}" y="${difY - DIF_H / 2}" width="${DIF_W}" height="${DIF_H}"/>`
     els += `<text x="${DIF_SYMBOL_X + DIF_W / 2 + 5}" y="${difY + DIF_H / 2 + 9}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${dif.amperatge}A / ${dif.sensibilitat_ma} mA</text>`
 
-    if (circuitRows.length > 0) {
+    // Vertical thermic bus only when multiple circuits branch off
+    if (circuitRows.length > 1) {
       const ys = [difConnY, ...circuitRows.map(r => r.circY)]
       els += `<line x1="${TERM_LINE_START}" y1="${Math.min(...ys)}" x2="${TERM_LINE_START}" y2="${Math.max(...ys)}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
     }
     els += `<line x1="${DIF_CONN_X}" y1="${difConnY}" x2="${TERM_LINE_START}" y2="${difConnY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
-    els += `<circle cx="${TERM_LINE_START}" cy="${difConnY}" r="1.2" fill="#000"/>`
+    // Junction circle only when multiple circuits
+    if (circuitRows.length > 1) els += `<circle cx="${TERM_LINE_START}" cy="${difConnY}" r="1.2" fill="#000"/>`
 
     for (const { circ, circY, globalIdx } of circuitRows) {
       const termSymY = circY - TERM_H * TERM_CIRC_Y_FRAC
