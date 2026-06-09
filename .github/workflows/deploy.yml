@@ -27,16 +27,18 @@ jobs:
           VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
         run: npm run build
 
-      - name: Deploy via SSH + tar
+      - name: Deploy via FTP
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASS: ${{ secrets.FTP_PASS }}
+          FTP_REMOTE_DIR: ${{ secrets.FTP_REMOTE_DIR }}
         run: |
-          echo "$SSH_PRIVATE_KEY" > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
-          tar czf /tmp/dist.tar.gz -C dist .
-          scp -P 1020 -i /tmp/deploy_key -o StrictHostKeyChecking=no \
-            /tmp/dist.tar.gz r307889@sinilos.com:/tmp/dist.tar.gz
-          ssh -p 1020 -i /tmp/deploy_key -o StrictHostKeyChecking=no \
-            r307889@sinilos.com \
-            'rm -rf ~/memoria.sinilos.com/* && tar xzf /tmp/dist.tar.gz -C ~/memoria.sinilos.com/ && rm /tmp/dist.tar.gz && echo OK'
-          rm /tmp/deploy_key /tmp/dist.tar.gz
+          cd dist
+          find . -type f | while read -r f; do
+            rel="${f#./}"
+            curl -s --ftp-create-dirs -T "$rel" \
+              "ftp://${FTP_HOST}/${FTP_REMOTE_DIR}/${rel}" \
+              --user "${FTP_USER}:${FTP_PASS}"
+            echo "  ✓ $rel"
+          done
