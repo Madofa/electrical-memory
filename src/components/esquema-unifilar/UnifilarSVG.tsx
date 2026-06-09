@@ -32,7 +32,7 @@ const TERM_CIRC_Y_FRAC = 15.33 / TERM_VB_H  // circuit Y inside thermic symbol
 // Thermic line: 15mm gap after DIF_END_X (enough room so differential label doesn't overlap)
 const TERM_LINE_START = DIF_END_X + 15 * MM
 const TERM_X = 278                            // thermic symbol start (close to cuadro right)
-const TERM_LINE_END = TERM_X - 2 * MM        // line ends 2mm before symbol
+const TERM_LINE_END = TERM_X - 2 * MM + 2    // line ends 2mm before symbol, +2pt closer
 
 // IGA potencia text position (calibrated)
 const IGA_TEXT_X = 140.01
@@ -107,12 +107,12 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
         <g key={dif.id}>
           <circle cx={DIF_X} cy={difInputY} r={1.5} fill="#000" />
           {/* Pre-symbol horizontal line: spine junction → left of differential symbol */}
-          <line x1={DIF_X} y1={difInputY} x2={DIF_SYMBOL_X} y2={difInputY}
+          <line x1={DIF_X} y1={difInputY} x2={DIF_SYMBOL_X - 2} y2={difInputY}
             stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
           {/* Differential symbol at DIF_SYMBOL_X */}
           <image href="/svg/simbolo-diferencial.svg"
             x={DIF_SYMBOL_X} y={difY - DIF_H / 2} width={DIF_W} height={DIF_H} />
-          <text x={DIF_SYMBOL_X + DIF_W / 2} y={difY + DIF_H / 2 + 6}
+          <text x={DIF_SYMBOL_X + DIF_W / 2} y={difY + DIF_H / 2 + 9}
             textAnchor="middle" fontSize="5" fontWeight="bold" fill="#000">
             {dif.amperatge}A / {dif.sensibilitat_ma} mA
           </text>
@@ -156,7 +156,7 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
                 )}
 
                 {/* Internal circuit line: from thermic symbol's edge (crosses the cuadro border) → EXT_LINE_START */}
-                <line x1={TERM_X + TERM_W} y1={circY} x2={EXT_LINE_START} y2={circY}
+                <line x1={TERM_X + TERM_W - 2} y1={circY} x2={EXT_LINE_START} y2={circY}
                   stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
 
                 {/* External circuit line: EXT_LINE_START → EXT_LINE_END (outside cuadro) */}

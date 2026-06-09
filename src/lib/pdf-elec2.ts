@@ -22,7 +22,7 @@ const TERM_W = 28, TERM_H = TERM_VB_H * (TERM_W / TERM_VB_W)
 const TERM_CIRC_Y_FRAC = 15.33 / TERM_VB_H
 const TERM_LINE_START = DIF_END_X + 15 * MM
 const TERM_X = 278
-const TERM_LINE_END = TERM_X - 2 * MM
+const TERM_LINE_END = TERM_X - 2 * MM + 2    // +2pt closer to symbol
 
 const EXT_LINE_START = 320.92 + 20 * MM  // +2cm a la dreta
 const EXT_LINE_LEN   = 70
@@ -76,9 +76,9 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
 
   for (const { dif, difY, difInputY, difConnY, circuitRows } of groups) {
     els += `<circle cx="${DIF_X}" cy="${difInputY}" r="1.5" fill="#000"/>`
-    els += `<line x1="${DIF_X}" y1="${difInputY}" x2="${DIF_SYMBOL_X}" y2="${difInputY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
+    els += `<line x1="${DIF_X}" y1="${difInputY}" x2="${DIF_SYMBOL_X - 2}" y2="${difInputY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
     els += `<image href="${difUrl}" x="${DIF_SYMBOL_X}" y="${difY - DIF_H / 2}" width="${DIF_W}" height="${DIF_H}"/>`
-    els += `<text x="${DIF_SYMBOL_X + DIF_W / 2}" y="${difY + DIF_H / 2 + 6}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${dif.amperatge}A / ${dif.sensibilitat_ma} mA</text>`
+    els += `<text x="${DIF_SYMBOL_X + DIF_W / 2}" y="${difY + DIF_H / 2 + 9}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${dif.amperatge}A / ${dif.sensibilitat_ma} mA</text>`
 
     if (circuitRows.length > 0) {
       const ys = [difConnY, ...circuitRows.map(r => r.circY)]
@@ -98,7 +98,7 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
       els += `<image href="${termUrl}" x="${TERM_X}" y="${termSymY}" width="${TERM_W}" height="${TERM_H}"/>`
       if (circ.pia_amperatge) els += `<text x="${TERM_X + TERM_W / 2}" y="${termSymY + TERM_H + 5}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${circ.pia_amperatge}A</text>`
       // Internal line: from thermic symbol's edge (crosses the cuadro border) → EXT_LINE_START
-      els += `<line x1="${TERM_X + TERM_W}" y1="${circY}" x2="${EXT_LINE_START}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
+      els += `<line x1="${TERM_X + TERM_W - 2}" y1="${circY}" x2="${EXT_LINE_START}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
       // External line: EXT_LINE_START → EXT_LINE_END (outside cuadro)
       els += `<line x1="${EXT_LINE_START}" y1="${circY}" x2="${EXT_LINE_END}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
       // Earth protection: reaches the vertical earth line
