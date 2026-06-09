@@ -16,7 +16,7 @@ const DIF_X = 206.76 + 2 * (505.19 / 297)  // ≈ 210.16
 // ── Diferencial symbol (viewBox 20.42 × 30.93) ────────────────────────────────
 const DIF_VB_W = 20.42, DIF_VB_H = 30.93
 const DIF_W = 20, DIF_H = DIF_VB_H * (DIF_W / DIF_VB_W)
-const DIF_SYMBOL_X = DIF_X + 5 * MM          // symbol offset right so pre-symbol line has space
+const DIF_SYMBOL_X = DIF_X + 5 * MM + 2      // symbol offset right so pre-symbol line has space
 const DIF_END_X = DIF_SYMBOL_X + DIF_W       // right edge of differential symbol
 const DIF_INPUT_Y_FRAC = 9.24 / DIF_VB_H    // circuit entry height on left side of symbol
 // Punt de connexió de sortida: vora dreta del símbol a l'alçada del punt de contacte
@@ -112,7 +112,7 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
           {/* Differential symbol at DIF_SYMBOL_X */}
           <image href="/svg/simbolo-diferencial.svg"
             x={DIF_SYMBOL_X} y={difY - DIF_H / 2} width={DIF_W} height={DIF_H} />
-          <text x={DIF_SYMBOL_X + DIF_W / 2} y={difY + DIF_H / 2 + 9}
+          <text x={DIF_SYMBOL_X + DIF_W / 2} y={difY + DIF_H / 2 + 14}
             textAnchor="middle" fontSize="5" fontWeight="bold" fill="#000">
             {dif.amperatge}A / {dif.sensibilitat_ma} mA
           </text>

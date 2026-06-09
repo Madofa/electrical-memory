@@ -10,7 +10,7 @@ const MM = VB_H / 297
 const DIF_X = 206.76 + 2 * MM  // +2mm right from calibrated point
 const DIF_VB_W = 20.42, DIF_VB_H = 30.93
 const DIF_W = 20, DIF_H = DIF_VB_H * (DIF_W / DIF_VB_W)
-const DIF_SYMBOL_X = DIF_X + 5 * MM
+const DIF_SYMBOL_X = DIF_X + 5 * MM + 2      // +2pt right so pre-symbol line is more visible
 const DIF_END_X = DIF_SYMBOL_X + DIF_W
 const DIF_INPUT_Y_FRAC = 9.24 / DIF_VB_H
 // Punt de connexió de sortida: vora dreta del símbol a l'alçada del punt de contacte
@@ -78,7 +78,7 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
     els += `<circle cx="${DIF_X}" cy="${difInputY}" r="1.5" fill="#000"/>`
     els += `<line x1="${DIF_X}" y1="${difInputY}" x2="${DIF_SYMBOL_X - 2}" y2="${difInputY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
     els += `<image href="${difUrl}" x="${DIF_SYMBOL_X}" y="${difY - DIF_H / 2}" width="${DIF_W}" height="${DIF_H}"/>`
-    els += `<text x="${DIF_SYMBOL_X + DIF_W / 2}" y="${difY + DIF_H / 2 + 9}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${dif.amperatge}A / ${dif.sensibilitat_ma} mA</text>`
+    els += `<text x="${DIF_SYMBOL_X + DIF_W / 2}" y="${difY + DIF_H / 2 + 14}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${dif.amperatge}A / ${dif.sensibilitat_ma} mA</text>`
 
     if (circuitRows.length > 0) {
       const ys = [difConnY, ...circuitRows.map(r => r.circY)]
