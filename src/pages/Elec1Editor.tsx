@@ -96,17 +96,18 @@ export function Elec1Editor() {
         const proj = p as Projecte
         setCert(c => {
           if (!c) return c
+          // Doc values always win — project only fills genuinely empty fields
           return {
             ...c,
-            tensio_v:              proj.tensio_v              || c.tensio_v,
-            seccio_lga_mm2:        proj.seccio_lga_mm2        || c.seccio_lga_mm2,
-            potencia_kw:           proj.potencia_kw            || c.potencia_kw,
-            calibre_fusibles_cgp_a:proj.calibre_fusibles_cgp_a || c.calibre_fusibles_cgp_a,
-            material_conductor:    proj.material_conductor     || c.material_conductor,
-            intensitat_iga_a:      proj.iga_amperatge          || c.intensitat_iga_a,
-            resist_terra_ohm:      proj.resist_terra_ohm       ?? c.resist_terra_ohm,
-            us_installacio:        proj.us_installacio         || c.us_installacio,
-            cups:                  proj.cups                   || c.cups,
+            tensio_v:               c.tensio_v               || proj.tensio_v              || c.tensio_v,
+            seccio_lga_mm2:         c.seccio_lga_mm2         || proj.seccio_lga_mm2        || '',
+            potencia_kw:            c.potencia_kw            || proj.potencia_kw            || 0,
+            calibre_fusibles_cgp_a: c.calibre_fusibles_cgp_a || proj.calibre_fusibles_cgp_a || 0,
+            material_conductor:     c.material_conductor     || proj.material_conductor     || c.material_conductor,
+            intensitat_iga_a:       c.intensitat_iga_a       || proj.iga_amperatge          || 0,
+            resist_terra_ohm:       c.resist_terra_ohm       ?? proj.resist_terra_ohm       ?? null,
+            us_installacio:         c.us_installacio         || proj.us_installacio         || c.us_installacio,
+            cups:                   c.cups                   || proj.cups                   || '',
           }
         })
       })

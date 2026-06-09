@@ -48,6 +48,7 @@ export function Elec3Editor() {
   const [projecte, setProjecte] = useState<Projecte | null>(null)
   const [esquemaDifs, setEsquemaDifs] = useState<Diferencial[]>([])
   const [esquemaCircuits, setEsquemaCircuits] = useState<Circuit[]>([])
+  const [esquemaIga, setEsquemaIga] = useState<number | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -75,8 +76,10 @@ export function Elec3Editor() {
             if (!esq || !mounted) return
             const difs = (esq as { diferencials: Diferencial[] }).diferencials || []
             const circs = (esq as { circuits: Circuit[] }).circuits || []
+            const iga = (esq as { iga_amperatge?: number }).iga_amperatge ?? null
             setEsquemaDifs(difs)
             setEsquemaCircuits(circs)
+            setEsquemaIga(iga)
 
             // Prefill trams from ELEC-2 circuit data if tram has no power yet
             setDoc(d => {
@@ -153,20 +156,20 @@ export function Elec3Editor() {
         if (!p) return
         const proj = p as Projecte
         setProjecte(proj)
-        // Force-update doc fields from project (project is source of truth)
-        if (id) {
-          const patch: Partial<Elec3Doc> = {
-            us_installacio:        proj.us_installacio        || '',
-            empresa_distribuidora: proj.empresa_distribuidora || '',
-            resist_terra_ohm:      proj.resist_terra_ohm      ?? null,
-            potencia_instal_kw:    proj.potencia_kw           || null,
-            intensitat_iga_a:      proj.iga_amperatge         || null,
-            superficie_local_m2:   proj.superficie_local_m2  ?? null,
-            nova_ampliacio_reforma: proj.nova_ampliacio_reforma || 'nova',
-          }
-          setDoc(d => d ? { ...d, ...patch } : d)
-          updateElec3Doc(id, patch).catch(() => {})
-        }
+        // Doc values always win — project only fills genuinely empty fields
+        setDoc(d => {
+          if (!d) return d
+          const patch: Partial<Elec3Doc> = {}
+          if (!d.us_installacio)        patch.us_installacio        = proj.us_installacio        || ''
+          if (!d.empresa_distribuidora) patch.empresa_distribuidora = proj.empresa_distribuidora || ''
+          if (d.resist_terra_ohm == null && proj.resist_terra_ohm != null) patch.resist_terra_ohm = proj.resist_terra_ohm
+          if (d.potencia_instal_kw == null && proj.potencia_kw)            patch.potencia_instal_kw = proj.potencia_kw
+          if (d.intensitat_iga_a == null && proj.iga_amperatge)            patch.intensitat_iga_a   = proj.iga_amperatge
+          if (d.superficie_local_m2 == null && proj.superficie_local_m2 != null) patch.superficie_local_m2 = proj.superficie_local_m2
+          if (Object.keys(patch).length === 0) return d
+          if (id) updateElec3Doc(id, patch).catch(() => {})
+          return { ...d, ...patch }
+        })
       })
     }
     document.addEventListener('visibilitychange', onFocus)
@@ -230,7 +233,7 @@ export function Elec3Editor() {
         const { data: p } = await getProjecte(projecteId)
         if (p) { freshProjecte = p as Projecte; setProjecte(p as Projecte) }
       }
-      const pdfBytes = await generateElec3PDF(doc, instalador, freshProjecte ?? undefined, esquemaDifs, esquemaCircuits, numDiferencials)
+      const pdfBytes = await generateElec3PDF(doc, instalador, freshProjecte ?? undefined, esquemaDifs, esquemaCircuits, numDiferencials, esquemaIga)
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')

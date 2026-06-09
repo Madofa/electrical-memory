@@ -50,6 +50,7 @@ export async function generateElec3PDF(
   diferencials?: Diferencial[],
   _circuits?: Circuit[],
   numDiferencialsOverride?: number | null,
+  esquemaIga?: number | null,
 ): Promise<Uint8Array> {
   const response = await fetch('/templates/elec3-blank.pdf')
   if (!response.ok) throw new Error("No s'ha pogut carregar la plantilla ELEC-3")
@@ -124,10 +125,10 @@ export async function generateElec3PDF(
   d2(P2.resist_terra,          doc.resist_terra_ohm  ? String(doc.resist_terra_ohm)  : p?.resist_terra_ohm  ? String(p.resist_terra_ohm)  : '')
   d2(P2.seccio_di,             trams[0] ? String(trams[0].seccio_mm2) : '')
   d2(P2.tensio,                p?.tensio_v || trams[0]?.tensio_v?.toString() || '230')
-  const igaA = doc.intensitat_iga_a ?? p?.iga_amperatge ?? null
+  const igaA = doc.intensitat_iga_a ?? esquemaIga ?? p?.iga_amperatge ?? null
   d2(P2.iga,                   igaA ? String(igaA) : '')
   const tensioV = p?.tensio_v ? parseFloat(p.tensio_v) : 230
-  d2(P2.potencia_max,          igaA ? String(Math.round(igaA * tensioV / 100) / 10) : p?.potencia_kw ? String(p.potencia_kw) : '')
+  d2(P2.potencia_max,          igaA ? String(parseFloat((igaA * tensioV / 1000).toFixed(2))) : p?.potencia_kw ? String(p.potencia_kw) : '')
   d2(P2.potencia_instal,       doc.potencia_instal_kw ? String(doc.potencia_instal_kw) : p?.potencia_kw ? String(p.potencia_kw) : '')
   d2(P2.superficie,            doc.superficie_local_m2 ? String(doc.superficie_local_m2) : p?.superficie_local_m2 ? String(p.superficie_local_m2) : '')
   // caracteristiques_edifici already written above (with old-dropdown migration logic)
