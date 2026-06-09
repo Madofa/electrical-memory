@@ -119,15 +119,17 @@ export async function generateElec3PDF(
   d2(P2.nova, ncp==='nova'?'X':'')
   d2(P2.ampliacio, ncp==='ampliacio'?'X':'')
   d2(P2.reforma, ncp==='reforma'?'X':'')
-  // Project is always source of truth for shared technical fields
-  d2(P2.empresa_distribuidora, p?.empresa_distribuidora || doc.empresa_distribuidora || '')
-  d2(P2.resist_terra,          p?.resist_terra_ohm       ? String(p.resist_terra_ohm)       : doc.resist_terra_ohm  ? String(doc.resist_terra_ohm)  : '')
+  // Doc values always take priority; project fills blanks
+  d2(P2.empresa_distribuidora, doc.empresa_distribuidora || p?.empresa_distribuidora || '')
+  d2(P2.resist_terra,          doc.resist_terra_ohm  ? String(doc.resist_terra_ohm)  : p?.resist_terra_ohm  ? String(p.resist_terra_ohm)  : '')
   d2(P2.seccio_di,             trams[0] ? String(trams[0].seccio_mm2) : '')
   d2(P2.tensio,                p?.tensio_v || trams[0]?.tensio_v?.toString() || '230')
-  d2(P2.iga,                   p?.iga_amperatge           ? String(p.iga_amperatge)           : doc.intensitat_iga_a ? String(doc.intensitat_iga_a) : '')
-  d2(P2.potencia_max,          p?.potencia_kw             ? String(p.potencia_kw)             : '')
-  d2(P2.potencia_instal,       doc.potencia_instal_kw     ? String(doc.potencia_instal_kw)    : p?.potencia_kw ? String(p.potencia_kw) : '')
-  d2(P2.superficie,            p?.superficie_local_m2     ? String(p.superficie_local_m2)     : doc.superficie_local_m2 ? String(doc.superficie_local_m2) : '')
+  const igaA = doc.intensitat_iga_a ?? p?.iga_amperatge ?? null
+  d2(P2.iga,                   igaA ? String(igaA) : '')
+  const tensioV = p?.tensio_v ? parseFloat(p.tensio_v) : 230
+  d2(P2.potencia_max,          igaA ? String(Math.round(igaA * tensioV / 100) / 10) : p?.potencia_kw ? String(p.potencia_kw) : '')
+  d2(P2.potencia_instal,       doc.potencia_instal_kw ? String(doc.potencia_instal_kw) : p?.potencia_kw ? String(p.potencia_kw) : '')
+  d2(P2.superficie,            doc.superficie_local_m2 ? String(doc.superficie_local_m2) : p?.superficie_local_m2 ? String(p.superficie_local_m2) : '')
   // caracteristiques_edifici already written above (with old-dropdown migration logic)
   // Diferencials from ELEC-2 esquema
   if (diferencials && diferencials.length > 0) {
