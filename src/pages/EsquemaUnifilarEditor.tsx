@@ -78,13 +78,15 @@ export function EsquemaUnifilarEditor() {
       getProjecte(projecteId).then(({ data: p }) => {
         if (!p) return
         const proj = p as Projecte
-        store.setCapcalera({
-          empresa_distribuidora: proj.empresa_distribuidora || store.capcalera.empresa_distribuidora,
-          seccio_connexio: proj.seccio_lga_mm2 ? `${proj.seccio_lga_mm2}mm²` : store.capcalera.seccio_connexio,
-          tensio: proj.tensio_v ? `${proj.tensio_v}V` : store.capcalera.tensio,
-          emplacament: [proj.inst_nom_via, proj.inst_numero, proj.inst_cp, proj.inst_poblacio].filter(Boolean).join(', ') || store.capcalera.emplacament,
-          titular: proj.titular_nom || store.capcalera.titular,
-        })
+        const cur = store.capcalera
+        // Only overwrite fields the user hasn't explicitly cleared
+        const patch: Partial<typeof cur> = {}
+        if (cur.emplacament !== undefined) {
+          const fromProj = [proj.inst_nom_via, proj.inst_numero, proj.inst_cp, proj.inst_poblacio].filter(Boolean).join(', ')
+          if (fromProj) patch.emplacament = fromProj
+        }
+        if (proj.titular_nom) patch.titular = proj.titular_nom
+        if (Object.keys(patch).length > 0) store.setCapcalera(patch)
       })
     }
     document.addEventListener('visibilitychange', onFocus)
@@ -121,26 +123,22 @@ export function EsquemaUnifilarEditor() {
   const handleExportPDF = async () => {
     setExporting(true)
     try {
-      // Refresh project capcalera before export
+      // Build capcalera for export: store values take priority (user edits), project fills only blanks
+      let capcaleraForExport = { ...store.capcalera }
       if (projecteId) {
         const { data: p } = await getProjecte(projecteId)
         if (p) {
           const proj = p as Projecte
           const emplacament = [proj.inst_nom_via, proj.inst_numero, proj.inst_cp, proj.inst_poblacio].filter(Boolean).join(', ')
-          store.setCapcalera({
-            empresa_distribuidora: proj.empresa_distribuidora || store.capcalera.empresa_distribuidora,
-            seccio_connexio: proj.seccio_lga_mm2 ? `${proj.seccio_lga_mm2}mm²` : store.capcalera.seccio_connexio,
-            tensio: proj.tensio_v ? `${proj.tensio_v}V` : store.capcalera.tensio,
-            emplacament: emplacament || store.capcalera.emplacament,
-            titular: proj.titular_nom || store.capcalera.titular,
-          })
+          if (!capcaleraForExport.emplacament && emplacament) capcaleraForExport.emplacament = emplacament
+          if (!capcaleraForExport.titular && proj.titular_nom) capcaleraForExport.titular = proj.titular_nom
         }
       }
       const pdfBytes = await generateElec2PDF(
         store.circuits,
         store.diferencials,
         store.iga_amperatge,
-        store.capcalera,
+        capcaleraForExport,
         instalador,
       )
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' })
