@@ -284,11 +284,12 @@ export function Elec3Editor() {
         </div>
       </header>
 
-      <main className="flex-1 px-4 py-6 overflow-x-auto">
+      <main className="flex-1 px-4 py-6 overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-amber-500/30 [&::-webkit-scrollbar-thumb]:rounded-full">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
           <div className="mb-4">
             <p className="section-sub">Caiguda de tensió · REBT ITC-BT-19</p>
             <h2 className="font-display font-bold text-xl uppercase text-slate-100">Taula de càlculs</h2>
+            <p className="text-[10px] text-slate-600 font-mono mt-0.5">← desplaça horitzontalment per veure tots els camps →</p>
           </div>
 
           {/* Table */}
