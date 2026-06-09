@@ -108,8 +108,13 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
       // Letter at END of external line — white halo, same reason
       els += `<text x="${EXT_LINE_END + 1}" y="${circY + 2}" font-size="5" font-weight="bold" stroke="#fff" stroke-width="2.5" paint-order="stroke" fill="#000">${labelB}</text>`
       // Cable section + kW above external line
-      const cableKw = [circ.seccio, circ.potencia_kw > 0 ? `${circ.potencia_kw.toFixed(2).replace('.', ',')} kW` : ''].filter(Boolean).join('   ')
-      if (cableKw) els += `<text x="${EXT_LINE_START + 2}" y="${circY - 3}" font-size="5.5" fill="#000">${cableKw}</text>`
+      if (circ.seccio || circ.potencia_kw > 0) {
+        const kw = circ.potencia_kw > 0 ? `${circ.potencia_kw.toFixed(2).replace('.', ',')} kW` : ''
+        const content = circ.seccio && kw
+          ? `${circ.seccio}<tspan dx="2">-</tspan><tspan dx="2">${kw}</tspan>`
+          : circ.seccio || kw
+        els += `<text x="${EXT_LINE_START + 5}" y="${circY - 3}" font-size="5.5" fill="#000">${content}</text>`
+      }
       // Circuit name after end letter, with extra gap so it doesn't crowd the letter
       els += `<text x="${EXT_LINE_END + 14}" y="${circY + 2}" font-size="5.5" font-weight="bold" fill="#000">${circ.nom}</text>`
     }

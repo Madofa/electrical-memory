@@ -176,10 +176,12 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
                   stroke="#fff" strokeWidth="2.5" paintOrder="stroke" fill="#000">{labelTop}</text>
 
                 {/* Cable section + kW above the external line */}
-                <text x={EXT_LINE_START + 2} y={circY - 3}
-                  fontSize="5.5" fill="#000">
-                  {[circ.seccio, circ.potencia_kw > 0 ? `${circ.potencia_kw.toFixed(2).replace('.', ',')} kW` : '']
-                    .filter(Boolean).join('   ')}
+                <text x={EXT_LINE_START + 5} y={circY - 3} fontSize="5.5" fill="#000">
+                  {circ.seccio}
+                  {circ.seccio && circ.potencia_kw > 0 && <tspan dx={2}>-</tspan>}
+                  {circ.potencia_kw > 0 && (
+                    <tspan dx={circ.seccio ? 2 : 0}>{circ.potencia_kw.toFixed(2).replace('.', ',')} kW</tspan>
+                  )}
                 </text>
 
                 {/* Circuit name: after end letter, with extra gap so it doesn't crowd the letter */}
