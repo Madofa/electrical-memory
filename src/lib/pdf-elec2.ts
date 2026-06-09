@@ -10,15 +10,17 @@ const MM = VB_H / 297
 const DIF_X = 206.76 + 2 * MM  // +2mm right from calibrated point
 const DIF_VB_W = 20.42, DIF_VB_H = 30.93
 const DIF_W = 20, DIF_H = DIF_VB_H * (DIF_W / DIF_VB_W)
-const DIF_END_X = DIF_X + DIF_W
-// Punt de connexió de sortida real: extrem de la línia diagonal de l'interruptor
-// (cantonada superior-dreta del símbol, x≈20.22 y≈17.71 al viewBox original)
-const DIF_CONN_X = DIF_X + DIF_W * (20.22 / DIF_VB_W)
-const DIF_CONN_Y_FRAC = 17.71 / DIF_VB_H
+const DIF_SYMBOL_X = DIF_X + 5 * MM
+const DIF_END_X = DIF_SYMBOL_X + DIF_W
+const DIF_INPUT_Y_FRAC = 9.24 / DIF_VB_H
+// Punt de connexió de sortida: vora dreta del símbol a l'alçada del punt de contacte
+// (calibrat via /dev/calibrar-elec2 — elec2-coords (2).json: x≈19.88, y≈29.67)
+const DIF_CONN_X = DIF_SYMBOL_X + DIF_W * (19.88 / DIF_VB_W)
+const DIF_CONN_Y_FRAC = 29.67 / DIF_VB_H
 const TERM_VB_W = 33.68, TERM_VB_H = 16.63
 const TERM_W = 28, TERM_H = TERM_VB_H * (TERM_W / TERM_VB_W)
 const TERM_CIRC_Y_FRAC = 15.33 / TERM_VB_H
-const TERM_LINE_START = DIF_END_X + 5 * MM
+const TERM_LINE_START = DIF_END_X + 15 * MM
 const TERM_X = 278
 const TERM_LINE_END = TERM_X - 2 * MM
 
@@ -26,6 +28,10 @@ const EXT_LINE_START = 320.92 + 20 * MM  // +2cm a la dreta
 const EXT_LINE_LEN   = 70
 const EXT_LINE_END   = EXT_LINE_START + EXT_LINE_LEN
 const IGA_TEXT_X = 140.01, IGA_TEXT_Y = 245
+
+// Earth protection line: reaches the vertical earth line (calibrated via /dev/calibrar-elec2 — x≈313.09)
+const EARTH_START_X = 313.09
+const EARTH_END_X   = EXT_LINE_END
 const BOT_LABELS = ['C','E','G','I','K','M','O','Q','S','U','W','Y']
 const TOP_LABELS = ['D','F','H','J','L','N','P','R','T','V','X','Z']
 
@@ -46,7 +52,8 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
   const groups = activeDifs.map((dif, gi) => {
     const allocStart = CUADRO_Y + gi * spacing
     const difY = allocStart + spacing / 2
-    const difConnY = (difY - DIF_H / 2) + DIF_H * DIF_CONN_Y_FRAC
+    const difInputY = (difY - DIF_H / 2) + DIF_H * DIF_INPUT_Y_FRAC
+    const difConnY  = (difY - DIF_H / 2) + DIF_H * DIF_CONN_Y_FRAC
     const difCircuits = circuits.filter(c => c.diferencial_grup === dif.id)
     const Nc = difCircuits.length || 1
     const cSpacing = spacing / Nc
@@ -54,7 +61,7 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
       circ, globalIdx: circuits.indexOf(circ),
       circY: allocStart + (ci + 0.5) * cSpacing,
     }))
-    return { dif, difY, difConnY, circuitRows }
+    return { dif, difY, difInputY, difConnY, circuitRows }
   })
 
   let els = `<image href="${baseUrl}" x="0" y="0" width="${BASE_W}" height="${VB_H}"/>
@@ -62,39 +69,40 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
 
   // Differential spine
   if (groups.length > 0) {
-    const y1 = groups[0].difY, y2 = groups[groups.length - 1].difY
+    const y1 = groups[0].difInputY, y2 = groups[groups.length - 1].difInputY
     els += `<line x1="${DIF_X}" y1="${y1}" x2="${DIF_X}" y2="${y2}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
   }
   els += `<circle cx="${DIF_X}" cy="236" r="1.8" fill="#000"/>`
 
-  for (const { dif, difY, difConnY, circuitRows } of groups) {
-    els += `<circle cx="${DIF_X}" cy="${difY}" r="1.5" fill="#000"/>`
-    els += `<image href="${difUrl}" x="${DIF_X}" y="${difY - DIF_H / 2}" width="${DIF_W}" height="${DIF_H}"/>`
-    els += `<text x="${DIF_X + DIF_W / 2}" y="${difY + DIF_H / 2 + 6}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${dif.amperatge}A / ${dif.sensibilitat_ma} mA</text>`
+  for (const { dif, difY, difInputY, difConnY, circuitRows } of groups) {
+    els += `<circle cx="${DIF_X}" cy="${difInputY}" r="1.5" fill="#000"/>`
+    els += `<line x1="${DIF_X}" y1="${difInputY}" x2="${DIF_SYMBOL_X}" y2="${difInputY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
+    els += `<image href="${difUrl}" x="${DIF_SYMBOL_X}" y="${difY - DIF_H / 2}" width="${DIF_W}" height="${DIF_H}"/>`
+    els += `<text x="${DIF_SYMBOL_X + DIF_W / 2}" y="${difY + DIF_H / 2 + 6}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${dif.amperatge}A / ${dif.sensibilitat_ma} mA</text>`
 
     if (circuitRows.length > 0) {
       const ys = [difConnY, ...circuitRows.map(r => r.circY)]
-      els += `<line x1="${DIF_END_X}" y1="${Math.min(...ys)}" x2="${DIF_END_X}" y2="${Math.max(...ys)}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
+      els += `<line x1="${TERM_LINE_START}" y1="${Math.min(...ys)}" x2="${TERM_LINE_START}" y2="${Math.max(...ys)}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
     }
-    els += `<line x1="${DIF_CONN_X}" y1="${difConnY}" x2="${DIF_END_X}" y2="${difConnY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
-    els += `<circle cx="${DIF_END_X}" cy="${difConnY}" r="1.2" fill="#000"/>`
+    els += `<line x1="${DIF_CONN_X}" y1="${difConnY}" x2="${TERM_LINE_START}" y2="${difConnY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
+    els += `<circle cx="${TERM_LINE_START}" cy="${difConnY}" r="1.2" fill="#000"/>`
 
     for (const { circ, circY, globalIdx } of circuitRows) {
       const termSymY = circY - TERM_H * TERM_CIRC_Y_FRAC
       const labelA = BOT_LABELS[globalIdx] ?? String(globalIdx + 1)
       const labelB = TOP_LABELS[globalIdx] ?? String(globalIdx + 1)
 
-      els += `<circle cx="${DIF_END_X}" cy="${circY}" r="1.2" fill="#000"/>`
+      els += `<circle cx="${TERM_LINE_START}" cy="${circY}" r="1.2" fill="#000"/>`
       // Thermic line with 5mm gap, symbol 2mm after line
       els += `<line x1="${TERM_LINE_START}" y1="${circY}" x2="${TERM_LINE_END}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
       els += `<image href="${termUrl}" x="${TERM_X}" y="${termSymY}" width="${TERM_W}" height="${TERM_H}"/>`
       if (circ.pia_amperatge) els += `<text x="${TERM_X + TERM_W / 2}" y="${termSymY + TERM_H + 5}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${circ.pia_amperatge}A</text>`
-      // Internal line: base image edge → EXT_LINE_START (visible from thermic)
-      els += `<line x1="${BASE_W}" y1="${circY}" x2="${EXT_LINE_START}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
+      // Internal line: from thermic symbol's edge (crosses the cuadro border) → EXT_LINE_START
+      els += `<line x1="${TERM_X + TERM_W}" y1="${circY}" x2="${EXT_LINE_START}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
       // External line: EXT_LINE_START → EXT_LINE_END (outside cuadro)
       els += `<line x1="${EXT_LINE_START}" y1="${circY}" x2="${EXT_LINE_END}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
-      // Earth protection: same span as external line
-      els += `<line x1="${EXT_LINE_START}" y1="${circY + 4}" x2="${EXT_LINE_END}" y2="${circY + 4}" stroke="#000" stroke-width="0.7" stroke-dasharray="1 1"/>`
+      // Earth protection: reaches the vertical earth line
+      els += `<line x1="${EARTH_START_X}" y1="${circY + 4}" x2="${EARTH_END_X}" y2="${circY + 4}" stroke="#000" stroke-width="0.7" stroke-dasharray="1 1"/>`
       // Letter at START of external line — white halo so the dashed line doesn't cross through it
       els += `<text x="${EXT_LINE_START - 1}" y="${circY + 2}" text-anchor="end" font-size="5" font-weight="bold" stroke="#fff" stroke-width="2.5" paint-order="stroke" fill="#000">${labelA}</text>`
       // Letter at END of external line — white halo, same reason

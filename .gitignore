@@ -33,6 +33,7 @@ dist-ssr
 Referencias nuevas Herramietnas/
 
 .env.supabase
+.env.ftp
 supabase/.temp/
 
 # Claude Code project settings
