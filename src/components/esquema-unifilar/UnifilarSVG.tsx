@@ -3,15 +3,21 @@ import type { Circuit, Diferencial } from '../../types/esquemaUnifilar'
 interface Props { circuits: Circuit[]; diferencials: Diferencial[]; iga: number }
 
 // ── SVG dimensions ─────────────────────────────────────────────────────────────
-const VB_W = 520        // Extended right to accommodate circuit labels (incl. long names)
-const VB_H = 505.19
-const BASE_W = 322.51   // Width of esquema-elec2.svg
-const CUADRO_Y = 3.2, CUADRO_H = 491.82
-const MM = VB_H / 297   // SVG units per mm (≈ 1.70)
+// VB_W crops the right side of esquema-elec3.svg (x>620 is empty in that file) and
+// leaves room for the longest circuit name + kW label (~x=580). Keeping VB_W ≥ 582
+// (areaH*VB_H/areaW in pdf-elec2.ts) preserves the diagram's vertical PDF position
+// while maximizing how much of the page width is used.
+const VB_W = 620
+const VB_H = 511.99
+const BASE_W = 686.97   // Width of esquema-elec3.svg
+const CUADRO_Y = 8.49, CUADRO_H = 491.82
+const MM = VB_H / 297   // SVG units per mm (≈ 1.72)
 
 // ── Calibrated positions ───────────────────────────────────────────────────────
+// esquema-elec3.svg = esquema-elec2.svg shifted by (+1.51, +5.29) on a wider canvas.
+// All old calibrated points below are shifted by that same offset.
 // +2mm right from calibrated point so it doesn't look too tight against the bus
-const DIF_X = 206.76 + 2 * (505.19 / 297)  // ≈ 210.16
+const DIF_X = 208.27 + 2 * MM  // ≈ 211.72
 
 // ── Diferencial symbol (viewBox 20.42 × 30.93) ────────────────────────────────
 const DIF_VB_W = 20.42, DIF_VB_H = 30.93
@@ -31,20 +37,20 @@ const TERM_CIRC_Y_FRAC = 15.33 / TERM_VB_H  // circuit Y inside thermic symbol
 
 // Thermic line: 15mm gap after DIF_END_X (enough room so differential label doesn't overlap)
 const TERM_LINE_START = DIF_END_X + 15 * MM
-const TERM_X = 278                            // thermic symbol start (close to cuadro right)
+const TERM_X = 279.51                         // thermic symbol start (close to cuadro right)
 const TERM_LINE_END = TERM_X - 2 * MM + 2    // line ends 2mm before symbol, +2pt closer
 
 // IGA potencia text position (calibrated)
-const IGA_TEXT_X = 140.01
-const IGA_TEXT_Y = 245
+const IGA_TEXT_X = 141.52
+const IGA_TEXT_Y = 250.29
 
 // External circuit line: starts OUTSIDE the cuadro (calibrated)
-const EXT_LINE_START = 320.92 + 20 * MM  // +2cm a la dreta
+const EXT_LINE_START = 322.43 + 20 * MM  // +2cm a la dreta
 const EXT_LINE_LEN   = 70             // long enough for cable info text
-const EXT_LINE_END   = EXT_LINE_START + EXT_LINE_LEN  // 390.92
+const EXT_LINE_END   = EXT_LINE_START + EXT_LINE_LEN
 
 // Earth protection line: reaches the vertical earth line (calibrated via /dev/calibrar-elec2 — x≈313.09)
-const EARTH_START_X = 313.09
+const EARTH_START_X = 314.60
 const EARTH_END_X   = EXT_LINE_END
 
 // Column letter pairs
@@ -81,10 +87,10 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
       fontFamily="Verdana, Arial, sans-serif">
 
       {/* Base schematic (occupies left BASE_W units) */}
-      <image href="/svg/esquema-elec2.svg" x={0} y={0} width={BASE_W} height={VB_H} />
+      <image href="/svg/esquema-elec3.svg" x={0} y={-5} width={BASE_W} height={VB_H} />
 
       {/* Short horizontal connector: main bus → spine (shows the split) */}
-      <line x1={206.76} y1={236} x2={DIF_X} y2={236}
+      <line x1={208.27} y1={241.29} x2={DIF_X} y2={241.29}
         stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
 
       {/* IGA potencia label */}
@@ -102,7 +108,7 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
       )}
 
 
-      <circle cx={DIF_X} cy={236} r={1.8} fill="#000" />
+      <circle cx={DIF_X} cy={241.29} r={1.8} fill="#000" />
 
       {groups.map(({ dif, difY, difInputY, difConnY, circuitRows }) => (
         <g key={dif.id}>

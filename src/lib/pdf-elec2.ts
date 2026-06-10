@@ -3,11 +3,14 @@ import type { Circuit, Diferencial, DadesCapcalera } from '../types/esquemaUnifi
 import type { Instalador } from '../types'
 
 // ── Same constants as UnifilarSVG.tsx ────────────────────────────────────────
-const VB_W = 520, VB_H = 505.19
-const BASE_W = 322.51
-const CUADRO_Y = 3.2, CUADRO_H = 491.82
+// VB_W=620 crops the empty right side of esquema-elec3.svg and keeps the diagram's
+// vertical position fixed (VB_W ≥ areaH*VB_H/areaW ≈ 581.9) while filling more page width.
+const VB_W = 620, VB_H = 511.99
+const BASE_W = 686.97
+const CUADRO_Y = 8.49, CUADRO_H = 491.82
 const MM = VB_H / 297
-const DIF_X = 206.76 + 2 * MM  // +2mm right from calibrated point
+// esquema-elec3.svg = esquema-elec2.svg shifted by (+1.51, +5.29) on a wider canvas.
+const DIF_X = 208.27 + 2 * MM  // +2mm right from calibrated point
 const DIF_VB_W = 20.42, DIF_VB_H = 30.93
 const DIF_W = 20, DIF_H = DIF_VB_H * (DIF_W / DIF_VB_W)
 const DIF_SYMBOL_X = DIF_X + 5 * MM + 2      // +2pt right so pre-symbol line is more visible
@@ -21,16 +24,16 @@ const TERM_VB_W = 33.68, TERM_VB_H = 16.63
 const TERM_W = 28, TERM_H = TERM_VB_H * (TERM_W / TERM_VB_W)
 const TERM_CIRC_Y_FRAC = 15.33 / TERM_VB_H
 const TERM_LINE_START = DIF_END_X + 15 * MM
-const TERM_X = 278
+const TERM_X = 279.51
 const TERM_LINE_END = TERM_X - 2 * MM + 2    // +2pt closer to symbol
 
-const EXT_LINE_START = 320.92 + 20 * MM  // +2cm a la dreta
+const EXT_LINE_START = 322.43 + 20 * MM  // +2cm a la dreta
 const EXT_LINE_LEN   = 70
 const EXT_LINE_END   = EXT_LINE_START + EXT_LINE_LEN
-const IGA_TEXT_X = 140.01, IGA_TEXT_Y = 245
+const IGA_TEXT_X = 141.52, IGA_TEXT_Y = 250.29
 
 // Earth protection line: reaches the vertical earth line (calibrated via /dev/calibrar-elec2 — x≈313.09)
-const EARTH_START_X = 313.09
+const EARTH_START_X = 314.60
 const EARTH_END_X   = EXT_LINE_END
 const BOT_LABELS = ['C','E','G','I','K','M','O','Q','S','U','W','Y']
 const TOP_LABELS = ['D','F','H','J','L','N','P','R','T','V','X','Z']
@@ -38,7 +41,7 @@ const TOP_LABELS = ['D','F','H','J','L','N','P','R','T','V','X','Z']
 // ── Build full diagram SVG string (base + all overlays) ───────────────────────
 async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[], iga: number): Promise<string> {
   const [baseTxt, difTxt, termTxt] = await Promise.all([
-    fetch('/svg/esquema-elec2.svg').then(r => r.text()),
+    fetch('/svg/esquema-elec3.svg').then(r => r.text()),
     fetch('/svg/simbolo-diferencial.svg').then(r => r.text()),
     fetch('/svg/simbolo-termico.svg').then(r => r.text()),
   ])
@@ -65,7 +68,7 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
     return { dif, difY, difInputY, difConnY, circuitRows }
   })
 
-  let els = `<image href="${baseUrl}" x="0" y="0" width="${BASE_W}" height="${VB_H}"/>
+  let els = `<image href="${baseUrl}" x="0" y="-5" width="${BASE_W}" height="${VB_H}"/>
   ${iga > 0 ? `<text x="${IGA_TEXT_X}" y="${IGA_TEXT_Y}" text-anchor="middle" font-size="6" font-weight="bold" fill="#000">${iga}A</text>` : ''}`
 
   // Differential spine
@@ -73,7 +76,7 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
     const y1 = groups[0].difInputY, y2 = groups[groups.length - 1].difInputY
     els += `<line x1="${DIF_X}" y1="${y1}" x2="${DIF_X}" y2="${y2}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
   }
-  els += `<circle cx="${DIF_X}" cy="236" r="1.8" fill="#000"/>`
+  els += `<circle cx="${DIF_X}" cy="241.29" r="1.8" fill="#000"/>`
 
   for (const { dif, difY, difInputY, difConnY, circuitRows } of groups) {
     els += `<circle cx="${DIF_X}" cy="${difInputY}" r="1.5" fill="#000"/>`
