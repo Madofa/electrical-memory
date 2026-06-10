@@ -119,7 +119,7 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
       }
       // Circuit name after end letter, followed by power 1.5cm later, bigger & bold
       const kw = circ.potencia_kw > 0 ? `${circ.potencia_kw.toFixed(2).replace('.', ',')} kW` : ''
-      els += `<text x="${EXT_LINE_END + 14}" y="${circY + 2}" font-size="5.5" font-weight="bold" fill="#000">${circ.nom}${kw ? `<tspan dx="${15 * MM}" font-size="7">${kw}</tspan>` : ''}</text>`
+      els += `<text x="${EXT_LINE_END + 14}" y="${circY + 2}" font-size="5.5" font-weight="bold" fill="#000">${circ.nom}${kw ? `<tspan dx="${10 * MM}" font-size="7">${kw}</tspan>` : ''}</text>`
     }
   }
 
@@ -181,9 +181,9 @@ export async function generateElec2PDF(
   const diagW = VB_W * scale   // becomes rotated HEIGHT
   const diagH = VB_H * scale   // becomes rotated WIDTH
 
-  // Center rotated image; -3.65 = raised another 10pt vs previous (-19.74) after the +2% scale
-  const leftX   = 20 + (areaW - diagH) / 2 + 24   // +6pt
-  const bottomY = 196 + (areaH - diagW) / 2 - 3.65
+  // Center rotated image; +6.35 = raised another 10pt vs previous (-3.65)
+  const leftX   = 20 + (areaW - diagH) / 2 + 34   // +10pt right vs previous (+24)
+  const bottomY = 196 + (areaH - diagW) / 2 + 6.35
 
   // Anchor for 90° CCW: anchorX = leftX + diagH, anchorY = bottomY
   const anchorX = leftX + diagH

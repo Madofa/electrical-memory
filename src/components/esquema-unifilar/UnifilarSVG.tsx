@@ -195,7 +195,7 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
                   fontSize="5.5" fontWeight="bold" fill="#000">
                   {circ.nom}
                   {circ.potencia_kw > 0 && (
-                    <tspan dx={15 * MM} fontSize="7">{circ.potencia_kw.toFixed(2).replace('.', ',')} kW</tspan>
+                    <tspan dx={10 * MM} fontSize="7">{circ.potencia_kw.toFixed(2).replace('.', ',')} kW</tspan>
                   )}
                 </text>
               </g>
