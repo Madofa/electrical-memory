@@ -102,7 +102,7 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
       // Thermic line with 5mm gap, symbol 2mm after line
       els += `<line x1="${TERM_LINE_START}" y1="${circY}" x2="${TERM_LINE_END}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
       els += `<image href="${termUrl}" x="${TERM_X}" y="${termSymY}" width="${TERM_W}" height="${TERM_H}"/>`
-      if (circ.pia_amperatge) els += `<text x="${TERM_X + TERM_W / 2}" y="${termSymY + TERM_H + 5}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${circ.pia_amperatge}A</text>`
+      if (circ.pia_amperatge) els += `<text x="${TERM_X + TERM_W / 2}" y="${termSymY + TERM_H + 2}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${circ.pia_amperatge}A</text>`
       // Internal line: from thermic symbol's edge (crosses the cuadro border) → EXT_LINE_START
       els += `<line x1="${TERM_X + TERM_W - 2}" y1="${circY}" x2="${EXT_LINE_START}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
       // External line: EXT_LINE_START → EXT_LINE_END (outside cuadro)
@@ -176,14 +176,14 @@ export async function generateElec2PDF(
   // Diagram is HORIZONTAL → rotate 90° CCW to fit in portrait form
   // After 90° CCW: rotated width = diagH, rotated height = diagW
   const areaW = 546, areaH = 620
-  // Scale so that: diagH ≤ areaW AND diagW ≤ areaH, +5% extra (per user feedback)
-  const scale = Math.min(areaW / VB_H, areaH / VB_W) * 0.92 * 1.05
+  // Scale so that: diagH ≤ areaW AND diagW ≤ areaH, +5% +2% extra (per user feedback)
+  const scale = Math.min(areaW / VB_H, areaH / VB_W) * 0.92 * 1.05 * 1.02
   const diagW = VB_W * scale   // becomes rotated HEIGHT
   const diagH = VB_H * scale   // becomes rotated WIDTH
 
-  // Center rotated image; -19.74 = raised 15pt vs previous (-49) after the +5% scale
+  // Center rotated image; -3.65 = raised another 10pt vs previous (-19.74) after the +2% scale
   const leftX   = 20 + (areaW - diagH) / 2 + 24   // +6pt
-  const bottomY = 196 + (areaH - diagW) / 2 - 19.74
+  const bottomY = 196 + (areaH - diagW) / 2 - 3.65
 
   // Anchor for 90° CCW: anchorX = leftX + diagH, anchorY = bottomY
   const anchorX = leftX + diagH
