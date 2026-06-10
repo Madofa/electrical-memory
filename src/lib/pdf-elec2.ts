@@ -3,7 +3,7 @@ import type { Circuit, Diferencial, DadesCapcalera } from '../types/esquemaUnifi
 import type { Instalador } from '../types'
 
 // ── Same constants as UnifilarSVG.tsx ────────────────────────────────────────
-const VB_W = 600, VB_H = 505.19
+const VB_W = 520, VB_H = 505.19
 const BASE_W = 322.51
 const CUADRO_Y = 3.2, CUADRO_H = 491.82
 const MM = VB_H / 297

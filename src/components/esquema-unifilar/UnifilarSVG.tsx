@@ -3,7 +3,7 @@ import type { Circuit, Diferencial } from '../../types/esquemaUnifilar'
 interface Props { circuits: Circuit[]; diferencials: Diferencial[]; iga: number }
 
 // ── SVG dimensions ─────────────────────────────────────────────────────────────
-const VB_W = 600        // Extended right to accommodate circuit labels (incl. long names + power)
+const VB_W = 520        // Extended right to accommodate circuit labels (incl. long names)
 const VB_H = 505.19
 const BASE_W = 322.51   // Width of esquema-elec2.svg
 const CUADRO_Y = 3.2, CUADRO_H = 491.82
