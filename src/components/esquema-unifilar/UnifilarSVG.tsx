@@ -179,18 +179,19 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
                 <text x={EXT_LINE_END + 1} y={circY + 2} textAnchor="start" fontSize="5" fontWeight="bold"
                   stroke="#fff" strokeWidth="2.5" paintOrder="stroke" fill="#000">{labelTop}</text>
 
-                {/* Cable section + kW above the external line */}
-                <text x={EXT_LINE_START + 5} y={circY - 3} fontSize="5.5" fill="#000">
-                  {circ.seccio}
-                  {circ.seccio && circ.potencia_kw > 0 && <tspan dx={2}>-</tspan>}
+                {/* Cable section above the external line */}
+                {circ.seccio && (
+                  <text x={EXT_LINE_START + 5} y={circY - 3} fontSize="5.5" fill="#000">{circ.seccio}</text>
+                )}
+
+                {/* Circuit name: after end letter, followed by power 1.5cm later, bigger & bold */}
+                <text x={EXT_LINE_END + 14} y={circY + 2}
+                  fontSize="5.5" fontWeight="bold" fill="#000">
+                  {circ.nom}
                   {circ.potencia_kw > 0 && (
-                    <tspan dx={circ.seccio ? 2 : 0}>{circ.potencia_kw.toFixed(2).replace('.', ',')} kW</tspan>
+                    <tspan dx={15 * MM} fontSize="7">{circ.potencia_kw.toFixed(2).replace('.', ',')} kW</tspan>
                   )}
                 </text>
-
-                {/* Circuit name: after end letter, with extra gap so it doesn't crowd the letter */}
-                <text x={EXT_LINE_END + 14} y={circY + 2}
-                  fontSize="5.5" fontWeight="bold" fill="#000">{circ.nom}</text>
               </g>
             )
           })}
