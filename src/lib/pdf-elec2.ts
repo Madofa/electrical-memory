@@ -176,14 +176,14 @@ export async function generateElec2PDF(
   // Diagram is HORIZONTAL → rotate 90° CCW to fit in portrait form
   // After 90° CCW: rotated width = diagH, rotated height = diagW
   const areaW = 546, areaH = 620
-  // Scale so that: diagH ≤ areaW AND diagW ≤ areaH (0.82 = reduce to fit with margin)
-  const scale = Math.min(areaW / VB_H, areaH / VB_W) * 0.92
+  // Scale so that: diagH ≤ areaW AND diagW ≤ areaH, +5% extra (per user feedback)
+  const scale = Math.min(areaW / VB_H, areaH / VB_W) * 0.92 * 1.05
   const diagW = VB_W * scale   // becomes rotated HEIGHT
   const diagH = VB_H * scale   // becomes rotated WIDTH
 
-  // Center rotated image, shifted down 20pt
+  // Center rotated image; -19.74 = raised 15pt vs previous (-49) after the +5% scale
   const leftX   = 20 + (areaW - diagH) / 2 + 24   // +6pt
-  const bottomY = 196 + (areaH - diagW) / 2 - 49  // +1.5cm (+42pt)
+  const bottomY = 196 + (areaH - diagW) / 2 - 19.74
 
   // Anchor for 90° CCW: anchorX = leftX + diagH, anchorY = bottomY
   const anchorX = leftX + diagH
