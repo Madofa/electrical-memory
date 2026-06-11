@@ -9,7 +9,9 @@ interface Props { circuits: Circuit[]; diferencials: Diferencial[]; iga: number 
 // while maximizing how much of the page width is used.
 const VB_W = 620
 const VB_H = 511.99
-const BASE_W = 686.97   // Width of esquema-elec3.svg
+// esquema-elec4.svg = esquema-elec3.svg shifted by (-5.49,-8.04) on a slightly smaller canvas
+// (same internal scale — drawing it at (5.49, 3.04) reproduces esquema-elec3's exact placement)
+const BASE_W = 674.29, BASE_H = 499.46
 const CUADRO_Y = 8.49, CUADRO_H = 491.82
 const MM = VB_H / 297   // SVG units per mm (≈ 1.72)
 
@@ -87,21 +89,18 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
       fontFamily="Verdana, Arial, sans-serif">
 
       {/* Base schematic (occupies left BASE_W units) */}
-      <image href="/svg/esquema-elec3.svg" x={0} y={-5} width={BASE_W} height={VB_H} />
+      <image href="/svg/esquema-elec4.svg" x={5.49} y={3.04} width={BASE_W} height={BASE_H} />
 
       {/* Short horizontal connector: main bus → spine (shows the split) */}
       <line x1={208.27} y1={241.29} x2={DIF_X} y2={241.29}
         stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
 
-      {/* IGA potencia label — white rect covers the placeholder "25A" baked into the background SVG */}
+      {/* IGA potencia label */}
       {iga > 0 && (
-        <>
-          <rect x={131} y={245} width={20} height={12} fill="#fff" />
-          <text x={IGA_TEXT_X} y={IGA_TEXT_Y}
-            textAnchor="middle" fontSize="6" fontWeight="bold" fill="#000">
-            {iga}A
-          </text>
-        </>
+        <text x={IGA_TEXT_X} y={IGA_TEXT_Y}
+          textAnchor="middle" fontSize="6" fontWeight="bold" fill="#000">
+          {iga}A
+        </text>
       )}
 
       {/* Differential vertical spine — spans from first to last group's input connection */}

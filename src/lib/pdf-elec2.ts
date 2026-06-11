@@ -6,7 +6,9 @@ import type { Instalador } from '../types'
 // VB_W=620 crops the empty right side of esquema-elec3.svg and keeps the diagram's
 // vertical position fixed (VB_W ≥ areaH*VB_H/areaW ≈ 581.9) while filling more page width.
 const VB_W = 620, VB_H = 511.99
-const BASE_W = 686.97
+// esquema-elec4.svg = esquema-elec3.svg shifted by (-5.49,-8.04) on a slightly smaller canvas
+// (same internal scale — drawing it at (5.49, 3.04) reproduces esquema-elec3's exact placement)
+const BASE_W = 674.29, BASE_H = 499.46
 const CUADRO_Y = 8.49, CUADRO_H = 491.82
 const MM = VB_H / 297
 // esquema-elec3.svg = esquema-elec2.svg shifted by (+1.51, +5.29) on a wider canvas.
@@ -41,7 +43,7 @@ const TOP_LABELS = ['D','F','H','J','L','N','P','R','T','V','X','Z']
 // ── Build full diagram SVG string (base + all overlays) ───────────────────────
 async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[], iga: number): Promise<string> {
   const [baseTxt, difTxt, termTxt] = await Promise.all([
-    fetch('/svg/esquema-elec3.svg').then(r => r.text()),
+    fetch('/svg/esquema-elec4.svg').then(r => r.text()),
     fetch('/svg/simbolo-diferencial.svg').then(r => r.text()),
     fetch('/svg/simbolo-termico.svg').then(r => r.text()),
   ])
@@ -68,8 +70,8 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
     return { dif, difY, difInputY, difConnY, circuitRows }
   })
 
-  let els = `<image href="${baseUrl}" x="0" y="-5" width="${BASE_W}" height="${VB_H}"/>
-  ${iga > 0 ? `<rect x="131" y="245" width="20" height="12" fill="#fff"/><text x="${IGA_TEXT_X}" y="${IGA_TEXT_Y}" text-anchor="middle" font-size="6" font-weight="bold" fill="#000">${iga}A</text>` : ''}`
+  let els = `<image href="${baseUrl}" x="5.49" y="3.04" width="${BASE_W}" height="${BASE_H}"/>
+  ${iga > 0 ? `<text x="${IGA_TEXT_X}" y="${IGA_TEXT_Y}" text-anchor="middle" font-size="6" font-weight="bold" fill="#000">${iga}A</text>` : ''}`
 
   // Differential spine
   if (groups.length > 0) {

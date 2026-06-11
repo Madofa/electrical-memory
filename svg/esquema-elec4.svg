@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Capa_2" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 674.29 499.46">
+  <!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 2.1.4 Build 3)  -->
+  <defs>
+    <style>
+      .st0 {
+        font-family: Verdana-Bold, Verdana;
+        font-size: 9px;
+        font-weight: 700;
+      }
+
+      .st0, .st1 {
+        isolation: isolate;
+      }
+
+      .st2 {
+        stroke: #fff;
+        stroke-dasharray: 3;
+      }
+
+      .st2, .st3, .st4, .st5, .st6, .st7, .st8, .st9, .st10, .st11, .st12 {
+        stroke-miterlimit: 10;
+      }
+
+      .st2, .st4, .st5, .st6, .st7, .st8, .st9, .st10, .st11, .st12 {
+        fill: none;
+      }
+
+      .st2, .st4, .st8, .st11, .st12 {
+        stroke-width: .9px;
+      }
+
+      .st3 {
+        stroke-width: .95px;
+      }
+
+      .st3, .st4, .st5, .st6, .st7, .st8, .st9, .st10, .st11, .st12 {
+        stroke: #000;
+      }
+
+      .st4 {
+        stroke-dasharray: 3.01 3.01;
+      }
+
+      .st5 {
+        stroke-width: .83px;
+      }
+
+      .st6 {
+        stroke-width: .89px;
+      }
+
+      .st7 {
+        stroke-width: 1.1px;
+      }
+
+      .st10 {
+        stroke-dasharray: 1 1;
+      }
+
+      .st11 {
+        stroke-dasharray: 2.83 2.83;
+      }
+
+      .st12 {
+        stroke-dasharray: 2.86 2.86;
+      }
+    </style>
+  </defs>
+  <line class="st8" x1=".45" y1="105.78" x2=".45" y2="234.08"/>
+  <rect class="st8" x="9.46" y="176.61" width="38.72" height="113.41"/>
+  <rect class="st8" x="15.35" y="222.24" width="27.68" height="22.15"/>
+  <rect class="st8" x="71.48" y="221.29" width="15.27" height="23.29"/>
+  <rect class="st8" x="121.12" y="212.7" width="33.03" height="40.48"/>
+  <rect class="st8" x="186.86" y=".45" width="127.64" height="491.82"/>
+  <line class="st8" x1="37.05" y1="222.05" x2="37.05" y2="244.2"/>
+  <line class="st8" x1=".39" y1="233.76" x2="15.54" y2="233.76"/>
+  <g>
+    <line class="st8" x1="43.03" y1="233.63" x2="44.53" y2="233.63"/>
+    <line class="st11" x1="47.37" y1="233.63" x2="68.63" y2="233.63"/>
+    <line class="st8" x1="70.04" y1="233.63" x2="71.54" y2="233.63"/>
+  </g>
+  <g>
+    <line class="st8" x1="86.94" y1="233.32" x2="88.44" y2="233.32"/>
+    <line class="st12" x1="91.3" y1="233.32" x2="118.44" y2="233.32"/>
+    <line class="st8" x1="119.87" y1="233.32" x2="121.37" y2="233.32"/>
+  </g>
+  <g>
+    <line class="st8" x1="153.99" y1="233.31" x2="155.49" y2="233.31"/>
+    <line class="st4" x1="158.5" y1="233.31" x2="199.12" y2="233.32"/>
+    <line class="st8" x1="200.62" y1="233.32" x2="202.12" y2="233.32"/>
+  </g>
+  <g id="Capa_3">
+    <line class="st6" x1="154.6" y1="233.36" x2="149.85" y2="233.36"/>
+  </g>
+  <g>
+    <line class="st9" x1="309.42" y1="15.85" x2="309.42" y2="16.35"/>
+    <line class="st10" x1="309.42" y1="17.35" x2="309.42" y2="479.95"/>
+    <line class="st9" x1="309.42" y1="480.45" x2="309.42" y2="480.95"/>
+  </g>
+  <g>
+    <line class="st9" x1="309.72" y1="480.54" x2="309.22" y2="480.54"/>
+    <line class="st10" x1="308.22" y1="480.54" x2="33.01" y2="480.54"/>
+    <line class="st9" x1="32.51" y1="480.54" x2="32.01" y2="480.54"/>
+  </g>
+  <line class="st7" x1="31.83" y1="463.19" x2="31.83" y2="499.46"/>
+  <line class="st7" x1="28.01" y1="466.92" x2="28.01" y2="495.73"/>
+  <line class="st7" x1="23.68" y1="471.13" x2="23.68" y2="491.52"/>
+  <line class="st7" x1="19.36" y1="475.57" x2="19.36" y2="487.08"/>
+  <line class="st7" x1="15.03" y1="479.76" x2="15.03" y2="482.9"/>
+  <g class="st1">
+    <text class="st0" transform="translate(22.83 224.16) rotate(90) scale(.78 1)"><tspan x="0" y="0">kWh</tspan></text>
+  </g>
+  <circle class="st6" cx="148.09" cy="233.46" r="1.53"/>
+  <circle class="st6" cx="127.32" cy="233.44" r="1.53"/>
+  <g id="Capa_31">
+    <line class="st5" x1="126.13" y1="233.53" x2="122.04" y2="233.53"/>
+  </g>
+  <line class="st9" x1="129.09" y1="233.08" x2="146.75" y2="223.25"/>
+  <polygon class="st3" points="139.19 227.19 139.25 225.36 142.89 223.39 144.6 224.27 139.19 227.19"/>
+  <rect class="st2" x="634.13" y="417.94" width="39.71" height="61.1"/>
+</svg>
