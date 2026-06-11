@@ -104,7 +104,7 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
       // Thermic line with 5mm gap, symbol 2mm after line
       els += `<line x1="${TERM_LINE_START}" y1="${circY}" x2="${TERM_LINE_END}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
       els += `<image href="${termUrl}" x="${TERM_X}" y="${termSymY}" width="${TERM_W}" height="${TERM_H}"/>`
-      if (circ.pia_amperatge) els += `<text x="${TERM_X + TERM_W / 2}" y="${termSymY + TERM_H + 5}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${circ.pia_amperatge}A</text>`
+      if (circ.pia_amperatge) els += `<text x="${TERM_X + TERM_W / 2}" y="${termSymY + TERM_H + 7}" text-anchor="middle" font-size="5" font-weight="bold" fill="#000">${circ.pia_amperatge}A</text>`
       // Internal line: from thermic symbol's edge (crosses the cuadro border) → EXT_LINE_START
       els += `<line x1="${TERM_X + TERM_W - 2}" y1="${circY}" x2="${EXT_LINE_START}" y2="${circY}" stroke="#000" stroke-width="0.9" stroke-dasharray="3 3"/>`
       // External line: EXT_LINE_START → EXT_LINE_END (outside cuadro)

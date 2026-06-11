@@ -161,7 +161,7 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
 
                 {/* Amperage below thermic */}
                 {circ.pia_amperatge > 0 && (
-                  <text x={TERM_X + TERM_W / 2} y={termSymY + TERM_H + 5}
+                  <text x={TERM_X + TERM_W / 2} y={termSymY + TERM_H + 7}
                     textAnchor="middle" fontSize="5" fontWeight="bold" fill="#000">
                     {circ.pia_amperatge}A
                   </text>
