@@ -119,7 +119,7 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
       }
       // Circuit name after end letter, followed by power 1.5cm later, bigger & bold
       const kw = circ.potencia_kw > 0 ? `${circ.potencia_kw.toFixed(2).replace('.', ',')} kW` : ''
-      els += `<text x="${EXT_LINE_END + 14}" y="${circY + 2}" font-size="5.5" font-weight="bold" fill="#000">${circ.nom}${kw ? `<tspan dx="${10 * MM}" font-size="7">${kw}</tspan>` : ''}</text>`
+      els += `<text x="${EXT_LINE_END + 14}" y="${circY + 2}" font-size="5.5" font-weight="bold" fill="#000">${circ.nom}${kw ? `<tspan dx="${10 * MM - 2}" font-size="6">${kw}</tspan>` : ''}</text>`
     }
   }
 
