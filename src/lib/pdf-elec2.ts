@@ -68,7 +68,7 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
     return { dif, difY, difInputY, difConnY, circuitRows }
   })
 
-  let els = `<image href="${baseUrl}" x="-5" y="-3" width="${BASE_W}" height="${VB_H}"/>
+  let els = `<image href="${baseUrl}" x="0" y="-5" width="${BASE_W}" height="${VB_H}"/>
   ${iga > 0 ? `<text x="${IGA_TEXT_X}" y="${IGA_TEXT_Y}" text-anchor="middle" font-size="6" font-weight="bold" fill="#000">${iga}A</text>` : ''}`
 
   // Differential spine

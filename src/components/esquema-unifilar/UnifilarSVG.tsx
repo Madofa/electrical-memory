@@ -87,7 +87,7 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
       fontFamily="Verdana, Arial, sans-serif">
 
       {/* Base schematic (occupies left BASE_W units) */}
-      <image href="/svg/esquema-elec3.svg" x={-5} y={-3} width={BASE_W} height={VB_H} />
+      <image href="/svg/esquema-elec3.svg" x={0} y={-5} width={BASE_W} height={VB_H} />
 
       {/* Short horizontal connector: main bus → spine (shows the split) */}
       <line x1={208.27} y1={241.29} x2={DIF_X} y2={241.29}
