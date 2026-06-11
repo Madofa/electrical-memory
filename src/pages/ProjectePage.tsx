@@ -4,16 +4,16 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Zap, Pencil, Loader2, Activity, FileText, BookOpen, ClipboardCheck, Calculator } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
-import { formatDate, saveMemoria, getMemorias } from '../lib/supabase'
+import { formatDate, saveMemoria, getMemorias, deleteMemoria } from '../lib/supabase'
 import {
   getProjecte, updateProjecte, prefillMTD,
   type Projecte, type ProjecteForm,
 } from '../lib/supabase-projectes'
-import { createEsquemaFromPlantilla, getEsquemes } from '../lib/supabase-esquemes'
+import { createEsquemaFromPlantilla, getEsquemes, deleteEsquema } from '../lib/supabase-esquemes'
 import { LABELS_TIPUS_INSTALLACIO, type TipusInstallacio } from '../types/esquemaUnifilar'
-import { createCertificatElec1, getCertificatsElec1 } from '../lib/supabase-elec1'
-import { createElec3Doc, getElec3Docs } from '../lib/supabase-elec3'
-import { createMemoriaDescriptiva, getMemoriesDescriptives } from '../lib/supabase-memoria-descriptiva'
+import { createCertificatElec1, getCertificatsElec1, deleteCertificatElec1 } from '../lib/supabase-elec1'
+import { createElec3Doc, getElec3Docs, deleteElec3Doc } from '../lib/supabase-elec3'
+import { createMemoriaDescriptiva, getMemoriesDescriptives, deleteMemoriaDescriptiva } from '../lib/supabase-memoria-descriptiva'
 import { defaultWizardData } from '../types'
 import { useWizardStore } from '../stores/wizardStore'
 import { DocumentCard } from '../components/projecte/DocumentCard'
@@ -133,6 +133,41 @@ export function ProjectePage() {
     navigate(`/memoria-descriptiva/${newId}`)
   }
 
+  const handleDeleteMTD = async (docId: string) => {
+    const { error } = await deleteMemoria(docId)
+    if (error) { toast.error(error.message); return }
+    setMtds((prev) => prev.filter((d) => d.id !== docId))
+    toast.success('Document eliminat')
+  }
+
+  const handleDeleteEsquema = async (docId: string) => {
+    const { error } = await deleteEsquema(docId)
+    if (error) { toast.error(error.message); return }
+    setEsquemes((prev) => prev.filter((d) => d.id !== docId))
+    toast.success('Document eliminat')
+  }
+
+  const handleDeleteElec3 = async (docId: string) => {
+    const { error } = await deleteElec3Doc(docId)
+    if (error) { toast.error(error.message); return }
+    setElec3s((prev) => prev.filter((d) => d.id !== docId))
+    toast.success('Document eliminat')
+  }
+
+  const handleDeleteElec1 = async (docId: string) => {
+    const { error } = await deleteCertificatElec1(docId)
+    if (error) { toast.error(error.message); return }
+    setElec1s((prev) => prev.filter((d) => d.id !== docId))
+    toast.success('Document eliminat')
+  }
+
+  const handleDeleteMD = async (docId: string) => {
+    const { error } = await deleteMemoriaDescriptiva(docId)
+    if (error) { toast.error(error.message); return }
+    setMds((prev) => prev.filter((d) => d.id !== docId))
+    toast.success('Document eliminat')
+  }
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
@@ -155,6 +190,7 @@ export function ProjectePage() {
       }
       navigate('/wizard')
     },
+    onDelete: () => handleDeleteMTD(d.id),
   }))
 
   return (
@@ -208,28 +244,28 @@ export function ProjectePage() {
               icon={<Activity className="w-5 h-5 text-amber-400" />}
               label="Esquema Unifilar"
               sublabel="Model ELEC 2"
-              docs={esquemes.map((d) => ({ id: d.id, estat: d.estat as 'esborrany' | 'finalitzat', nom: d.nom, route: `/unifilar/${d.id}` }))}
+              docs={esquemes.map((d) => ({ id: d.id, estat: d.estat as 'esborrany' | 'finalitzat', nom: d.nom, route: `/unifilar/${d.id}`, onDelete: () => handleDeleteEsquema(d.id) }))}
               onCreate={handleCreateEsquema}
             />
             <DocumentCard
               icon={<Calculator className="w-5 h-5 text-amber-400" />}
               label="Memòria Tècnica de càlculs"
               sublabel="ELEC-3 · ITC-BT-19"
-              docs={elec3s.map((d) => ({ id: d.id, estat: d.estat as 'esborrany' | 'finalitzat', nom: d.nom, route: `/elec3/${d.id}` }))}
+              docs={elec3s.map((d) => ({ id: d.id, estat: d.estat as 'esborrany' | 'finalitzat', nom: d.nom, route: `/elec3/${d.id}`, onDelete: () => handleDeleteElec3(d.id) }))}
               onCreate={handleCreateElec3}
             />
             <DocumentCard
               icon={<ClipboardCheck className="w-5 h-5 text-amber-400" />}
               label="Certificat d'instal·lació"
               sublabel="ELEC-1 Abril 2024"
-              docs={elec1s.map((d) => ({ id: d.id, estat: d.estat as 'esborrany' | 'finalitzat', nom: d.nom || d.titular_nom, route: `/elec1/${d.id}` }))}
+              docs={elec1s.map((d) => ({ id: d.id, estat: d.estat as 'esborrany' | 'finalitzat', nom: d.nom || d.titular_nom, route: `/elec1/${d.id}`, onDelete: () => handleDeleteElec1(d.id) }))}
               onCreate={handleCreateElec1}
             />
             <DocumentCard
               icon={<BookOpen className="w-5 h-5 text-amber-400" />}
               label="Memòria Descriptiva"
               sublabel="Document narratiu"
-              docs={mds.map((d) => ({ id: d.id, estat: d.estat as 'esborrany' | 'finalitzat', nom: d.nom, route: `/memoria-descriptiva/${d.id}` }))}
+              docs={mds.map((d) => ({ id: d.id, estat: d.estat as 'esborrany' | 'finalitzat', nom: d.nom, route: `/memoria-descriptiva/${d.id}`, onDelete: () => handleDeleteMD(d.id) }))}
               onCreate={handleCreateMD}
             />
           </div>
