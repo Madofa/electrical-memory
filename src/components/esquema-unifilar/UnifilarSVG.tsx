@@ -121,7 +121,7 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
           {/* Differential symbol at DIF_SYMBOL_X */}
           <image href="/svg/simbolo-diferencial.svg"
             x={DIF_SYMBOL_X} y={difY - DIF_H / 2} width={DIF_W} height={DIF_H} />
-          <text x={DIF_SYMBOL_X + DIF_W / 2 + 5} y={difY + DIF_H / 2 + 9}
+          <text x={DIF_SYMBOL_X + DIF_W / 2 + 5} y={difY + DIF_H / 2 + 11}
             textAnchor="middle" fontSize="5" fontWeight="bold" fill="#000">
             {dif.amperatge}A / {dif.sensibilitat_ma} mA
           </text>
