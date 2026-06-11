@@ -93,12 +93,15 @@ export function UnifilarSVG({ circuits, diferencials, iga }: Props) {
       <line x1={208.27} y1={241.29} x2={DIF_X} y2={241.29}
         stroke="#000" strokeWidth="0.9" strokeDasharray="3 3" />
 
-      {/* IGA potencia label */}
+      {/* IGA potencia label — white rect covers the placeholder "25A" baked into the background SVG */}
       {iga > 0 && (
-        <text x={IGA_TEXT_X} y={IGA_TEXT_Y}
-          textAnchor="middle" fontSize="6" fontWeight="bold" fill="#000">
-          {iga}A
-        </text>
+        <>
+          <rect x={131} y={245} width={20} height={12} fill="#fff" />
+          <text x={IGA_TEXT_X} y={IGA_TEXT_Y}
+            textAnchor="middle" fontSize="6" fontWeight="bold" fill="#000">
+            {iga}A
+          </text>
+        </>
       )}
 
       {/* Differential vertical spine — spans from first to last group's input connection */}

@@ -69,7 +69,7 @@ async function buildDiagramSVG(circuits: Circuit[], diferencials: Diferencial[],
   })
 
   let els = `<image href="${baseUrl}" x="0" y="-5" width="${BASE_W}" height="${VB_H}"/>
-  ${iga > 0 ? `<text x="${IGA_TEXT_X}" y="${IGA_TEXT_Y}" text-anchor="middle" font-size="6" font-weight="bold" fill="#000">${iga}A</text>` : ''}`
+  ${iga > 0 ? `<rect x="131" y="245" width="20" height="12" fill="#fff"/><text x="${IGA_TEXT_X}" y="${IGA_TEXT_Y}" text-anchor="middle" font-size="6" font-weight="bold" fill="#000">${iga}A</text>` : ''}`
 
   // Differential spine
   if (groups.length > 0) {
