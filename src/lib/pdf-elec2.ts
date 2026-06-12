@@ -234,7 +234,7 @@ export async function generateElec2PDF(
   try {
     const logoImg = await embedImage(pdfDoc, logoUrl)
     if (logoImg) {
-      const LOGO_X = 402.7, LOGO_Y = 120, LOGO_W = 141.3, LOGO_H = 94
+      const LOGO_X = 386.6, LOGO_Y = 148.6, LOGO_W = 135.6, LOGO_H = 90.2
       const scale = Math.min(LOGO_W / logoImg.width, LOGO_H / logoImg.height)
       const w = logoImg.width * scale, h = logoImg.height * scale
       page.drawImage(logoImg, {

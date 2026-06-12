@@ -18,7 +18,7 @@ interface PdfMarker {
   id: string; name: string; x: number; y: number; screenX: number; screenY: number
 }
 
-const IMG_SCALE = 2          // elec2-p1.png was generated at 150dpi (≈2× PDF pts)
+const IMG_SCALE = 150 / 72   // elec2-p1.png was generated at 150dpi (1pt = 150/72 px)
 const PAGE_HEIGHT_PTS = 836  // ELEC-2 PDF page height
 
 const PDF_FIELDS = [
