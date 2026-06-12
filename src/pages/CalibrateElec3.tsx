@@ -209,9 +209,9 @@ export function CalibrateElec3() {
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
         {/* Canvas area */}
-        <div className="flex-1 overflow-auto p-4 relative">
+        <div className="flex-1 min-h-[60vh] overflow-auto p-4 relative">
           <div className="relative inline-block cursor-crosshair">
             <canvas ref={canvasRef} onClick={handleCanvasClick} />
 
@@ -258,7 +258,7 @@ export function CalibrateElec3() {
         </div>
 
         {/* Right panel */}
-        <div className="w-72 border-l border-[#1e2d47] flex flex-col bg-[#0f1729]">
+        <div className="w-full lg:w-72 max-h-[40vh] lg:max-h-none overflow-y-auto border-t lg:border-t-0 lg:border-l border-[#1e2d47] flex flex-col bg-[#0f1729]">
           {/* Field name input */}
           {pendingClick && (
             <div className="p-4 border-b border-[#1e2d47] bg-amber-500/10">
