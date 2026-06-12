@@ -152,16 +152,16 @@ async function svgToPng(svgStr: string, w: number, h: number): Promise<Uint8Arra
 async function embedImage(pdfDoc: PDFDocument, url: string) {
   const resp = await fetch(url)
   if (!resp.ok) return null
-  const bytes = new Uint8Array(await resp.arrayBuffer())
+  const buffer = await resp.arrayBuffer()
   const contentType = resp.headers.get('content-type') || ''
-  if (contentType.includes('png')) return pdfDoc.embedPng(bytes)
-  if (contentType.includes('jpeg') || contentType.includes('jpg')) return pdfDoc.embedJpg(bytes)
-  const png = await rasterizeToPng(bytes, contentType)
+  if (contentType.includes('png')) return pdfDoc.embedPng(buffer)
+  if (contentType.includes('jpeg') || contentType.includes('jpg')) return pdfDoc.embedJpg(buffer)
+  const png = await rasterizeToPng(buffer, contentType)
   return pdfDoc.embedPng(png)
 }
 
-function rasterizeToPng(bytes: Uint8Array, contentType: string): Promise<Uint8Array> {
-  const blob = new Blob([bytes], { type: contentType || 'image/png' })
+function rasterizeToPng(buffer: ArrayBuffer, contentType: string): Promise<Uint8Array> {
+  const blob = new Blob([buffer], { type: contentType || 'image/png' })
   const url = URL.createObjectURL(blob)
   return new Promise((resolve, reject) => {
     const img = new Image()
