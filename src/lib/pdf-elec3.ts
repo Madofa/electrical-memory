@@ -102,13 +102,12 @@ export async function generateElec3PDF(
   const page2 = pdfDoc.addPage([842, 595])
   page2.drawPage(embP2, { x: 0, y: 0, width: 842, height: 595 })
 
-  // Logo de l'empresa instal·ladora (caixa "SEGELL INSTAL·LADOR I EMPRESA
-  // INSTAL·LADORA AUTORITZATS", mesurada directament del PDF plantilla)
+  // Logo de l'empresa instal·ladora, calibrat amb /dev/calibrar-elec3 (pàgina 2)
   const logoUrl = instalador?.empresa_logo_url || '/img/logo-lelctric.png'
   try {
     const logoImg = await embedImage(pdfDoc, logoUrl)
     if (logoImg) {
-      const LOGO_X = 686.4, LOGO_Y = 465.6, LOGO_W = 133.9, LOGO_H = 54.7
+      const LOGO_X = 688.7, LOGO_Y = 267.9, LOGO_W = 128, LOGO_H = 194
       const logoScale = Math.min(LOGO_W / logoImg.width, LOGO_H / logoImg.height)
       const w = logoImg.width * logoScale, h = logoImg.height * logoScale
       page2.drawImage(logoImg, {
