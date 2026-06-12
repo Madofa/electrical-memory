@@ -1,8 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Instalador, Memoria, WizardData, EstadoMemoria } from '../types'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+// Clau pública (anon key): per disseny va incrustada al codi client de qualsevol
+// app Supabase; la seguretat depèn de les polítiques RLS, no del seu secret.
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string) || 'https://moctmdicimxivthkrzhs.supabase.co'
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vY3RtZGljaW14aXZ0aGtyemhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4Mzk1MDEsImV4cCI6MjA5NDQxNTUwMX0.xJdX_UJHOgAAIvJ5wKP9eC-U1DOuD9gUsQkhRkvobtY'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
