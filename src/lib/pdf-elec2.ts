@@ -229,12 +229,13 @@ export async function generateElec2PDF(
     rotate: degrees(90),
   })
 
-  // 3. Logo de l'empresa instal·ladora (zona calibrada via /dev/calibrar-elec2)
+  // 3. Logo de l'empresa instal·ladora (caixa "SEGELL INSTAL·LADOR I EMPRESA
+  //    INSTAL·LADORA AUTORITZATS", mesurada directament del PDF plantilla)
   const logoUrl = instalador?.empresa_logo_url || '/img/logo-lelctric.png'
   try {
     const logoImg = await embedImage(pdfDoc, logoUrl)
     if (logoImg) {
-      const LOGO_X = 386.6, LOGO_Y = 148.6, LOGO_W = 135.6, LOGO_H = 90.2
+      const LOGO_X = 430.8, LOGO_Y = 78.1, LOGO_W = 143.3, LOGO_H = 94.3
       const scale = Math.min(LOGO_W / logoImg.width, LOGO_H / logoImg.height)
       const w = logoImg.width * scale, h = logoImg.height * scale
       page.drawImage(logoImg, {
