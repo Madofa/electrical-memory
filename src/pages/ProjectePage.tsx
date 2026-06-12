@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Zap, Pencil, Loader2, Activity, FileText, BookOpen, ClipboardCheck, Calculator } from 'lucide-react'
+import { ArrowLeft, Zap, Pencil, Loader2, Activity, FileText, BookOpen, ClipboardCheck, Calculator, Download } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import { formatDate, saveMemoria, getMemorias, deleteMemoria } from '../lib/supabase'
 import {
@@ -50,6 +50,7 @@ export function ProjectePage() {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
   const [triantTipusEsquema, setTriantTipusEsquema] = useState(false)
+  const [generantTots, setGenerantTots] = useState(false)
 
   const [mtds, setMtds] = useState<Memoria[]>([])
   const [esquemes, setEsquemes] = useState<EsquemaUnifilar[]>([])
@@ -178,6 +179,99 @@ export function ProjectePage() {
     toast.success('Document eliminat')
   }
 
+  const handleGenerateAll = async () => {
+    if (!projecte || !instalador) return
+
+    type Tasca = { prefix: string; nom: string; gen: () => Promise<Blob> }
+    const tasques: Tasca[] = []
+    const esquemaPrincipal = esquemes[0]
+
+    mtds.forEach((d) => tasques.push({
+      prefix: 'memoria_tecnica',
+      nom: d.referencia_interna || d.wizard_data?.ubicacion?.municipio || 'document',
+      gen: async () => {
+        const { pdf } = await import('@react-pdf/renderer')
+        const { PDFTemplate } = await import('../components/pdf/PDFTemplate')
+        return pdf(<PDFTemplate data={d.wizard_data} instalador={instalador} />).toBlob()
+      },
+    }))
+
+    esquemes.forEach((d) => tasques.push({
+      prefix: 'elec2',
+      nom: d.nom || 'unifilar',
+      gen: async () => {
+        const { generateElec2PDF } = await import('../lib/pdf-elec2')
+        const capcalera = { ...d.capcalera }
+        if (!capcalera.emplacament && adreça) capcalera.emplacament = adreça
+        if (!capcalera.titular && projecte.titular_nom) capcalera.titular = projecte.titular_nom
+        const bytes = await generateElec2PDF(d.circuits, d.diferencials, d.iga_amperatge, capcalera, instalador)
+        return new Blob([new Uint8Array(bytes)], { type: 'application/pdf' })
+      },
+    }))
+
+    elec3s.forEach((d) => tasques.push({
+      prefix: 'elec3',
+      nom: d.nom || 'calculs',
+      gen: async () => {
+        const { generateElec3PDF } = await import('../lib/pdf-elec3')
+        const bytes = await generateElec3PDF(
+          d, instalador, projecte,
+          esquemaPrincipal?.diferencials ?? [],
+          esquemaPrincipal?.circuits ?? [],
+          null,
+          esquemaPrincipal?.iga_amperatge ?? null,
+        )
+        return new Blob([new Uint8Array(bytes)], { type: 'application/pdf' })
+      },
+    }))
+
+    elec1s.forEach((d) => tasques.push({
+      prefix: 'elec1',
+      nom: d.nom || d.titular_nom || 'certificat',
+      gen: async () => {
+        const { generateElec1PDF } = await import('../lib/pdf-elec1')
+        const bytes = await generateElec1PDF(d, instalador)
+        return new Blob([new Uint8Array(bytes)], { type: 'application/pdf' })
+      },
+    }))
+
+    mds.forEach((d) => tasques.push({
+      prefix: 'memoria_descriptiva',
+      nom: d.nom || 'document',
+      gen: async () => {
+        const { pdf } = await import('@react-pdf/renderer')
+        const { MemoriaDescriptivaPDF } = await import('../components/pdf/MemoriaDescriptivaPDF')
+        return pdf(<MemoriaDescriptivaPDF doc={d} instalador={instalador} />).toBlob()
+      },
+    }))
+
+    if (tasques.length === 0) {
+      toast.error('Aquest projecte encara no té cap document')
+      return
+    }
+
+    setGenerantTots(true)
+    let ok = 0
+    for (const tasca of tasques) {
+      try {
+        const blob = await tasca.gen()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${tasca.prefix}_${tasca.nom.replace(/\s+/g, '_')}.pdf`
+        document.body.appendChild(a); a.click(); document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        ok++
+        await new Promise((r) => setTimeout(r, 400))
+      } catch (err) {
+        console.error(`[ProjectePage] Error generant ${tasca.prefix}:`, err)
+      }
+    }
+    setGenerantTots(false)
+    if (ok === tasques.length) toast.success(`${ok} PDF descarregats`)
+    else toast.error(`${ok} de ${tasques.length} PDF descarregats (revisa la consola)`)
+  }
+
   const handleDeleteMD = async (docId: string) => {
     const { error } = await deleteMemoriaDescriptiva(docId)
     if (error) { toast.error(error.message); return }
@@ -248,7 +342,13 @@ export function ProjectePage() {
         )}
 
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <p className="section-sub mb-4">Documents de l'expedient</p>
+          <div className="flex items-center justify-between mb-4">
+            <p className="section-sub">Documents de l'expedient</p>
+            <button onClick={handleGenerateAll} disabled={generantTots} className="btn-ghost text-[12px] gap-2">
+              {generantTots ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+              Generar tots els PDF
+            </button>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <DocumentCard
               icon={<FileText className="w-5 h-5 text-amber-400" />}
