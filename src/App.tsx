@@ -18,6 +18,7 @@ import { ProjecteList } from './pages/ProjecteList'
 import { CalibrateElec3 } from './pages/CalibrateElec3'
 import { CalibrateElec1 } from './pages/CalibrateElec1'
 import { CalibrateElec2 } from './pages/CalibrateElec2'
+import { CalibrateMTD } from './pages/CalibrateMTD'
 const ProjectePage = lazy(() => import('./pages/ProjectePage').then((m) => ({ default: m.ProjectePage })))
 
 // El motor PDF (@react-pdf/renderer) pesa ~1.5 MB — lo cargamos sólo cuando
@@ -154,6 +155,7 @@ export default function App() {
         <Route path="/dev/calibrar-elec3" element={<CalibrateElec3 />} />
         <Route path="/dev/calibrar-elec1" element={<CalibrateElec1 />} />
         <Route path="/dev/calibrar-elec2" element={<CalibrateElec2 />} />
+        <Route path="/dev/calibrar-mtd" element={<CalibrateMTD />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
