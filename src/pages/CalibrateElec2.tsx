@@ -62,12 +62,28 @@ export function CalibrateElec2() {
   const [pdfPending, setPdfPending] = useState<{ screenX: number; screenY: number; pdfX: number; pdfY: number } | null>(null)
   const [pdfSearch, setPdfSearch] = useState('')
   const [pdfZoom, setPdfZoom] = useState(0.75)
+  const [logoMode, setLogoMode] = useState(false)
+  const [logoCorners, setLogoCorners] = useState<{ screenX: number; screenY: number; pdfX: number; pdfY: number }[]>([])
 
   const usedKeys = new Set(pdfMarkers.map(m => m.name))
   const remaining = PDF_FIELDS.filter(f => !usedKeys.has(f.key))
   const filtered = pdfSearch
     ? remaining.filter(f => f.label.toLowerCase().includes(pdfSearch.toLowerCase()) || f.key.includes(pdfSearch))
     : remaining
+
+  const round1 = (n: number) => Math.round(n * 10) / 10
+  const logoBox = logoCorners.length === 4 ? {
+    x: round1(Math.min(...logoCorners.map(c => c.pdfX))),
+    y: round1(Math.min(...logoCorners.map(c => c.pdfY))),
+    width: round1(Math.max(...logoCorners.map(c => c.pdfX)) - Math.min(...logoCorners.map(c => c.pdfX))),
+    height: round1(Math.max(...logoCorners.map(c => c.pdfY)) - Math.min(...logoCorners.map(c => c.pdfY))),
+  } : null
+  const logoScreenBox = logoCorners.length === 4 ? {
+    left: Math.min(...logoCorners.map(c => c.screenX)),
+    top: Math.min(...logoCorners.map(c => c.screenY)),
+    width: Math.max(...logoCorners.map(c => c.screenX)) - Math.min(...logoCorners.map(c => c.screenX)),
+    height: Math.max(...logoCorners.map(c => c.screenY)) - Math.min(...logoCorners.map(c => c.screenY)),
+  } : null
 
   // ── SVG handlers ──
   function toSvgCoords(e: React.MouseEvent) {
@@ -100,14 +116,25 @@ export function CalibrateElec2() {
   }
 
   // ── PDF handlers ──
-  function pdfHandleClick(e: React.MouseEvent<HTMLImageElement>) {
+  function toPdfCoords(e: React.MouseEvent<HTMLImageElement>) {
     const rect = e.currentTarget.getBoundingClientRect()
     const screenX = e.clientX - rect.left
     const screenY = e.clientY - rect.top
     const displayScale = pdfZoom * IMG_SCALE
     const pdfX = Math.round((screenX / displayScale) * 10) / 10
     const pdfY = Math.round((PAGE_HEIGHT_PTS - screenY / displayScale) * 10) / 10
-    setPdfPending({ screenX, screenY, pdfX, pdfY }); setPdfSearch('')
+    return { screenX, screenY, pdfX, pdfY }
+  }
+  function pdfHandleClick(e: React.MouseEvent<HTMLImageElement>) {
+    const c = toPdfCoords(e)
+    if (logoMode) {
+      if (logoCorners.length >= 4) return
+      const next = [...logoCorners, c]
+      setLogoCorners(next)
+      if (next.length === 4) setLogoMode(false)
+      return
+    }
+    setPdfPending(c); setPdfSearch('')
   }
   function pdfAddMarker(fieldKey: string) {
     if (!pdfPending) return
@@ -115,7 +142,9 @@ export function CalibrateElec2() {
     setPdfPending(null)
   }
   function pdfExportJSON() {
-    const data = pdfMarkers.map(({ name, x, y }) => ({ name, x, y }))
+    const data: { name: string; x: number; y: number; width?: number; height?: number }[] =
+      pdfMarkers.map(({ name, x, y }) => ({ name, x, y }))
+    if (logoBox) data.push({ name: 'logo_zone', ...logoBox })
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'elec2-pdf-coords.json' })
     document.body.appendChild(a); a.click(); document.body.removeChild(a)
@@ -192,9 +221,20 @@ export function CalibrateElec2() {
                 </button>
               ))}
             </div>
+            <div className="flex items-center gap-2 ml-2">
+              <span className="text-xs text-slate-500">Logo</span>
+              <button onClick={() => setLogoMode(m => !m)}
+                className={`text-xs px-2 py-1 rounded font-bold ${logoMode ? 'bg-sky-500 text-black' : 'btn-ghost'}`}>
+                {logoMode ? 'Marcant…' : 'Marca cantonades'}
+              </button>
+              <span className="text-xs text-slate-400 font-mono">{logoCorners.length}/4</span>
+              {logoCorners.length > 0 && (
+                <button onClick={() => { setLogoCorners([]); setLogoMode(true) }} className="text-xs px-2 py-1 rounded btn-ghost">↺ Reinicia</button>
+              )}
+            </div>
             <div className="ml-auto flex items-center gap-3">
               <span className="text-xs text-slate-400">{pdfMarkers.length}/{PDF_FIELDS.length} camps</span>
-              <button onClick={pdfExportJSON} disabled={pdfMarkers.length === 0} className="btn-primary text-sm disabled:opacity-30">⬇ Exportar JSON</button>
+              <button onClick={pdfExportJSON} disabled={pdfMarkers.length === 0 && !logoBox} className="btn-primary text-sm disabled:opacity-30">⬇ Exportar JSON</button>
             </div>
           </>
         )}
@@ -276,6 +316,15 @@ export function CalibrateElec2() {
                   <div className="w-4 h-4 rounded-full bg-amber-400 border-2 border-white animate-pulse" />
                 </div>
               )}
+              {logoCorners.map((c, i) => (
+                <div key={`logo-${i}`} className="absolute pointer-events-none" style={{ left: c.screenX - 8, top: c.screenY - 8 }}>
+                  <div className="w-4 h-4 rounded-full bg-sky-400 border-2 border-white flex items-center justify-center text-[9px] font-bold text-black">{i + 1}</div>
+                </div>
+              ))}
+              {logoScreenBox && (
+                <div className="absolute pointer-events-none border-2 border-dashed border-sky-400 bg-sky-400/10"
+                  style={{ left: logoScreenBox.left, top: logoScreenBox.top, width: logoScreenBox.width, height: logoScreenBox.height }} />
+              )}
             </div>
           </div>
 
@@ -310,6 +359,19 @@ export function CalibrateElec2() {
                   </p>
                 </div>
                 <div className="flex-1 overflow-y-auto p-3 space-y-1">
+                  {logoMode && logoCorners.length < 4 && (
+                    <div className="p-2 mb-2 rounded-lg border border-sky-500/40 bg-sky-500/10 text-[11px] text-sky-300">
+                      Fes clic a la cantonada {logoCorners.length + 1} de 4 del logo a la imatge.
+                    </div>
+                  )}
+                  {logoBox && (
+                    <div className="p-2 mb-3 rounded-lg border border-sky-500/40 bg-sky-500/10 space-y-1">
+                      <p className="text-[10px] text-sky-300 font-display tracking-widest uppercase">Zona del logo</p>
+                      <p className="text-[11px] font-mono text-sky-200">x={logoBox.x} y={logoBox.y} w={logoBox.width} h={logoBox.height}</p>
+                      <button onClick={() => navigator.clipboard.writeText(`x=${logoBox.x} y=${logoBox.y} width=${logoBox.width} height=${logoBox.height}`)}
+                        className="btn-ghost text-[11px]">📋 Copiar</button>
+                    </div>
+                  )}
                   {remaining.length > 0 && <>
                     <p className="text-[10px] text-slate-500 font-display tracking-widest uppercase mb-2">Pendents ({remaining.length})</p>
                     {remaining.map(f => <div key={f.key} className="text-[11px] text-slate-600 font-mono px-2 py-0.5">{f.label}</div>)}
