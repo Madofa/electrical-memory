@@ -137,7 +137,9 @@ export function calculaTrams(trams: Tram[], circuitNoms?: string[]): TramCalcula
   return trams.map((t, idx) => {
     const U = t.tensio_v ?? (t.tipus === 'mono' ? 230 : 400)
     const gamma = GAMMA[t.material]
-    const cosfi = Math.max(t.cos_fi || 0.001, 0.001)
+    // Si cos_fi és 0 o no està definit (dada incompleta/corrupta), fem servir el
+    // valor per defecte del tipus de tram per evitar intensitats absurdes (ITC-BT-19)
+    const cosfi = t.cos_fi > 0 ? t.cos_fi : (idx === 0 ? 1 : 0.9)
     const pot = t.potencia_kw * (t.carrega_pct / 100)
     const isEmpty = pot === 0 && t.longitud_m === 0
 
