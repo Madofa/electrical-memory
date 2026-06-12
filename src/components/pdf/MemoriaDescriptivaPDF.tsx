@@ -60,12 +60,20 @@ export function MemoriaDescriptivaPDF({ doc, instalador }: Props) {
         <View style={s.footer} wrap={false}>
           <View style={s.footerRow}>
             <View style={s.footerLeft}>
-              <Text style={s.label}>Redactor</Text>
+              <Text style={s.label}>Instal·lador</Text>
               <Text style={{ fontSize: 11 }}>{instalador.nombre_completo}</Text>
               {instalador.empresa_nombre && <Text style={{ fontSize: 10, color: '#555' }}>{instalador.empresa_nombre}</Text>}
               <Text style={{ fontSize: 10, color: '#555' }}>
                 {LABELS_TIPO_INSTALADOR[instalador.tipo]} · Núm. {instalador.numero_carnet}
               </Text>
+              {instalador.numero_colegiado && <Text style={{ fontSize: 10, color: '#555' }}>Núm. col·legiat: {instalador.numero_colegiado}</Text>}
+              {instalador.empresa_cif && <Text style={{ fontSize: 10, color: '#555' }}>CIF: {instalador.empresa_cif}</Text>}
+              {instalador.empresa_direccion && <Text style={{ fontSize: 10, color: '#555' }}>{instalador.empresa_direccion}</Text>}
+              {(instalador.empresa_telefono || instalador.empresa_email) && (
+                <Text style={{ fontSize: 10, color: '#555' }}>
+                  {[instalador.empresa_telefono, instalador.empresa_email].filter(Boolean).join(' · ')}
+                </Text>
+              )}
               <Text style={{ fontSize: 10, marginTop: 6 }}>
                 {doc.lloc_signatura}, a {formatDate(doc.data_signatura)}
               </Text>

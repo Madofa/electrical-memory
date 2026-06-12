@@ -126,7 +126,7 @@ export function ProfileSetup() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <p className="section-sub mb-1">Configuració</p>
           <h1 className="font-display font-bold text-3xl tracking-wide uppercase text-slate-100 mb-2">
-            Dades del redactor
+            Dades de l'instal·lador
           </h1>
           <p className="text-slate-500 font-body text-sm mb-8">
             Aquestes dades apareixeran al peu de tots els documents que generis.

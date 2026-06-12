@@ -54,6 +54,10 @@ export function Step8Redactor({ onNext: _onNext }: Props) {
       { label: 'Núm. carnet', value: instalador!.numero_carnet },
       ...(instalador!.numero_colegiado ? [{ label: 'Núm. col·legiat', value: instalador!.numero_colegiado }] : []),
       ...(instalador!.empresa_nombre ? [{ label: 'Empresa', value: instalador!.empresa_nombre }] : []),
+      ...(instalador!.empresa_cif ? [{ label: 'CIF empresa', value: instalador!.empresa_cif }] : []),
+      ...(instalador!.empresa_direccion ? [{ label: 'Adreça', value: instalador!.empresa_direccion }] : []),
+      ...(instalador!.empresa_telefono ? [{ label: 'Telèfon', value: instalador!.empresa_telefono }] : []),
+      ...(instalador!.empresa_email ? [{ label: 'Correu', value: instalador!.empresa_email }] : []),
     ]
 
     return (
@@ -62,7 +66,7 @@ export function Step8Redactor({ onNext: _onNext }: Props) {
           <div className="flex items-center gap-2 mb-5">
             <CheckCircle className="w-4 h-4 text-emerald-500" />
             <span className="font-display font-semibold text-xs tracking-widest uppercase text-emerald-500">
-              Dades del redactor a punt
+              Dades de l'instal·lador a punt
             </span>
           </div>
           <div className="space-y-3">

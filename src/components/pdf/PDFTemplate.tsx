@@ -239,7 +239,7 @@ export function PDFTemplate({ data, instalador }: Props) {
 
         {/* SECCIÓN 8 — Redactor */}
         <View wrap={false}>
-          <SectionTitle>8. Datos del redactor</SectionTitle>
+          <SectionTitle>8. Datos del instalador</SectionTitle>
           <Row label="Nombre y apellidos" value={instalador.nombre_completo} blank />
           <Row label="DNI / NIE" value={instalador.dni_nie} blank />
           <Row label="Tipo / Categoría" value={instalador.tipo ? LABELS_TIPO_INSTALADOR[instalador.tipo] : null} blank />
