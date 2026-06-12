@@ -4,6 +4,7 @@ import type { Instalador } from '../types'
 import type { Projecte } from './supabase-projectes'
 import type { Diferencial, Circuit } from '../types/esquemaUnifilar'
 import { calculaTrams } from './elec3-calculs'
+import { embedImage } from './pdf-elec2'
 
 const COL_X = [133,170.8,202.1,227.3,269,302.7,337.1,382.4,424.5,
                464.9,500.2,552.8,590,620.6,661.6,733.6,770.7,805.7]
@@ -45,7 +46,7 @@ const P2 = {
 
 export async function generateElec3PDF(
   doc: Elec3Doc,
-  _instalador: Instalador,
+  instalador: Instalador,
   projecte?: Projecte,
   diferencials?: Diferencial[],
   _circuits?: Circuit[],
@@ -100,6 +101,23 @@ export async function generateElec3PDF(
   // PAGE 2
   const page2 = pdfDoc.addPage([842, 595])
   page2.drawPage(embP2, { x: 0, y: 0, width: 842, height: 595 })
+
+  // Logo de l'empresa instal·ladora (caixa "SEGELL INSTAL·LADOR I EMPRESA
+  // INSTAL·LADORA AUTORITZATS", mesurada directament del PDF plantilla)
+  const logoUrl = instalador?.empresa_logo_url || '/img/logo-lelctric.png'
+  try {
+    const logoImg = await embedImage(pdfDoc, logoUrl)
+    if (logoImg) {
+      const LOGO_X = 686.4, LOGO_Y = 465.6, LOGO_W = 133.9, LOGO_H = 54.7
+      const logoScale = Math.min(LOGO_W / logoImg.width, LOGO_H / logoImg.height)
+      const w = logoImg.width * logoScale, h = logoImg.height * logoScale
+      page2.drawImage(logoImg, {
+        x: LOGO_X + (LOGO_W - w) / 2,
+        y: LOGO_Y + (LOGO_H - h) / 2,
+        width: w, height: h,
+      })
+    }
+  } catch { /* logo opcional */ }
   const p = projecte
   const ncp = doc.nova_ampliacio_reforma||p?.nova_ampliacio_reforma||'nova'
   const d2 = (coord:{x:number;y:number}, text:string) => {

@@ -149,7 +149,7 @@ async function svgToPng(svgStr: string, w: number, h: number): Promise<Uint8Arra
 }
 
 // ── Embed an image, downscaling it to maxDim so huge uploads don't bloat/slow the PDF ─
-async function embedImage(pdfDoc: PDFDocument, url: string, maxDim = 600) {
+export async function embedImage(pdfDoc: PDFDocument, url: string, maxDim = 600) {
   const resp = await fetch(url)
   if (!resp.ok) return null
   const buffer = await resp.arrayBuffer()
