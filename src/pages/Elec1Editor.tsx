@@ -6,7 +6,6 @@ import { useAuthStore } from '../stores/authStore'
 import { getCertificatElec1, updateCertificatElec1, type CertificatElec1 } from '../lib/supabase-elec1'
 import { getProjecte } from '../lib/supabase-projectes'
 import type { Projecte } from '../lib/supabase-projectes'
-import { generateElec1PDF } from '../lib/pdf-elec1'
 import { FormInput } from '../components/ui/FormField'
 import toast from 'react-hot-toast'
 
@@ -147,6 +146,7 @@ export function Elec1Editor() {
     if (!instalador) { toast.error('Cal completar el perfil d\'instal·lador abans d\'exportar'); return }
     setExporting(true)
     try {
+      const { generateElec1PDF } = await import('../lib/pdf-elec1')
       const pdfBytes = await generateElec1PDF(cert, instalador)
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)

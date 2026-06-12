@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Zap, Save, FileDown, Cloud, Loader2 } from 'lucide-react'
-import { generateElec2PDF } from '../lib/pdf-elec2'
 import { useAuthStore } from '../stores/authStore'
 import { useEsquemaStore } from '../stores/esquemaUnifilarStore'
 import { getEsquema, updateEsquema } from '../lib/supabase-esquemes'
@@ -134,6 +133,7 @@ export function EsquemaUnifilarEditor() {
           if (!capcaleraForExport.titular && proj.titular_nom) capcaleraForExport.titular = proj.titular_nom
         }
       }
+      const { generateElec2PDF } = await import('../lib/pdf-elec2')
       const pdfBytes = await generateElec2PDF(
         store.circuits,
         store.diferencials,

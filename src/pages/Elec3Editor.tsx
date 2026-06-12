@@ -9,7 +9,6 @@ import { getEsquemaByProjecte } from '../lib/supabase-esquemes'
 import type { Diferencial, Circuit } from '../types/esquemaUnifilar'
 import { calculaTrams, migrateTrams, carregaPctFromNom, FIXED_SLOTS, type Tram, type TramCalculat } from '../lib/elec3-calculs'
 import { FormInput, FormSelect } from '../components/ui/FormField'
-import { generateElec3PDF } from '../lib/pdf-elec3'
 import toast from 'react-hot-toast'
 
 // FIXED_SLOTS imported to satisfy module dependency (used by migrateTrams internally)
@@ -233,6 +232,7 @@ export function Elec3Editor() {
         const { data: p } = await getProjecte(projecteId)
         if (p) { freshProjecte = p as Projecte; setProjecte(p as Projecte) }
       }
+      const { generateElec3PDF } = await import('../lib/pdf-elec3')
       const pdfBytes = await generateElec3PDF(doc, instalador, freshProjecte ?? undefined, esquemaDifs, esquemaCircuits, numDiferencials, esquemaIga)
       const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
