@@ -148,21 +148,28 @@ export async function generateElec3PDF(
   d2(P2.potencia_instal,       doc.potencia_instal_kw ? String(doc.potencia_instal_kw) : p?.potencia_kw ? String(p.potencia_kw) : '')
   d2(P2.superficie,            doc.superficie_local_m2 ? String(doc.superficie_local_m2) : p?.superficie_local_m2 ? String(p.superficie_local_m2) : '')
   // caracteristiques_edifici already written above (with old-dropdown migration logic)
-  // Diferencials from ELEC-2 esquema
+  // Diferencials from ELEC-2 esquema, agrupats per amperatge+sensibilitat:
+  // cada fila mostra "Nombre" = quants diferencials idèntics té la instal·lació
   if (diferencials && diferencials.length > 0) {
-    const limit = numDiferencialsOverride ?? diferencials.length
-    const difsToShow = diferencials.slice(0, Math.min(limit, 3))
+    const grouped: { amperatge: number; sensibilitat_ma: number; count: number }[] = []
+    diferencials.forEach(dif => {
+      const g = grouped.find(g => g.amperatge === dif.amperatge && g.sensibilitat_ma === dif.sensibilitat_ma)
+      if (g) g.count++
+      else grouped.push({ amperatge: dif.amperatge, sensibilitat_ma: dif.sensibilitat_ma, count: 1 })
+    })
+    const limit = numDiferencialsOverride ?? grouped.length
+    const difsToShow = grouped.slice(0, Math.min(limit, 3))
     const difCoords = [
       { circuit: P2.dif1_circuit, nombre: P2.dif1_nombre, in_a: P2.dif1_in, sens: P2.dif1_sensibilitat },
       { circuit: P2.dif2_circuit, nombre: P2.dif2_nombre, in_a: P2.dif2_in, sens: P2.dif2_sensibilitat },
       { circuit: P2.dif3_circuit, nombre: P2.dif3_nombre, in_a: P2.dif3_in, sens: P2.dif3_sensibilitat },
     ]
-    difsToShow.slice(0, 3).forEach((dif, i) => {
+    difsToShow.forEach((g, i) => {
       const cc = difCoords[i]
       d2(cc.circuit, String(i + 1))
-      d2(cc.nombre,  '1')
-      d2(cc.in_a,    String(dif.amperatge))
-      d2(cc.sens,    String(dif.sensibilitat_ma))
+      d2(cc.nombre,  String(g.count))
+      d2(cc.in_a,    String(g.amperatge))
+      d2(cc.sens,    String(g.sensibilitat_ma))
     })
   }
 
