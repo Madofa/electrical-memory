@@ -9,11 +9,11 @@ import {
   getProjecte, updateProjecte, prefillMTD,
   type Projecte, type ProjecteForm,
 } from '../lib/supabase-projectes'
-import { createEsquemaFromPlantilla, getEsquemes, deleteEsquema } from '../lib/supabase-esquemes'
+import { createEsquemaFromPlantilla, getEsquemes, deleteEsquema, updateEsquema } from '../lib/supabase-esquemes'
 import { LABELS_TIPUS_INSTALLACIO, type TipusInstallacio } from '../types/esquemaUnifilar'
-import { createCertificatElec1, getCertificatsElec1, deleteCertificatElec1 } from '../lib/supabase-elec1'
-import { createElec3Doc, getElec3Docs, deleteElec3Doc } from '../lib/supabase-elec3'
-import { createMemoriaDescriptiva, getMemoriesDescriptives, deleteMemoriaDescriptiva } from '../lib/supabase-memoria-descriptiva'
+import { createCertificatElec1, getCertificatsElec1, deleteCertificatElec1, updateCertificatElec1 } from '../lib/supabase-elec1'
+import { createElec3Doc, getElec3Docs, deleteElec3Doc, updateElec3Doc } from '../lib/supabase-elec3'
+import { createMemoriaDescriptiva, getMemoriesDescriptives, deleteMemoriaDescriptiva, updateMemoriaDescriptiva } from '../lib/supabase-memoria-descriptiva'
 import { defaultWizardData } from '../types'
 import { useWizardStore } from '../stores/wizardStore'
 import { DocumentCard } from '../components/projecte/DocumentCard'
@@ -26,9 +26,18 @@ import type { MemoriaDescriptiva } from '../lib/supabase-memoria-descriptiva'
 import type { Memoria } from '../types'
 import toast from 'react-hot-toast'
 
-// Helper to filter docs by projecte_id
-function filterByProjecte<T extends { projecte_id?: string }>(docs: T[], id: string): T[] {
-  return docs.filter((d) => d.projecte_id === id)
+// Helper to filter docs by projecte_id, ordenats per creació (els nous van al final)
+function filterByProjecte<T extends { projecte_id?: string; created_at: string }>(docs: T[], id: string): T[] {
+  return docs.filter((d) => d.projecte_id === id).sort((a, b) => a.created_at.localeCompare(b.created_at))
+}
+
+// Evita noms duplicats: si "Joaquin Auger" ja existeix, el següent serà "Joaquin Auger 2", "Joaquin Auger 3"...
+function uniqueDocName(base: string, existing: (string | null | undefined)[]): string {
+  const taken = new Set(existing.filter(Boolean) as string[])
+  if (!taken.has(base)) return base
+  let i = 2
+  while (taken.has(`${base} ${i}`)) i++
+  return `${base} ${i}`
 }
 
 export function ProjectePage() {
@@ -112,24 +121,32 @@ export function ProjectePage() {
     if (!user || !projecte) return
     setTriantTipusEsquema(false)
     const newId = await createEsquemaFromPlantilla(user.id, tipus, projecte.nom, id, projecte)
+    const nom = uniqueDocName(projecte.nom, esquemes.map((d) => d.nom))
+    if (nom !== projecte.nom) await updateEsquema(newId, { nom })
     navigate(`/unifilar/${newId}`)
   }
 
   const handleCreateElec1 = async () => {
     if (!user || !projecte) return
     const newId = await createCertificatElec1(user.id, instalador, id, projecte)
+    const nom = uniqueDocName(projecte.nom, elec1s.map((d) => d.nom))
+    if (nom !== projecte.nom) await updateCertificatElec1(newId, { nom })
     navigate(`/elec1/${newId}`)
   }
 
   const handleCreateElec3 = async () => {
     if (!user || !projecte) return
     const newId = await createElec3Doc(user.id, id, projecte)
+    const nom = uniqueDocName(projecte.nom, elec3s.map((d) => d.nom))
+    if (nom !== projecte.nom) await updateElec3Doc(newId, { nom })
     navigate(`/elec3/${newId}`)
   }
 
   const handleCreateMD = async () => {
     if (!user || !projecte) return
     const newId = await createMemoriaDescriptiva(user.id, id, projecte)
+    const nom = uniqueDocName(projecte.nom, mds.map((d) => d.nom))
+    if (nom !== projecte.nom) await updateMemoriaDescriptiva(newId, { nom })
     navigate(`/memoria-descriptiva/${newId}`)
   }
 
