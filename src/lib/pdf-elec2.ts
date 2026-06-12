@@ -148,28 +148,28 @@ async function svgToPng(svgStr: string, w: number, h: number): Promise<Uint8Arra
   })
 }
 
-// ── Embed an arbitrary image (PNG/JPG directly, anything else via canvas) ─────
-async function embedImage(pdfDoc: PDFDocument, url: string) {
+// ── Embed an image, downscaling it to maxDim so huge uploads don't bloat/slow the PDF ─
+async function embedImage(pdfDoc: PDFDocument, url: string, maxDim = 600) {
   const resp = await fetch(url)
   if (!resp.ok) return null
   const buffer = await resp.arrayBuffer()
-  const contentType = resp.headers.get('content-type') || ''
-  if (contentType.includes('png')) return pdfDoc.embedPng(buffer)
-  if (contentType.includes('jpeg') || contentType.includes('jpg')) return pdfDoc.embedJpg(buffer)
-  const png = await rasterizeToPng(buffer, contentType)
+  const contentType = resp.headers.get('content-type') || 'image/png'
+  const png = await rasterizeToPng(buffer, contentType, maxDim)
   return pdfDoc.embedPng(png)
 }
 
-function rasterizeToPng(buffer: ArrayBuffer, contentType: string): Promise<Uint8Array> {
-  const blob = new Blob([buffer], { type: contentType || 'image/png' })
+function rasterizeToPng(buffer: ArrayBuffer, contentType: string, maxDim: number): Promise<Uint8Array> {
+  const blob = new Blob([buffer], { type: contentType })
   const url = URL.createObjectURL(blob)
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.onload = () => {
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
       const c = document.createElement('canvas')
-      c.width = img.width; c.height = img.height
+      c.width = Math.round(img.width * scale)
+      c.height = Math.round(img.height * scale)
       const ctx = c.getContext('2d')!
-      ctx.drawImage(img, 0, 0)
+      ctx.drawImage(img, 0, 0, c.width, c.height)
       URL.revokeObjectURL(url)
       c.toBlob(b => b!.arrayBuffer().then(buf => resolve(new Uint8Array(buf))), 'image/png')
     }
@@ -230,22 +230,21 @@ export async function generateElec2PDF(
   })
 
   // 3. Logo de l'empresa instal·ladora (zona calibrada via /dev/calibrar-elec2)
-  if (instalador?.empresa_logo_url) {
-    try {
-      const logoImg = await embedImage(pdfDoc, instalador.empresa_logo_url)
-      if (logoImg) {
-        const LOGO_X = 301, LOGO_Y = 297.5, LOGO_W = 107.5, LOGO_H = 72.5
-        const scale = Math.min(LOGO_W / logoImg.width, LOGO_H / logoImg.height)
-        const w = logoImg.width * scale, h = logoImg.height * scale
-        page.drawImage(logoImg, {
-          x: LOGO_X + (LOGO_W - w) / 2,
-          y: LOGO_Y + (LOGO_H - h) / 2,
-          width: w, height: h,
-        })
-      }
-    } catch {
-      // Logo opcional: si no es pot carregar, el PDF es genera igualment.
+  const logoUrl = instalador?.empresa_logo_url || '/img/logo-lelctric.png'
+  try {
+    const logoImg = await embedImage(pdfDoc, logoUrl)
+    if (logoImg) {
+      const LOGO_X = 301, LOGO_Y = 297.5, LOGO_W = 107.5, LOGO_H = 72.5
+      const scale = Math.min(LOGO_W / logoImg.width, LOGO_H / logoImg.height)
+      const w = logoImg.width * scale, h = logoImg.height * scale
+      page.drawImage(logoImg, {
+        x: LOGO_X + (LOGO_W - w) / 2,
+        y: LOGO_Y + (LOGO_H - h) / 2,
+        width: w, height: h,
+      })
     }
+  } catch {
+    // Logo opcional: si no es pot carregar, el PDF es genera igualment.
   }
 
   // 4. Data fields at official calibrated positions
