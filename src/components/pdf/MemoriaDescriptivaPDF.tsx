@@ -51,7 +51,7 @@ export function MemoriaDescriptivaPDF({ doc, instalador }: Props) {
         {SECCIONS.map(({ key, title }, i) => (
           doc[key] ? (
             <View key={key}>
-              <Text style={s.sectionTitle}>{i + 1}. {title}</Text>
+              <Text style={s.sectionTitle} minPresenceAhead={60}>{i + 1}. {title}</Text>
               <Text style={s.body}>{doc[key]}</Text>
             </View>
           ) : null
