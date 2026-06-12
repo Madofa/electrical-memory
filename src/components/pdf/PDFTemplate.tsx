@@ -225,15 +225,15 @@ export function PDFTemplate({ data, instalador }: Props) {
           </View>
         )}
 
-        {/* SECCIÓN 7 — Declaración */}
+        {/* SECCIÓN 7 — Declaració */}
         <View wrap={false}>
-          <SectionTitle>7. Declaración responsable de calidad de onda</SectionTitle>
+          <SectionTitle>7. Declaració responsable de qualitat d'ona</SectionTitle>
           <Text style={s.declaracion}>
-            En calidad de solicitante del suministro descrito en la presente memoria, declaro bajo mi responsabilidad
-            que la instalación eléctrica objeto de la solicitud de acceso y conexión cumplirá con la normativa de
-            calidad de la onda vigente y huecos de tensión exigible por la empresa distribuidora.
+            En qualitat de sol·licitant del subministrament descrit en la present memòria, declaro sota la meva
+            responsabilitat que la instal·lació elèctrica objecte de la sol·licitud d'accés i connexió complirà amb
+            la normativa de qualitat de l'ona vigent i buits de tensió exigible per l'empresa distribuïdora.
           </Text>
-          <Text style={s.firmaLabel}>Firma del solicitante:</Text>
+          <Text style={s.firmaLabel}>Signatura del sol·licitant:</Text>
           <View style={s.signatureBox} />
         </View>
 

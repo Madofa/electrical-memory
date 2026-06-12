@@ -22,15 +22,15 @@ export function Step7Declaracion({ onNext: _onNext }: Props) {
           </div>
         </div>
 
-        {/* Texto legal — el PDF de la MTD se mantiene en castellano (documento oficial e-distribución) */}
+        {/* Texto legal de la MTD, en català */}
         <div className="bg-ink-700/40 border border-ink-600/50 rounded-xl p-5 mb-6">
           <p className="text-[12px] text-slate-400 font-body leading-relaxed text-justify italic">
-            "En calidad de solicitante, declaro bajo mi responsabilidad que la instalación eléctrica
-            objeto de la solicitud de acceso y conexión cumplirá con la normativa de calidad de la
-            onda vigente y huecos de tensión."
+            "En qualitat de sol·licitant, declaro sota la meva responsabilitat que la instal·lació
+            elèctrica objecte de la sol·licitud d'accés i connexió complirà amb la normativa de
+            qualitat de l'ona vigent i buits de tensió."
           </p>
           <p className="text-[11px] text-slate-500 font-mono mt-3">
-            Y para que conste a los efectos oportunos, firma la presente en <strong className="text-slate-400">[lloc]</strong>, a <strong className="text-slate-400">[data]</strong>.
+            I perquè així consti als efectes oportuns, signo la present a <strong className="text-slate-400">[lloc]</strong>, el <strong className="text-slate-400">[data]</strong>.
           </p>
         </div>
 
