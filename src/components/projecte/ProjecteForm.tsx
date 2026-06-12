@@ -100,6 +100,21 @@ export function ProjecteForm({ initial, onSave, onClose }: Props) {
                 <FormInput label="Telèfon" value={form.titular_telefon} onChange={set('titular_telefon')} type="tel" />
                 <FormInput label="Correu electrònic" value={form.titular_correu} onChange={set('titular_correu')} type="email" />
               </div>
+              <div className="grid grid-cols-4 gap-3">
+                <FormInput label="Tipus via" value={form.titular_tipus_via} onChange={set('titular_tipus_via')} placeholder="Carrer" />
+                <div className="col-span-2"><FormInput label="Nom de la via" value={form.titular_nom_via} onChange={set('titular_nom_via')} /></div>
+                <FormInput label="Núm." value={form.titular_numero} onChange={set('titular_numero')} />
+              </div>
+              <div className="grid grid-cols-5 gap-3">
+                <FormInput label="Bloc" value={form.titular_bloc} onChange={set('titular_bloc')} />
+                <FormInput label="Escala" value={form.titular_escala} onChange={set('titular_escala')} />
+                <FormInput label="Pis" value={form.titular_pis} onChange={set('titular_pis')} />
+                <FormInput label="Porta" value={form.titular_porta} onChange={set('titular_porta')} />
+                <FormInput label="C.P." value={form.titular_cp} onChange={set('titular_cp')} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FormInput label="Municipi" value={form.titular_poblacio} onChange={set('titular_poblacio')} />
+              </div>
             </div>
 
             {/* Adreça instal·lació */}

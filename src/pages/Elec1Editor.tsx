@@ -67,6 +67,15 @@ export function Elec1Editor() {
             if (proj.titular_nif && proj.titular_nif !== c.titular_nif)         patch.titular_nif = proj.titular_nif
             if (proj.titular_telefon && proj.titular_telefon !== c.titular_telefon) patch.titular_telefon = proj.titular_telefon
             if (proj.titular_correu && proj.titular_correu !== c.titular_correu)   patch.titular_correu = proj.titular_correu
+            if (proj.titular_tipus_via && proj.titular_tipus_via !== c.titular_tipus_via) patch.titular_tipus_via = proj.titular_tipus_via
+            if (proj.titular_nom_via && proj.titular_nom_via !== c.titular_nom_via)     patch.titular_nom_via = proj.titular_nom_via
+            if (proj.titular_numero && proj.titular_numero !== c.titular_numero)       patch.titular_numero = proj.titular_numero
+            if (proj.titular_bloc && proj.titular_bloc !== c.titular_bloc)             patch.titular_bloc = proj.titular_bloc
+            if (proj.titular_escala && proj.titular_escala !== c.titular_escala)       patch.titular_escala = proj.titular_escala
+            if (proj.titular_pis && proj.titular_pis !== c.titular_pis)               patch.titular_pis = proj.titular_pis
+            if (proj.titular_porta && proj.titular_porta !== c.titular_porta)         patch.titular_porta = proj.titular_porta
+            if (proj.titular_cp && proj.titular_cp !== c.titular_cp)                   patch.titular_cp = proj.titular_cp
+            if (proj.titular_poblacio && proj.titular_poblacio !== c.titular_poblacio) patch.titular_poblacio = proj.titular_poblacio
             if (!c.tensio_v)                  patch.tensio_v                  = proj.tensio_v || '230'
             if (!c.seccio_lga_mm2)            patch.seccio_lga_mm2            = proj.seccio_lga_mm2 || ''
             if (!c.potencia_kw)               patch.potencia_kw               = proj.potencia_kw || 0
@@ -108,6 +117,15 @@ export function Elec1Editor() {
             titular_nif:            proj.titular_nif            || c.titular_nif,
             titular_telefon:        proj.titular_telefon        || c.titular_telefon,
             titular_correu:         proj.titular_correu         || c.titular_correu,
+            titular_tipus_via:      proj.titular_tipus_via      || c.titular_tipus_via,
+            titular_nom_via:        proj.titular_nom_via        || c.titular_nom_via,
+            titular_numero:         proj.titular_numero         || c.titular_numero,
+            titular_bloc:           proj.titular_bloc           || c.titular_bloc,
+            titular_escala:         proj.titular_escala         || c.titular_escala,
+            titular_pis:            proj.titular_pis            || c.titular_pis,
+            titular_porta:          proj.titular_porta          || c.titular_porta,
+            titular_cp:             proj.titular_cp             || c.titular_cp,
+            titular_poblacio:       proj.titular_poblacio       || c.titular_poblacio,
             tensio_v:               c.tensio_v               || proj.tensio_v              || c.tensio_v,
             seccio_lga_mm2:         c.seccio_lga_mm2         || proj.seccio_lga_mm2        || '',
             potencia_kw:            c.potencia_kw            || proj.potencia_kw            || 0,

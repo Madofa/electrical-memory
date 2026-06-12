@@ -11,6 +11,16 @@ export interface Projecte {
   titular_nif: string
   titular_telefon: string
   titular_correu: string
+  // Adreça del titular
+  titular_tipus_via: string
+  titular_nom_via: string
+  titular_numero: string
+  titular_bloc: string
+  titular_escala: string
+  titular_pis: string
+  titular_porta: string
+  titular_cp: string
+  titular_poblacio: string
   // Adreça instal·lació
   inst_tipus_via: string
   inst_nom_via: string
@@ -46,6 +56,9 @@ export function emptyProjecte(): ProjecteForm {
   return {
     nom: '', estat: 'actiu',
     titular_nom: '', titular_nif: '', titular_telefon: '', titular_correu: '',
+    titular_tipus_via: '', titular_nom_via: '', titular_numero: '',
+    titular_bloc: '', titular_escala: '', titular_pis: '', titular_porta: '',
+    titular_cp: '', titular_poblacio: '',
     inst_tipus_via: '', inst_nom_via: '', inst_numero: '',
     inst_bloc: '', inst_escala: '', inst_pis: '', inst_porta: '',
     inst_cp: '', inst_poblacio: '',
@@ -155,6 +168,15 @@ export function prefillElec1(p: Projecte) {
     titular_nif: p.titular_nif,
     titular_telefon: p.titular_telefon,
     titular_correu: p.titular_correu,
+    titular_tipus_via: p.titular_tipus_via,
+    titular_nom_via: p.titular_nom_via,
+    titular_numero: p.titular_numero,
+    titular_bloc: p.titular_bloc,
+    titular_escala: p.titular_escala,
+    titular_pis: p.titular_pis,
+    titular_porta: p.titular_porta,
+    titular_cp: p.titular_cp,
+    titular_poblacio: p.titular_poblacio,
     inst_tipus_via: p.inst_tipus_via,
     inst_nom_via: p.inst_nom_via,
     inst_numero: p.inst_numero,
@@ -205,6 +227,8 @@ export function prefillMemoriaDescriptiva(p: Projecte) {
 
 const ELEC1_DIRECT_FIELDS = new Set([
   'titular_nom', 'titular_nif', 'titular_telefon', 'titular_correu',
+  'titular_tipus_via', 'titular_nom_via', 'titular_numero', 'titular_bloc',
+  'titular_escala', 'titular_pis', 'titular_porta', 'titular_cp', 'titular_poblacio',
   'inst_tipus_via', 'inst_nom_via', 'inst_numero', 'inst_bloc', 'inst_escala',
   'inst_pis', 'inst_porta', 'inst_cp', 'inst_poblacio',
   'cups', 'us_installacio', 'tensio_v', 'seccio_lga_mm2',
