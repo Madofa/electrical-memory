@@ -148,6 +148,36 @@ async function svgToPng(svgStr: string, w: number, h: number): Promise<Uint8Arra
   })
 }
 
+// ── Embed an arbitrary image (PNG/JPG directly, anything else via canvas) ─────
+async function embedImage(pdfDoc: PDFDocument, url: string) {
+  const resp = await fetch(url)
+  if (!resp.ok) return null
+  const bytes = new Uint8Array(await resp.arrayBuffer())
+  const contentType = resp.headers.get('content-type') || ''
+  if (contentType.includes('png')) return pdfDoc.embedPng(bytes)
+  if (contentType.includes('jpeg') || contentType.includes('jpg')) return pdfDoc.embedJpg(bytes)
+  const png = await rasterizeToPng(bytes, contentType)
+  return pdfDoc.embedPng(png)
+}
+
+function rasterizeToPng(bytes: Uint8Array, contentType: string): Promise<Uint8Array> {
+  const blob = new Blob([bytes], { type: contentType || 'image/png' })
+  const url = URL.createObjectURL(blob)
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const c = document.createElement('canvas')
+      c.width = img.width; c.height = img.height
+      const ctx = c.getContext('2d')!
+      ctx.drawImage(img, 0, 0)
+      URL.revokeObjectURL(url)
+      c.toBlob(b => b!.arrayBuffer().then(buf => resolve(new Uint8Array(buf))), 'image/png')
+    }
+    img.onerror = reject
+    img.src = url
+  })
+}
+
 // ── PDF generation — official elec2-blank.pdf template ───────────────────────
 export async function generateElec2PDF(
   circuits: Circuit[],
@@ -199,7 +229,26 @@ export async function generateElec2PDF(
     rotate: degrees(90),
   })
 
-  // 3. Data fields at official calibrated positions
+  // 3. Logo de l'empresa instal·ladora (zona calibrada via /dev/calibrar-elec2)
+  if (instalador?.empresa_logo_url) {
+    try {
+      const logoImg = await embedImage(pdfDoc, instalador.empresa_logo_url)
+      if (logoImg) {
+        const LOGO_X = 301, LOGO_Y = 297.5, LOGO_W = 107.5, LOGO_H = 72.5
+        const scale = Math.min(LOGO_W / logoImg.width, LOGO_H / logoImg.height)
+        const w = logoImg.width * scale, h = logoImg.height * scale
+        page.drawImage(logoImg, {
+          x: LOGO_X + (LOGO_W - w) / 2,
+          y: LOGO_Y + (LOGO_H - h) / 2,
+          width: w, height: h,
+        })
+      }
+    } catch {
+      // Logo opcional: si no es pot carregar, el PDF es genera igualment.
+    }
+  }
+
+  // 4. Data fields at official calibrated positions
   const tf = (text: string, x: number, y: number, bold = false) => {
     if (!text) return
     page.drawText(text.slice(0, 60), { x, y, size: 7.5, font: bold ? fontB : font, color: BLACK })
