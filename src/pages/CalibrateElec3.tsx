@@ -14,6 +14,9 @@ interface Marker {
   screenY: number
 }
 
+// Zona del logo calibrada actualment a pdf-elec3.ts (pàgina 2, origen bottom-left)
+const EXISTING_LOGO = { x: 686.4, y: 465.6, width: 133.9, height: 54.7 }
+
 const FIELD_SUGGESTIONS = [
   'titular_nom', 'us_installacio', 'emplacament', 'emplacament_num', 'emplacament_pis', 'emplacament_porta',
   'localitat', 'cp', 'nova', 'ampliacio', 'reforma',
@@ -33,9 +36,13 @@ export function CalibrateElec3() {
   const [fieldName, setFieldName] = useState('')
   const [scale, setScale] = useState(1.5)
   const [pageHeight, setPageHeight] = useState(0)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(2)
   const [totalPages, setTotalPages] = useState(0)
   const pdfRef = useRef<unknown>(null)
+
+  // ── Logo calibration ──
+  const [logoMode, setLogoMode] = useState(false)
+  const [logoCorners, setLogoCorners] = useState<{ screenX: number; screenY: number; pdfX: number; pdfY: number; page: number }[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -77,6 +84,15 @@ export function CalibrateElec3() {
     // Convert to PDF points (origin bottom-left)
     const pdfX = Math.round((screenX / scale) * 10) / 10
     const pdfY = Math.round(((pageHeight / scale) - (screenY / scale)) * 10) / 10
+
+    if (logoMode) {
+      if (logoCorners.length >= 4) return
+      const next = [...logoCorners, { screenX, screenY, pdfX, pdfY, page: currentPage }]
+      setLogoCorners(next)
+      if (next.length === 4) setLogoMode(false)
+      return
+    }
+
     setPendingClick({ screenX, screenY, pdfX, pdfY, page: currentPage })
     setFieldName('')
   }
@@ -110,6 +126,36 @@ export function CalibrateElec3() {
 
   const currentPageMarkers = markers.filter(m => m.page === currentPage)
 
+  // ── Logo box (4 cantonades → bounding box, origen bottom-left) ──
+  const round1 = (n: number) => Math.round(n * 10) / 10
+  const logoCornersCurrentPage = logoCorners.filter(c => c.page === currentPage)
+  const logoBox = logoCornersCurrentPage.length === 4 ? {
+    x: round1(Math.min(...logoCornersCurrentPage.map(c => c.pdfX))),
+    y: round1(Math.min(...logoCornersCurrentPage.map(c => c.pdfY))),
+    width: round1(Math.max(...logoCornersCurrentPage.map(c => c.pdfX)) - Math.min(...logoCornersCurrentPage.map(c => c.pdfX))),
+    height: round1(Math.max(...logoCornersCurrentPage.map(c => c.pdfY)) - Math.min(...logoCornersCurrentPage.map(c => c.pdfY))),
+  } : null
+  const logoScreenBox = logoCornersCurrentPage.length === 4 ? {
+    left: Math.min(...logoCornersCurrentPage.map(c => c.screenX)),
+    top: Math.min(...logoCornersCurrentPage.map(c => c.screenY)),
+    width: Math.max(...logoCornersCurrentPage.map(c => c.screenX)) - Math.min(...logoCornersCurrentPage.map(c => c.screenX)),
+    height: Math.max(...logoCornersCurrentPage.map(c => c.screenY)) - Math.min(...logoCornersCurrentPage.map(c => c.screenY)),
+  } : null
+
+  // ── Zona del logo ja calibrada (referència, només pàgina 2) ──
+  const pageHeightPt = scale ? pageHeight / scale : 0
+  const existingLogoScreen = currentPage === 2 && pageHeight > 0 ? {
+    left: EXISTING_LOGO.x * scale,
+    top: (pageHeightPt - EXISTING_LOGO.y - EXISTING_LOGO.height) * scale,
+    width: EXISTING_LOGO.width * scale,
+    height: EXISTING_LOGO.height * scale,
+  } : null
+
+  function copyLogoBox() {
+    if (!logoBox) return
+    navigator.clipboard.writeText(`x=${logoBox.x} y=${logoBox.y} width=${logoBox.width} height=${logoBox.height}`)
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0f1e] text-slate-200 flex flex-col">
       {/* Header */}
@@ -133,6 +179,27 @@ export function CalibrateElec3() {
             </button>
           ))}
         </div>
+        <div className="flex items-center gap-2 ml-2">
+          <span className="text-xs text-slate-500">Logo</span>
+          <button onClick={() => { setLogoMode(m => !m); if (!logoMode) setLogoCorners(c => c.filter(x => x.page !== currentPage)) }}
+            className={`text-xs px-2 py-1 rounded font-bold ${logoMode ? 'bg-sky-500 text-black' : 'btn-ghost'}`}>
+            {logoMode ? 'Marcant…' : 'Marca cantonades'}
+          </button>
+          <span className="text-xs text-slate-400 font-mono">{logoCornersCurrentPage.length}/4</span>
+          {logoCornersCurrentPage.length > 0 && (
+            <button onClick={() => { setLogoCorners(c => c.filter(x => x.page !== currentPage)); setLogoMode(true) }}
+              className="text-xs px-2 py-1 rounded btn-ghost">↺ Reinicia</button>
+          )}
+          {logoBox && (
+            <>
+              <span className="text-xs text-sky-300 font-mono bg-sky-500/10 px-2 py-1 rounded">
+                x={logoBox.x} y={logoBox.y} w={logoBox.width} h={logoBox.height}
+              </span>
+              <button onClick={copyLogoBox} className="btn-ghost text-xs">📋 Copiar</button>
+            </>
+          )}
+        </div>
+
         <div className="ml-auto flex items-center gap-3">
           <span className="text-xs text-slate-400">{markers.length} camps marcats</span>
           <button onClick={exportJSON} disabled={markers.length === 0}
@@ -164,6 +231,27 @@ export function CalibrateElec3() {
               <div className="absolute pointer-events-none"
                 style={{ left: pendingClick.screenX - 6, top: pendingClick.screenY - 6 }}>
                 <div className="w-3 h-3 rounded-full bg-amber-400 border-2 border-white animate-pulse" />
+              </div>
+            )}
+
+            {/* Zona del logo ja calibrada (referència) */}
+            {existingLogoScreen && (
+              <div className="absolute pointer-events-none border-2 border-dashed border-amber-400 bg-amber-400/10"
+                style={existingLogoScreen}>
+                <span className="absolute -top-5 left-0 text-[10px] text-amber-400 font-mono whitespace-nowrap">actual</span>
+              </div>
+            )}
+
+            {/* Cantonades noves del logo */}
+            {logoCornersCurrentPage.map((c, i) => (
+              <div key={`logo-${i}`} className="absolute pointer-events-none" style={{ left: c.screenX - 8, top: c.screenY - 8 }}>
+                <div className="w-4 h-4 rounded-full bg-sky-400 border-2 border-white flex items-center justify-center text-[9px] font-bold text-black">{i + 1}</div>
+              </div>
+            ))}
+            {logoScreenBox && (
+              <div className="absolute pointer-events-none border-2 border-dashed border-sky-400 bg-sky-400/10"
+                style={logoScreenBox}>
+                <span className="absolute -top-5 left-0 text-[10px] text-sky-300 font-mono whitespace-nowrap">nova</span>
               </div>
             )}
           </div>
