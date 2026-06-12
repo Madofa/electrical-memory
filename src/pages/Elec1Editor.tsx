@@ -62,6 +62,11 @@ export function Elec1Editor() {
           setCert(c => {
             if (!c) return c
             const patch: Partial<CertificatElec1> = {}
+            // Dades del titular: el projecte és la font de veritat
+            if (proj.titular_nom && proj.titular_nom !== c.titular_nom)         patch.titular_nom = proj.titular_nom
+            if (proj.titular_nif && proj.titular_nif !== c.titular_nif)         patch.titular_nif = proj.titular_nif
+            if (proj.titular_telefon && proj.titular_telefon !== c.titular_telefon) patch.titular_telefon = proj.titular_telefon
+            if (proj.titular_correu && proj.titular_correu !== c.titular_correu)   patch.titular_correu = proj.titular_correu
             if (!c.tensio_v)                  patch.tensio_v                  = proj.tensio_v || '230'
             if (!c.seccio_lga_mm2)            patch.seccio_lga_mm2            = proj.seccio_lga_mm2 || ''
             if (!c.potencia_kw)               patch.potencia_kw               = proj.potencia_kw || 0
@@ -98,6 +103,11 @@ export function Elec1Editor() {
           // Doc values always win — project only fills genuinely empty fields
           return {
             ...c,
+            // Dades del titular: el projecte és la font de veritat
+            titular_nom:            proj.titular_nom            || c.titular_nom,
+            titular_nif:            proj.titular_nif            || c.titular_nif,
+            titular_telefon:        proj.titular_telefon        || c.titular_telefon,
+            titular_correu:         proj.titular_correu         || c.titular_correu,
             tensio_v:               c.tensio_v               || proj.tensio_v              || c.tensio_v,
             seccio_lga_mm2:         c.seccio_lga_mm2         || proj.seccio_lga_mm2        || '',
             potencia_kw:            c.potencia_kw            || proj.potencia_kw            || 0,
