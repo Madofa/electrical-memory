@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Zap, Cloud, FileDown, Loader2 } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import { getElec3Doc, updateElec3Doc, type Elec3Doc } from '../lib/supabase-elec3'
-import { getProjecte, type Projecte } from '../lib/supabase-projectes'
+import { getProjecte, updateProjecte, mapElec3FieldToProjecte, type Projecte } from '../lib/supabase-projectes'
 import { getEsquemaByProjecte } from '../lib/supabase-esquemes'
 import type { Diferencial, Circuit } from '../types/esquemaUnifilar'
 import { calculaTrams, migrateTrams, carregaPctFromNom, FIXED_SLOTS, type Tram, type TramCalculat } from '../lib/elec3-calculs'
@@ -203,7 +203,15 @@ export function Elec3Editor() {
     timer.current = setTimeout(async () => {
       if (!id) return
       setAutoSaving(true)
-      try { await updateElec3Doc(id, { [field]: value as never }); setDirty(false) }
+      try {
+        await updateElec3Doc(id, { [field]: value as never })
+        setDirty(false)
+        // El document és la font prioritària: si el camp ve del projecte, l'actualitzem
+        if (projecteId) {
+          const projPatch = mapElec3FieldToProjecte(field, value)
+          if (projPatch) updateProjecte(projecteId, projPatch).catch(() => {})
+        }
+      }
       catch (e) { toast.error(`Error desant ${String(field)}: ${e instanceof Error ? e.message : String(e)}`) }
       setAutoSaving(false)
     }, 2000)

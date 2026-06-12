@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Zap, Cloud, FileDown, Loader2 } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import { getCertificatElec1, updateCertificatElec1, type CertificatElec1 } from '../lib/supabase-elec1'
-import { getProjecte } from '../lib/supabase-projectes'
+import { getProjecte, updateProjecte, mapElec1FieldToProjecte } from '../lib/supabase-projectes'
 import type { Projecte } from '../lib/supabase-projectes'
 import { FormInput } from '../components/ui/FormField'
 import toast from 'react-hot-toast'
@@ -132,7 +132,15 @@ export function Elec1Editor() {
     timer.current = setTimeout(async () => {
       if (!id) return
       setAutoSaving(true)
-      try { await updateCertificatElec1(id, { [field]: value }); setDirty(false) }
+      try {
+        await updateCertificatElec1(id, { [field]: value })
+        setDirty(false)
+        // El document és la font prioritària: si el camp ve del projecte, l'actualitzem
+        if (projecteId) {
+          const projPatch = mapElec1FieldToProjecte(field, value)
+          if (projPatch) updateProjecte(projecteId, projPatch).catch(() => {})
+        }
+      }
       catch { toast.error('Error desant') }
       setAutoSaving(false)
     }, 2000)

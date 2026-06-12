@@ -196,3 +196,39 @@ export function prefillElec3(p: Projecte) {
 export function prefillMemoriaDescriptiva(p: Projecte) {
   return { nom: p.nom }
 }
+
+// ── Sync document → project ────────────────────────────────────────────────
+// Quan l'usuari edita un camp d'un document que també existeix al projecte,
+// aquest valor és la font prioritària i s'ha de propagar al projecte, perquè
+// la resta de documents (que es prefilen/sincronitzen des del projecte)
+// rebin la dada corregida.
+
+const ELEC1_DIRECT_FIELDS = new Set([
+  'titular_nom', 'titular_nif', 'titular_telefon', 'titular_correu',
+  'inst_tipus_via', 'inst_nom_via', 'inst_numero', 'inst_bloc', 'inst_escala',
+  'inst_pis', 'inst_porta', 'inst_cp', 'inst_poblacio',
+  'cups', 'us_installacio', 'tensio_v', 'seccio_lga_mm2',
+  'material_conductor', 'potencia_kw', 'calibre_fusibles_cgp_a',
+  'resist_terra_ohm', 'classificacio',
+])
+
+export function mapElec1FieldToProjecte(field: string, value: unknown): Partial<ProjecteForm> | null {
+  if (ELEC1_DIRECT_FIELDS.has(field)) return { [field]: value } as Partial<ProjecteForm>
+  if (field === 'intensitat_iga_a') return { iga_amperatge: value as number }
+  if (field === 'tipus_actuacio') {
+    return { nova_ampliacio_reforma: value === 'modificacio' ? 'reforma' : value as 'nova' | 'ampliacio' }
+  }
+  return null
+}
+
+const ELEC3_DIRECT_FIELDS = new Set([
+  'us_installacio', 'caracteristiques_edifici', 'empresa_distribuidora',
+  'nova_ampliacio_reforma', 'resist_terra_ohm', 'superficie_local_m2',
+])
+
+export function mapElec3FieldToProjecte(field: string, value: unknown): Partial<ProjecteForm> | null {
+  if (ELEC3_DIRECT_FIELDS.has(field)) return { [field]: value } as Partial<ProjecteForm>
+  if (field === 'potencia_instal_kw') return { potencia_kw: (value as number | null) ?? 0 }
+  if (field === 'intensitat_iga_a')   return { iga_amperatge: (value as number | null) ?? 0 }
+  return null
+}
