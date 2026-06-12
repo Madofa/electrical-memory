@@ -108,7 +108,7 @@ export async function generateElec3PDF(
     const logoImg = await embedImage(pdfDoc, logoUrl)
     if (logoImg) {
       const LOGO_X = 688.7, LOGO_Y = 267.9, LOGO_W = 128, LOGO_H = 194
-      const logoScale = Math.min(LOGO_W / logoImg.width, LOGO_H / logoImg.height)
+      const logoScale = Math.min(LOGO_W / logoImg.width, LOGO_H / logoImg.height) * 0.96
       const w = logoImg.width * logoScale, h = logoImg.height * logoScale
       page2.drawImage(logoImg, {
         x: LOGO_X + (LOGO_W - w) / 2,
