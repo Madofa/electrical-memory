@@ -103,9 +103,12 @@ export async function generateElec1PDF(
   }
 
   // Draw each digit of a CP (5 boxes) individually
+  // Els 3 últims dígits tenen 2pt extra de separació respecte als 2 primers
   const drawCP1 = (coord: { x: number; y: number }, cp: string) => {
     cp.padEnd(5, ' ').split('').forEach((ch, i) => {
-      if (ch.trim()) page1.drawText(ch, { x: coord.x + i * CP_BOX_W + 3, y: coord.y, size: FS, font, color: BLACK })
+      if (!ch.trim()) return
+      const extra = i >= 2 ? 2 : 0
+      page1.drawText(ch, { x: coord.x + i * CP_BOX_W + 3 + extra, y: coord.y, size: FS, font, color: BLACK })
     })
   }
 
