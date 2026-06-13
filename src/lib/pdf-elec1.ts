@@ -41,13 +41,13 @@ const P1 = {
   inst_porta:         { x: 386,   y: 268   },
   inst_cp:            { x: 487,   y: 268   },  // ⚠️ pendent calibrar 1r dígit
   inst_poblacio:      { x: 94.7,  y: 234   },
-  chk_nova:           { x: 92.7,  y: 176.7 },
-  chk_ampliacio:      { x: 151.3, y: 177.3 },
-  chk_modificacio:    { x: 226,   y: 176.7 },
+  chk_nova:           { x: 87.3,  y: 219   },
+  chk_ampliacio:      { x: 142,   y: 217.7 },
+  chk_modificacio:    { x: 213.3, y: 217.7 },
   cups:               { x: 386.7, y: 176.7 },
-  opt_p1:             { x: 92,    y: 100.7 },
-  opt_p2:             { x: 172,   y: 100.7 },
-  opt_memoria:        { x: 251.3, y: 100   },
+  opt_p1:             { x: 86.7,  y: 145.7 },
+  opt_p2:             { x: 161.3, y: 145   },
+  opt_memoria:        { x: 236,   y: 145   },
   us_installacio:     { x: 91.3,  y: 67.3  },
 }
 
