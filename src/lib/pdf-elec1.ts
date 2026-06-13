@@ -29,9 +29,9 @@ const P1 = {
   instalador_nom:     { x: 90.7,  y: 494   },
   instalador_cat:     { x: 374,   y: 494.7 },
   instalador_dni:     { x: 488,   y: 532.7 },
-  empresa_tipus_via:  { x: 90.7,  y: 522   },  // ⚠️ pendent calibrar (posició aproximada)
-  empresa_nom_via:    { x: 180,   y: 522   },  // ⚠️ pendent calibrar (posició aproximada)
-  empresa_cp:         { x: 487,   y: 510   },  // ⚠️ pendent calibrar (posició aproximada)
+  empresa_tipus_via:  { x: 86.7,  y: 479.35 },
+  empresa_nom_via:    { x: 167.3, y: 479.35 },
+  empresa_cp:         { x: 462,   y: 443.7  },
   empresa_tel:        { x: 319.3, y: 379.3 },
   empresa_correu:     { x: 404,   y: 378.7 },
   inst_tipus_via:     { x: 89.3,  y: 456   },
