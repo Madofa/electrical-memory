@@ -139,6 +139,8 @@ export function CalibrateElec1() {
   const [search, setSearch] = useState('')
   const usedKeys = new Set(markers.map(m => m.name))
   const remaining = ALL_FIELDS.filter(f => !usedKeys.has(f.key))
+  const initialKeys = new Set(CALIBRATED.map(c => c.name))
+  const newMarkers = markers.filter(m => !initialKeys.has(m.name))
   const filtered = search ? remaining.filter(f => f.label.toLowerCase().includes(search.toLowerCase()) || f.key.includes(search.toLowerCase())) : remaining
 
   function handleImgClick(e: React.MouseEvent<HTMLImageElement>, pageNum: number) {
@@ -167,7 +169,7 @@ export function CalibrateElec1() {
   }
 
   function exportJSON() {
-    const data = markers.map(({ name, x, y, page }) => ({ name, x, y, page }))
+    const data = newMarkers.map(({ name, x, y, page }) => ({ name, x, y, page }))
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -176,7 +178,7 @@ export function CalibrateElec1() {
     URL.revokeObjectURL(url)
   }
 
-  const currentMarkers = markers.filter(m => m.page === currentPage)
+  const currentMarkers = newMarkers.filter(m => m.page === currentPage)
 
   return (
     <div className="min-h-screen bg-[#0a0f1e] text-slate-200 flex flex-col">
@@ -203,8 +205,8 @@ export function CalibrateElec1() {
           ))}
         </div>
         <div className="ml-auto flex items-center gap-3">
-          <span className="text-xs text-slate-400">{markers.length}/{ALL_FIELDS.length} camps</span>
-          <button onClick={exportJSON} disabled={markers.length === 0}
+          <span className="text-xs text-slate-400">{remaining.length} pendents</span>
+          <button onClick={exportJSON} disabled={newMarkers.length === 0}
             className="btn-primary text-sm disabled:opacity-30">⬇ Exportar JSON</button>
         </div>
       </div>
@@ -293,12 +295,12 @@ export function CalibrateElec1() {
                     {f.label}
                   </div>
                 ))}
-                {markers.length > 0 && (
+                {newMarkers.length > 0 && (
                   <>
                     <p className="text-[10px] text-slate-500 font-display tracking-widest uppercase mt-4 mb-2">
-                      Marcats ({markers.length})
+                      Marcats ({newMarkers.length})
                     </p>
-                    {markers.map(m => {
+                    {newMarkers.map(m => {
                       const field = ALL_FIELDS.find(f => f.key === m.name)
                       return (
                         <div key={m.id} className="flex items-center gap-2 text-[11px] group">
