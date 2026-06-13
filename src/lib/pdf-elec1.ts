@@ -31,15 +31,15 @@ const P1 = {
   instalador_dni:     { x: 488,   y: 532.7 },
   empresa_tipus_via:  { x: 86.7,  y: 479.35 },
   empresa_nom_via:    { x: 167.3, y: 479.35 },
-  empresa_numero:     { x: 0,     y: 0      },  // ⚠️ pendent calibrar
-  empresa_bloc:       { x: 0,     y: 0      },  // ⚠️ pendent calibrar
-  empresa_escala:     { x: 0,     y: 0      },  // ⚠️ pendent calibrar
-  empresa_pis:        { x: 0,     y: 0      },  // ⚠️ pendent calibrar
-  empresa_porta:      { x: 0,     y: 0      },  // ⚠️ pendent calibrar
-  empresa_cp:         { x: 0,     y: 0      },  // ⚠️ pendent calibrar (marcar la 1a casella, la de més a l'esquerra)
-  empresa_poblacio:   { x: 0,     y: 0      },  // ⚠️ pendent calibrar
-  empresa_tel:        { x: 319.3, y: 379.3 },
-  empresa_correu:     { x: 404,   y: 378.7 },
+  empresa_numero:     { x: 490,   y: 480.3  },
+  empresa_bloc:       { x: 85.3,  y: 444.3  },
+  empresa_escala:     { x: 176.7, y: 444.3  },
+  empresa_pis:        { x: 270,   y: 445    },
+  empresa_porta:      { x: 365.3, y: 445.7  },
+  empresa_cp:         { x: 462,   y: 444.3  },
+  empresa_poblacio:   { x: 84,    y: 407    },
+  empresa_tel:        { x: 299.3, y: 409    },
+  empresa_correu:     { x: 380.7, y: 408.3  },
   inst_tipus_via:     { x: 89.3,  y: 456   },
   inst_nom_via:       { x: 178,   y: 456.7 },
   inst_numero:        { x: 522,   y: 310.7 },
