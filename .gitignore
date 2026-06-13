@@ -43,3 +43,4 @@ supabase/.temp/
 *.backup.json
 esquema_backup_*.json
 .backups-unifilar/
+img/
