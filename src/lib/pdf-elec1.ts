@@ -19,7 +19,7 @@ const P1 = {
   titular_escala:     { x: 185.3, y: 624.7 },
   titular_pis:        { x: 286,   y: 625.3 },
   titular_porta:      { x: 388.7, y: 626   },
-  titular_cp:         { x: 487,   y: 626   },  // ⚠️ pendent calibrar 1r dígit
+  titular_cp:         { x: 487,   y: 621   },  // ⚠️ pendent calibrar 1r dígit
   titular_poblacio:   { x: 90.7,  y: 589.3 },
   titular_tel:        { x: 317.3, y: 589.3 },
   titular_correu:     { x: 402.7, y: 589.3 },
