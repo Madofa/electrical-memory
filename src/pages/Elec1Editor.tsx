@@ -268,7 +268,9 @@ export function Elec1Editor() {
           <div className="grid grid-cols-5 gap-3">
             {fi('inst_bloc', 'Bloc')} {fi('inst_escala', 'Escala')} {fi('inst_pis', 'Pis')} {fi('inst_porta', 'Porta')} {fi('inst_cp', 'C.P.')}
           </div>
-          <div className="grid grid-cols-2 gap-4">{fi('inst_poblacio', 'Població')}</div>
+          <div className="grid grid-cols-3 gap-4">
+            {fi('inst_poblacio', 'Població')} {fi('inst_telefon', 'Telèfon')} {fi('inst_correu', 'Correu electrònic')}
+          </div>
         </motion.div>
 
         {/* Característiques */}

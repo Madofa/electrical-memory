@@ -15,7 +15,7 @@ export interface CertificatElec1 {
   titular_cp: string; titular_poblacio: string; titular_telefon: string; titular_correu: string
   inst_tipus_via: string; inst_nom_via: string; inst_numero: string
   inst_bloc: string; inst_escala: string; inst_pis: string; inst_porta: string
-  inst_cp: string; inst_poblacio: string
+  inst_cp: string; inst_poblacio: string; inst_telefon: string; inst_correu: string
   tipus_actuacio: 'nova' | 'ampliacio' | 'modificacio'
   cups: string
   classificacio: 'p1' | 'p2' | 'mtd'
@@ -39,7 +39,7 @@ export function emptyCertificat(_instalador: Instalador | null): Omit<Certificat
     titular_cp: '', titular_poblacio: '', titular_telefon: '', titular_correu: '',
     inst_tipus_via: '', inst_nom_via: '', inst_numero: '',
     inst_bloc: '', inst_escala: '', inst_pis: '', inst_porta: '',
-    inst_cp: '', inst_poblacio: '',
+    inst_cp: '', inst_poblacio: '', inst_telefon: '', inst_correu: '',
     tipus_actuacio: 'nova',
     cups: '',
     classificacio: 'mtd',

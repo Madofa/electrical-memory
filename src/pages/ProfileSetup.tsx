@@ -25,7 +25,9 @@ export function ProfileSetup() {
   const [form, setForm] = useState<Partial<Instalador>>({
     nombre_completo: '', dni_nie: '', tipo: 'IBTM', numero_carnet: '',
     numero_colegiado: '', empresa_nombre: '', empresa_cif: '',
-    empresa_direccion: '', empresa_tipus_via: '', empresa_nom_via: '', empresa_cp: '',
+    empresa_direccion: '', empresa_tipus_via: '', empresa_nom_via: '', empresa_numero: '',
+    empresa_bloc: '', empresa_escala: '', empresa_pis: '', empresa_porta: '',
+    empresa_cp: '', empresa_poblacio: '',
     empresa_telefono: '', empresa_email: '',
   })
   const [firmaDataUrl, setFirmaDataUrl] = useState('')
@@ -193,7 +195,13 @@ export function ProfileSetup() {
                 <FormInput label="Adreça" value={form.empresa_direccion ?? ''} onChange={set('empresa_direccion')} className="sm:col-span-2" />
                 <FormInput label="Tipus de via" value={form.empresa_tipus_via ?? ''} onChange={set('empresa_tipus_via')} placeholder="Carrer, Avinguda…" />
                 <FormInput label="Nom del carrer" value={form.empresa_nom_via ?? ''} onChange={set('empresa_nom_via')} />
+                <FormInput label="Núm." value={form.empresa_numero ?? ''} onChange={set('empresa_numero')} />
+                <FormInput label="Bloc" value={form.empresa_bloc ?? ''} onChange={set('empresa_bloc')} />
+                <FormInput label="Escala" value={form.empresa_escala ?? ''} onChange={set('empresa_escala')} />
+                <FormInput label="Pis" value={form.empresa_pis ?? ''} onChange={set('empresa_pis')} />
+                <FormInput label="Porta" value={form.empresa_porta ?? ''} onChange={set('empresa_porta')} />
                 <FormInput label="Codi postal" value={form.empresa_cp ?? ''} onChange={set('empresa_cp')} />
+                <FormInput label="Població" value={form.empresa_poblacio ?? ''} onChange={set('empresa_poblacio')} />
               </div>
             </section>
 

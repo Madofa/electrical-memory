@@ -31,7 +31,13 @@ const P1 = {
   instalador_dni:     { x: 488,   y: 532.7 },
   empresa_tipus_via:  { x: 86.7,  y: 479.35 },
   empresa_nom_via:    { x: 167.3, y: 479.35 },
-  empresa_cp:         { x: 462,   y: 443.7  },
+  empresa_numero:     { x: 0,     y: 0      },  // ⚠️ pendent calibrar
+  empresa_bloc:       { x: 0,     y: 0      },  // ⚠️ pendent calibrar
+  empresa_escala:     { x: 0,     y: 0      },  // ⚠️ pendent calibrar
+  empresa_pis:        { x: 0,     y: 0      },  // ⚠️ pendent calibrar
+  empresa_porta:      { x: 0,     y: 0      },  // ⚠️ pendent calibrar
+  empresa_cp:         { x: 0,     y: 0      },  // ⚠️ pendent calibrar (marcar la 1a casella, la de més a l'esquerra)
+  empresa_poblacio:   { x: 0,     y: 0      },  // ⚠️ pendent calibrar
   empresa_tel:        { x: 319.3, y: 379.3 },
   empresa_correu:     { x: 404,   y: 378.7 },
   inst_tipus_via:     { x: 89.3,  y: 456   },
@@ -43,6 +49,8 @@ const P1 = {
   inst_porta:         { x: 386,   y: 268   },
   inst_cp:            { x: 487,   y: 268   },
   inst_poblacio:      { x: 94.7,  y: 234   },
+  inst_telefon:       { x: 0,     y: 0      },  // ⚠️ pendent calibrar
+  inst_correu:        { x: 0,     y: 0      },  // ⚠️ pendent calibrar
   chk_nova:           { x: 87.3,  y: 219   },
   chk_ampliacio:      { x: 142,   y: 217.7 },
   chk_modificacio:    { x: 213.3, y: 217.7 },
@@ -138,7 +146,13 @@ export async function generateElec1PDF(
   d1(P1.instalador_dni,     instalador.dni_nie || '')
   d1(P1.empresa_tipus_via,  instalador.empresa_tipus_via || '')
   d1(P1.empresa_nom_via,    instalador.empresa_nom_via || '')
+  d1(P1.empresa_numero,     instalador.empresa_numero || '')
+  d1(P1.empresa_bloc,       instalador.empresa_bloc || '')
+  d1(P1.empresa_escala,     instalador.empresa_escala || '')
+  d1(P1.empresa_pis,        instalador.empresa_pis || '')
+  d1(P1.empresa_porta,      instalador.empresa_porta || '')
   drawCP1(P1.empresa_cp,    instalador.empresa_cp || '')
+  d1(P1.empresa_poblacio,   instalador.empresa_poblacio || '')
   d1(P1.empresa_tel,        instalador.empresa_telefono || '')
   d1(P1.empresa_correu,     instalador.empresa_email || '')
 
@@ -152,6 +166,8 @@ export async function generateElec1PDF(
   d1(P1.inst_porta,         cert.inst_porta || '')
   drawCP1(P1.inst_cp,       cert.inst_cp || '')
   d1(P1.inst_poblacio,      cert.inst_poblacio || '')
+  d1(P1.inst_telefon,       cert.inst_telefon || '')
+  d1(P1.inst_correu,        cert.inst_correu || '')
 
   // Tipus actuació (checkboxes)
   if (cert.tipus_actuacio === 'nova')        d1(P1.chk_nova,        'X')

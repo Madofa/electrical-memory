@@ -13,7 +13,13 @@ export interface Instalador {
   empresa_direccion?: string
   empresa_tipus_via?: string
   empresa_nom_via?: string
+  empresa_numero?: string
+  empresa_bloc?: string
+  empresa_escala?: string
+  empresa_pis?: string
+  empresa_porta?: string
   empresa_cp?: string
+  empresa_poblacio?: string
   empresa_telefono?: string
   empresa_email?: string
   empresa_logo_url?: string
