@@ -11,6 +11,8 @@ export interface Instalador {
   empresa_nombre?: string
   empresa_cif?: string
   empresa_direccion?: string
+  empresa_tipus_via?: string
+  empresa_nom_via?: string
   empresa_cp?: string
   empresa_telefono?: string
   empresa_email?: string

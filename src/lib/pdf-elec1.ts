@@ -19,7 +19,7 @@ const P1 = {
   titular_escala:     { x: 185.3, y: 624.7 },
   titular_pis:        { x: 286,   y: 625.3 },
   titular_porta:      { x: 388.7, y: 626   },
-  titular_cp:         { x: 487,   y: 621   },  // ⚠️ pendent calibrar 1r dígit
+  titular_cp:         { x: 487,   y: 621   },
   titular_poblacio:   { x: 90.7,  y: 589.3 },
   titular_tel:        { x: 317.3, y: 589.3 },
   titular_correu:     { x: 402.7, y: 589.3 },
@@ -29,6 +29,8 @@ const P1 = {
   instalador_nom:     { x: 90.7,  y: 494   },
   instalador_cat:     { x: 374,   y: 494.7 },
   instalador_dni:     { x: 488,   y: 532.7 },
+  empresa_tipus_via:  { x: 90.7,  y: 522   },  // ⚠️ pendent calibrar (posició aproximada)
+  empresa_nom_via:    { x: 180,   y: 522   },  // ⚠️ pendent calibrar (posició aproximada)
   empresa_cp:         { x: 487,   y: 510   },  // ⚠️ pendent calibrar (posició aproximada)
   empresa_tel:        { x: 319.3, y: 379.3 },
   empresa_correu:     { x: 404,   y: 378.7 },
@@ -39,7 +41,7 @@ const P1 = {
   inst_escala:        { x: 186.7, y: 268   },
   inst_pis:           { x: 285.3, y: 267.3 },
   inst_porta:         { x: 386,   y: 268   },
-  inst_cp:            { x: 487,   y: 268   },  // ⚠️ pendent calibrar 1r dígit
+  inst_cp:            { x: 487,   y: 268   },
   inst_poblacio:      { x: 94.7,  y: 234   },
   chk_nova:           { x: 87.3,  y: 219   },
   chk_ampliacio:      { x: 142,   y: 217.7 },
@@ -134,6 +136,8 @@ export async function generateElec1PDF(
   d1(P1.instalador_nom,     instalador.nombre_completo)
   d1(P1.instalador_cat,     categoria)
   d1(P1.instalador_dni,     instalador.dni_nie || '')
+  d1(P1.empresa_tipus_via,  instalador.empresa_tipus_via || '')
+  d1(P1.empresa_nom_via,    instalador.empresa_nom_via || '')
   drawCP1(P1.empresa_cp,    instalador.empresa_cp || '')
   d1(P1.empresa_tel,        instalador.empresa_telefono || '')
   d1(P1.empresa_correu,     instalador.empresa_email || '')

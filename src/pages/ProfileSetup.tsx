@@ -25,7 +25,8 @@ export function ProfileSetup() {
   const [form, setForm] = useState<Partial<Instalador>>({
     nombre_completo: '', dni_nie: '', tipo: 'IBTM', numero_carnet: '',
     numero_colegiado: '', empresa_nombre: '', empresa_cif: '',
-    empresa_direccion: '', empresa_cp: '', empresa_telefono: '', empresa_email: '',
+    empresa_direccion: '', empresa_tipus_via: '', empresa_nom_via: '', empresa_cp: '',
+    empresa_telefono: '', empresa_email: '',
   })
   const [firmaDataUrl, setFirmaDataUrl] = useState('')
   const [logoFile, setLogoFile] = useState<File | null>(null)
@@ -190,6 +191,8 @@ export function ProfileSetup() {
                 <FormInput label="Telèfon" value={form.empresa_telefono ?? ''} onChange={set('empresa_telefono')} />
                 <FormInput label="Correu electrònic" value={form.empresa_email ?? ''} onChange={set('empresa_email')} type="email" />
                 <FormInput label="Adreça" value={form.empresa_direccion ?? ''} onChange={set('empresa_direccion')} className="sm:col-span-2" />
+                <FormInput label="Tipus de via" value={form.empresa_tipus_via ?? ''} onChange={set('empresa_tipus_via')} placeholder="Carrer, Avinguda…" />
+                <FormInput label="Nom del carrer" value={form.empresa_nom_via ?? ''} onChange={set('empresa_nom_via')} />
                 <FormInput label="Codi postal" value={form.empresa_cp ?? ''} onChange={set('empresa_cp')} />
               </div>
             </section>
