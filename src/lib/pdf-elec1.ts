@@ -29,6 +29,7 @@ const P1 = {
   instalador_nom:     { x: 90.7,  y: 494   },
   instalador_cat:     { x: 374,   y: 494.7 },
   instalador_dni:     { x: 488,   y: 532.7 },
+  empresa_cp:         { x: 487,   y: 510   },  // ⚠️ pendent calibrar (posició aproximada)
   empresa_tel:        { x: 319.3, y: 379.3 },
   empresa_correu:     { x: 404,   y: 378.7 },
   inst_tipus_via:     { x: 89.3,  y: 456   },
@@ -85,7 +86,6 @@ export async function generateElec1PDF(
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
   const BLACK = rgb(0, 0, 0)
   const FS = 8   // font size for regular fields
-  const FS_SM = 7  // smaller for long values
 
   const [embP1, embP2] = await pdfDoc.embedPdf(templateBytes, [0, 1])
 
@@ -110,40 +110,41 @@ export async function generateElec1PDF(
   }
 
   // Titular
-  d1(P1.titular_nom,        cert.titular_nom || '', FS_SM)
+  d1(P1.titular_nom,        cert.titular_nom || '')
   d1(P1.titular_nif,        cert.titular_nif || '')
   d1(P1.titular_tipus_via,  cert.titular_tipus_via || '')
-  d1(P1.titular_nom_via,    cert.titular_nom_via || '', FS_SM)
+  d1(P1.titular_nom_via,    cert.titular_nom_via || '')
   d1(P1.titular_numero,     cert.titular_numero || '')
   d1(P1.titular_bloc,       cert.titular_bloc || '')
   d1(P1.titular_escala,     cert.titular_escala || '')
   d1(P1.titular_pis,        cert.titular_pis || '')
   d1(P1.titular_porta,      cert.titular_porta || '')
   drawCP1(P1.titular_cp,    cert.titular_cp || '')
-  d1(P1.titular_poblacio,   cert.titular_poblacio || '', FS_SM)
+  d1(P1.titular_poblacio,   cert.titular_poblacio || '')
   d1(P1.titular_tel,        cert.titular_telefon || '')
-  d1(P1.titular_correu,     cert.titular_correu || '', FS_SM)
+  d1(P1.titular_correu,     cert.titular_correu || '')
 
   // Empresa instal·ladora
-  d1(P1.empresa_nom,        nomEmpresa, FS_SM)
+  d1(P1.empresa_nom,        nomEmpresa)
   d1(P1.empresa_rasic,      instalador.numero_carnet || '')
   d1(P1.empresa_nif,        cifEmpresa)
-  d1(P1.instalador_nom,     instalador.nombre_completo, FS_SM)
+  d1(P1.instalador_nom,     instalador.nombre_completo)
   d1(P1.instalador_cat,     categoria)
   d1(P1.instalador_dni,     instalador.dni_nie || '')
+  drawCP1(P1.empresa_cp,    instalador.empresa_cp || '')
   d1(P1.empresa_tel,        instalador.empresa_telefono || '')
-  d1(P1.empresa_correu,     instalador.empresa_email || '', FS_SM)
+  d1(P1.empresa_correu,     instalador.empresa_email || '')
 
   // Instal·lació
   d1(P1.inst_tipus_via,     cert.inst_tipus_via || '')
-  d1(P1.inst_nom_via,       cert.inst_nom_via || '', FS_SM)
+  d1(P1.inst_nom_via,       cert.inst_nom_via || '')
   d1(P1.inst_numero,        cert.inst_numero || '')
   d1(P1.inst_bloc,          cert.inst_bloc || '')
   d1(P1.inst_escala,        cert.inst_escala || '')
   d1(P1.inst_pis,           cert.inst_pis || '')
   d1(P1.inst_porta,         cert.inst_porta || '')
   drawCP1(P1.inst_cp,       cert.inst_cp || '')
-  d1(P1.inst_poblacio,      cert.inst_poblacio || '', FS_SM)
+  d1(P1.inst_poblacio,      cert.inst_poblacio || '')
 
   // Tipus actuació (checkboxes)
   if (cert.tipus_actuacio === 'nova')        d1(P1.chk_nova,        'X')
@@ -155,7 +156,7 @@ export async function generateElec1PDF(
   if (cert.classificacio === 'p1')  d1(P1.opt_p1,      'X')
   if (cert.classificacio === 'p2')  d1(P1.opt_p2,      'X')
   if (cert.classificacio === 'mtd') d1(P1.opt_memoria, 'X')
-  d1(P1.us_installacio, cert.us_installacio || '', FS_SM)
+  d1(P1.us_installacio, cert.us_installacio || '')
 
   // ── PAGE 2 ──────────────────────────────────────────────────────────────────
   const page2 = pdfDoc.addPage([595, 842])
@@ -173,7 +174,7 @@ export async function generateElec1PDF(
   d2(P2.num_circuits,        cert.num_circuits ? String(cert.num_circuits) : '')
   d2(P2.seccio_lga,          cert.seccio_lga_mm2 || '')
   d2(P2.material_conductor,  cert.material_conductor || '')
-  d2(P2.ubicacio_comptadors, cert.ubicacio_comptadors || '', FS_SM)
+  d2(P2.ubicacio_comptadors, cert.ubicacio_comptadors || '')
   d2(P2.resist_conductors,   cert.resist_aillament_conductors_mt ? String(cert.resist_aillament_conductors_mt) : '')
   d2(P2.aillament_terra,     cert.resist_aillament_mt ? String(cert.resist_aillament_mt) : '')
   d2(P2.resist_terra,        cert.resist_terra_ohm ? String(cert.resist_terra_ohm) : '')
@@ -185,8 +186,8 @@ export async function generateElec1PDF(
     d2(P2.opt_submin_no, 'X')
   }
 
-  d2(P2.observacions, cert.observacions || '', FS_SM)
-  d2(P2.signatura_nom, instalador.nombre_completo, FS_SM)
+  d2(P2.observacions, cert.observacions || '')
+  d2(P2.signatura_nom, instalador.nombre_completo)
   d2(P2.data_signatura, cert.data_signatura || '')
 
   return pdfDoc.save()

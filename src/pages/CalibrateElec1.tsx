@@ -35,6 +35,7 @@ const ALL_FIELDS = [
   { key: 'instalador_nom',    label: 'Instal·lador – Nom' },
   { key: 'instalador_cat',    label: 'Instal·lador – Categoria' },
   { key: 'instalador_dni',    label: 'Instal·lador – DNI' },
+  { key: 'empresa_cp',        label: 'Empresa – C.P.' },
   { key: 'empresa_tel',       label: 'Empresa – Telèfon' },
   { key: 'empresa_correu',    label: 'Empresa – Correu' },
   // Instal·lació
