@@ -106,83 +106,83 @@ export function PDFTemplate({ data, instalador }: Props) {
             )}
           </View>
           <View style={s.headerRight}>
-            <Text style={s.h1}>Memoria Técnica Descriptiva</Text>
-            <Text style={s.headerSub}>Instalación Eléctrica en Baja Tensión</Text>
+            <Text style={s.h1}>Memòria Tècnica Descriptiva</Text>
+            <Text style={s.headerSub}>Instal·lació Elèctrica en Baixa Tensió</Text>
             <Text style={s.headerMeta}>
-              Ref: {data.referencia_interna || '—'}   |   Fecha: {formatDate(data.fechaFirma)}
+              Ref: {data.referencia_interna || '—'}   |   Data: {formatDate(data.fechaFirma)}
             </Text>
           </View>
         </View>
 
-        {/* SECCIÓN 1 */}
-        <SectionTitle>1. Características de la solicitud</SectionTitle>
-        <Row label="Tipo de solicitud" value={u.tipo_solicitud ? LABELS_TIPO_SOLICITUD[u.tipo_solicitud] : null} />
-        <Row label="Uso de la finca" value={u.uso_finca ? LABELS_USO_FINCA[u.uso_finca] : null} />
-        <Row label="Nivel de tensión solicitado" value={potenciaTotal > 15 ? '3×230/400 V (trifásico con neutro)' : '230 V (monofásico)'} />
-        <Row label="Potencia total solicitada" value={`${potenciaTotal.toFixed(2).replace('.', ',')} kW`} />
+        {/* SECCIÓ 1 */}
+        <SectionTitle>1. Característiques de la sol·licitud</SectionTitle>
+        <Row label="Tipus de sol·licitud" value={u.tipo_solicitud ? LABELS_TIPO_SOLICITUD[u.tipo_solicitud] : null} />
+        <Row label="Ús de la finca" value={u.uso_finca ? LABELS_USO_FINCA[u.uso_finca] : null} />
+        <Row label="Nivell de tensió sol·licitat" value={potenciaTotal > 15 ? '3×230/400 V (trifàsic amb neutre)' : '230 V (monofàsic)'} />
+        <Row label="Potència total sol·licitada" value={`${potenciaTotal.toFixed(2).replace('.', ',')} kW`} />
 
-        {/* SECCIÓN 2 */}
-        <SectionTitle>2. Datos del solicitante</SectionTitle>
-        {sol.razon_social && <Row label="Razón social / Nombre" value={sol.razon_social} />}
+        {/* SECCIÓ 2 */}
+        <SectionTitle>2. Dades del sol·licitant</SectionTitle>
+        {sol.razon_social && <Row label="Raó social / Nom" value={sol.razon_social} />}
         {sol.cif_nif && <Row label="CIF / NIF" value={sol.cif_nif} />}
         {(sol.direccion || sol.municipio || sol.cp) && (
-          <Row label="Dirección" value={[sol.direccion, sol.municipio, sol.cp].filter(Boolean).join(', ')} />
+          <Row label="Adreça" value={[sol.direccion, sol.municipio, sol.cp].filter(Boolean).join(', ')} />
         )}
-        {sol.telefono && <Row label="Teléfono" value={sol.telefono} />}
-        {sol.email && <Row label="Email" value={sol.email} />}
+        {sol.telefono && <Row label="Telèfon" value={sol.telefono} />}
+        {sol.email && <Row label="Correu electrònic" value={sol.email} />}
 
-        {/* SECCIÓN 3 */}
-        <SectionTitle>3. Ubicación del suministro</SectionTitle>
-        <Row label="Dirección" value={`${u.direccion} ${u.numero}${u.piso_puerta ? ', ' + u.piso_puerta : ''}`} />
-        <Row label="Municipio / C.P." value={`${u.municipio} / ${u.cp}`} />
-        <Row label="Provincia" value={u.provincia} />
-        {u.referencia_catastral && <Row label="Referencia catastral" value={u.referencia_catastral} />}
-        {u.utm_x && <Row label="Coord. UTM (ETRS89)" value={`X: ${u.utm_x} / Y: ${u.utm_y} / Huso: ${u.utm_huso}`} />}
+        {/* SECCIÓ 3 */}
+        <SectionTitle>3. Ubicació del subministrament</SectionTitle>
+        <Row label="Adreça" value={`${u.direccion} ${u.numero}${u.piso_puerta ? ', ' + u.piso_puerta : ''}`} />
+        <Row label="Municipi / C.P." value={`${u.municipio} / ${u.cp}`} />
+        <Row label="Província" value={u.provincia} />
+        {u.referencia_catastral && <Row label="Referència cadastral" value={u.referencia_catastral} />}
+        {u.utm_x && <Row label="Coord. UTM (ETRS89)" value={`X: ${u.utm_x} / Y: ${u.utm_y} / Fus: ${u.utm_huso}`} />}
         {u.cups && <Row label="CUPS" value={u.cups} />}
 
-        {/* SECCIÓN 4 — Tabla receptores */}
-        <SectionTitle>4. Datos técnicos de la petición</SectionTitle>
+        {/* SECCIÓ 4 — Taula receptors */}
+        <SectionTitle>4. Dades tècniques de la petició</SectionTitle>
         <View style={s.table}>
           <View style={s.tableRow}>
-            <Text style={[s.th, { flex: 3 }]}>Concepto</Text>
+            <Text style={[s.th, { flex: 3 }]}>Concepte</Text>
             <Text style={[s.th, { flex: 1, textAlign: 'right' }]}>Pot. (kW)</Text>
-            <Text style={[s.th, { flex: 1 }]}>Tensión (V)</Text>
-            <Text style={[s.th, { flex: 1 }]}>Grado electrif.</Text>
+            <Text style={[s.th, { flex: 1 }]}>Tensió (V)</Text>
+            <Text style={[s.th, { flex: 1 }]}>Grau electrif.</Text>
           </View>
           {receptores.map((r) => (
             <View key={r.id} style={s.tableRow} wrap={false}>
               <Text style={[s.td, { flex: 3 }]}>{r.concepto}</Text>
               <Text style={[s.td, s.tdRight, { flex: 1 }]}>{r.potencia_kw.toFixed(2).replace('.', ',')}</Text>
               <Text style={[s.td, { flex: 1 }]}>{r.tension}</Text>
-              <Text style={[s.td, { flex: 1 }]}>{r.grado === 'basica' ? 'Básica' : r.grado === 'elevada' ? 'Elevada' : '—'}</Text>
+              <Text style={[s.td, { flex: 1 }]}>{r.grado === 'basica' ? 'Bàsica' : r.grado === 'elevada' ? 'Elevada' : '—'}</Text>
             </View>
           ))}
           <View style={s.tableRow} wrap={false}>
-            <Text style={[s.td, s.tdRight, s.bold, { flex: 3 }]}>POTENCIA TOTAL:</Text>
+            <Text style={[s.td, s.tdRight, s.bold, { flex: 3 }]}>POTÈNCIA TOTAL:</Text>
             <Text style={[s.td, s.tdRight, s.bold, { flex: 1 }]}>{potenciaTotal.toFixed(2).replace('.', ',')}</Text>
             <Text style={[s.td, { flex: 2 }]}></Text>
           </View>
         </View>
 
-        {/* SECCIÓN 5 — Punto de medida / CGP */}
+        {/* SECCIÓ 5 — Punt de mesura / CGP */}
         <SectionTitle>
           {u.centralizacion_existente
-            ? '5. Punto de medida — centralización existente'
-            : '5. Propuesta de ubicación del elemento frontera'}
+            ? '5. Punt de mesura — centralització existent'
+            : "5. Proposta d'ubicació de l'element frontera"}
         </SectionTitle>
         <Row
-          label={u.centralizacion_existente ? 'Tipo de centralización' : 'Tipo de elemento'}
+          label={u.centralizacion_existente ? 'Tipus de centralització' : "Tipus d'element"}
           value={ef.tipo_elemento}
         />
         <Text style={[s.bold, { fontSize: 10, marginTop: 6 }]}>
-          {u.centralizacion_existente ? 'Ubicación del módulo de contador asignado:' : 'Descripción:'}
+          {u.centralizacion_existente ? 'Ubicació del mòdul de comptador assignat:' : 'Descripció:'}
         </Text>
         <Text style={s.fullText}>{ef.descripcion || '—'}</Text>
         {fotos.length > 0 && (
           <View style={s.photoGrid}>
             {fotos.map((foto, i) => (
               <View key={foto.id} style={s.photoCell} wrap={false}>
-                <Text style={s.photoTitle}>{foto.titulo || `Fotografía ${i + 1}`}:</Text>
+                <Text style={s.photoTitle}>{foto.titulo || `Fotografia ${i + 1}`}:</Text>
                 <Image src={foto.base64} style={s.photo} />
               </View>
             ))}
@@ -190,42 +190,42 @@ export function PDFTemplate({ data, instalador }: Props) {
         )}
         <Text style={s.note}>
           {u.centralizacion_existente
-            ? '* Las fotografías adjuntas muestran la centralización de contadores existente y el módulo asignado al nuevo suministro.'
-            : '* Las fotografías y el croquis adjuntos muestran la propuesta de ubicación del elemento frontera (CGP/CGPM) en el emplazamiento indicado.'}
+            ? '* Les fotografies adjuntes mostren la centralització de comptadors existent i el mòdul assignat al nou subministrament.'
+            : "* Les fotografies i el croquis adjunts mostren la proposta d'ubicació de l'element frontera (CGP/CGPM) a l'emplaçament indicat."}
         </Text>
 
-        {/* SECCIÓN 6 — Cálculos (opcional) */}
+        {/* SECCIÓ 6 — Càlculs (opcional) */}
         {data.incluir_calculos && c.seccion_normalizada_mm2 && (
           <View>
-            <SectionTitle>6. Cálculos justificativos (REBT)</SectionTitle>
-            <Text style={s.calcSubtitle}>DATOS DE CÁLCULO</Text>
-            <Row label="Potencia total instalada" value={`${potenciaTotal.toFixed(2).replace('.', ',')} kW`} />
-            <Row label="Coeficiente de simultaneidad" value={String(c.coef_simultaneidad)} />
-            <Row label="Potencia de demanda" value={`${c.potencia_demanda_kw?.toFixed(2).replace('.', ',')} kW`} />
-            <Row label="Número de fases" value={potenciaTotal > 15 ? 'Trifásico (3F+N)' : 'Monofásico (1F+N)'} />
-            <Row label="Tensión nominal" value={`${c.tension_nominal_v} V`} />
-            <Row label="Intensidad nominal" value={`${c.intensidad_nominal_a} A`} />
-            <Text style={s.calcSubtitle}>LÍNEA GENERAL DE ALIMENTACIÓN (LGA)</Text>
+            <SectionTitle>6. Càlculs justificatius (REBT)</SectionTitle>
+            <Text style={s.calcSubtitle}>DADES DE CÀLCUL</Text>
+            <Row label="Potència total instal·lada" value={`${potenciaTotal.toFixed(2).replace('.', ',')} kW`} />
+            <Row label="Coeficient de simultaneïtat" value={String(c.coef_simultaneidad)} />
+            <Row label="Potència de demanda" value={`${c.potencia_demanda_kw?.toFixed(2).replace('.', ',')} kW`} />
+            <Row label="Nombre de fases" value={potenciaTotal > 15 ? 'Trifàsic (3F+N)' : 'Monofàsic (1F+N)'} />
+            <Row label="Tensió nominal" value={`${c.tension_nominal_v} V`} />
+            <Row label="Intensitat nominal" value={`${c.intensidad_nominal_a} A`} />
+            <Text style={s.calcSubtitle}>LÍNIA GENERAL D'ALIMENTACIÓ (LGA)</Text>
             <Row label="Material conductor" value={c.material_conductor as string} />
-            <Row label="Tipo de conductor" value={c.tipo_conductor as string} />
-            <Row label="Tipo de instalación" value={c.tipo_instalacion as string} />
+            <Row label="Tipus de conductor" value={c.tipo_conductor as string} />
+            <Row label="Tipus d'instal·lació" value={c.tipo_instalacion as string} />
             <Row label="Longitud estimada" value={`${c.longitud_m} m`} />
-            <Row label="Sección normalizada adoptada" value={`${c.seccion_normalizada_mm2} mm²`} />
-            <Row label="Caída de tensión" value={`${c.caida_tension_pct?.toFixed(2).replace('.', ',')} % (límite: 1,5%)`} />
-            <Text style={s.cumple}>✓ Cumple con ITC-BT-14</Text>
-            <Text style={s.calcSubtitle}>PROTECCIONES</Text>
-            <Row label="ICP recomendado" value={`${c.icp_a} A`} />
-            <Row label="Interruptor diferencial" value={`ID ${c.diferencial_a} A  ${c.diferencial_ma} mA  Clase AC`} />
+            <Row label="Secció normalitzada adoptada" value={`${c.seccion_normalizada_mm2} mm²`} />
+            <Row label="Caiguda de tensió" value={`${c.caida_tension_pct?.toFixed(2).replace('.', ',')} % (límit: 1,5%)`} />
+            <Text style={s.cumple}>✓ Compleix amb ITC-BT-14</Text>
+            <Text style={s.calcSubtitle}>PROTECCIONS</Text>
+            <Row label="ICP recomanat" value={`${c.icp_a} A`} />
+            <Row label="Interruptor diferencial" value={`ID ${c.diferencial_a} A  ${c.diferencial_ma} mA  Classe AC`} />
             {c.puesta_tierra_desc && (
               <View>
-                <Text style={s.calcSubtitle}>PUESTA A TIERRA</Text>
+                <Text style={s.calcSubtitle}>POSADA A TERRA</Text>
                 <Text style={{ fontSize: 11 }}>{c.puesta_tierra_desc as string}</Text>
               </View>
             )}
           </View>
         )}
 
-        {/* SECCIÓN 7 — Declaració */}
+        {/* SECCIÓ 7 — Declaració */}
         <View wrap={false}>
           <SectionTitle>7. Declaració responsable de qualitat d'ona</SectionTitle>
           <Text style={s.declaracion}>
@@ -237,28 +237,28 @@ export function PDFTemplate({ data, instalador }: Props) {
           <View style={s.signatureBox} />
         </View>
 
-        {/* SECCIÓN 8 — Redactor */}
+        {/* SECCIÓ 8 — Instal·lador */}
         <View wrap={false}>
-          <SectionTitle>8. Datos del instalador</SectionTitle>
-          <Row label="Nombre y apellidos" value={instalador.nombre_completo} blank />
+          <SectionTitle>8. Dades de l'instal·lador</SectionTitle>
+          <Row label="Nom i cognoms" value={instalador.nombre_completo} blank />
           <Row label="DNI / NIE" value={instalador.dni_nie} blank />
-          <Row label="Tipo / Categoría" value={instalador.tipo ? LABELS_TIPO_INSTALADOR[instalador.tipo] : null} blank />
-          <Row label="Nº de instalador" value={instalador.numero_carnet} blank />
-          {instalador.numero_colegiado && <Row label="Nº de colegiado" value={instalador.numero_colegiado} blank />}
+          <Row label="Tipus / Categoria" value={instalador.tipo ? LABELS_TIPO_INSTALADOR[instalador.tipo] : null} blank />
+          <Row label="Núm. d'instal·lador" value={instalador.numero_carnet} blank />
+          {instalador.numero_colegiado && <Row label="Núm. de col·legiat" value={instalador.numero_colegiado} blank />}
           {instalador.empresa_nombre && <Row label="Empresa" value={instalador.empresa_nombre} />}
           {instalador.empresa_cif && <Row label="CIF empresa" value={instalador.empresa_cif} />}
-          {instalador.empresa_direccion && <Row label="Dirección" value={instalador.empresa_direccion} />}
-          {instalador.empresa_telefono && <Row label="Teléfono" value={instalador.empresa_telefono} />}
-          {instalador.empresa_email && <Row label="Email" value={instalador.empresa_email} />}
+          {instalador.empresa_direccion && <Row label="Adreça" value={instalador.empresa_direccion} />}
+          {instalador.empresa_telefono && <Row label="Telèfon" value={instalador.empresa_telefono} />}
+          {instalador.empresa_email && <Row label="Correu electrònic" value={instalador.empresa_email} />}
           <Text style={s.redactorFooter}>
-            El instalador/técnico redactor declara que la presente Memoria Técnica está de acuerdo con las
-            prescripciones del vigente Reglamento Electrotécnico para Baja Tensión (RD 842/2002) e
-            instrucciones ITC-BT específicas de aplicación.
+            L'instal·lador/tècnic redactor declara que la present Memòria Tècnica està d'acord amb les
+            prescripcions del vigent Reglament Electrotècnic per a Baixa Tensió (RD 842/2002) i
+            instruccions ITC-BT específiques d'aplicació.
           </Text>
           <Text style={s.redactorLugar}>
             {data.lugarFirma}, a {formatDate(data.fechaFirma)}
           </Text>
-          <Text style={s.firmaLabel}>Firma y sello del instalador:</Text>
+          <Text style={s.firmaLabel}>Signatura i segell de l'instal·lador:</Text>
           {instalador.firma_url
             ? <Image src={instalador.firma_url} style={s.firma} />
             : <View style={s.signatureBox} />}

@@ -152,29 +152,29 @@ export interface Memoria {
 
 // ── Helpers ───────────────────────────────────────────────────────
 export const LABELS_TIPO_SOLICITUD: Record<TipoSolicitud, string> = {
-  nuevo_suministro: 'Nuevo suministro (finca nueva sin acometida)',
-  ampliacion_potencia: 'Ampliación de potencia',
-  modificacion: 'Modificación de instalación existente',
-  reanudacion: 'Reanudación de suministro',
+  nuevo_suministro: 'Nou subministrament (finca nova sense escomesa)',
+  ampliacion_potencia: 'Ampliació de potència',
+  modificacion: "Modificació d'instal·lació existent",
+  reanudacion: 'Represa de subministrament',
 }
 
 export const LABELS_USO_FINCA: Record<UsoFinca, string> = {
-  vivienda: 'Vivienda',
+  vivienda: 'Habitatge',
   local_comercial: 'Local comercial',
   taller: 'Taller',
-  almacen: 'Almacén',
+  almacen: 'Magatzem',
   oficina: 'Oficina',
-  garaje: 'Garaje / Aparcamiento',
-  industrial: 'Uso industrial',
-  comunidad: 'Comunidad (edificio completo)',
-  otro: 'Otro uso',
+  garaje: 'Garatge / Aparcament',
+  industrial: 'Ús industrial',
+  comunidad: 'Comunitat (edifici complet)',
+  otro: 'Altre ús',
 }
 
 export const LABELS_TIPO_INSTALADOR: Record<TipoInstalador, string> = {
-  IBTE: 'Instalador Básico (IBTE)',
-  IBTM: 'Instalador en Media Tensión (IBTM)',
-  TECNICO_TITULADO: 'Técnico titulado',
-  EMPRESA: 'Empresa instaladora',
+  IBTE: 'Instal·lador Bàsic (IBTE)',
+  IBTM: 'Instal·lador en Mitja Tensió (IBTM)',
+  TECNICO_TITULADO: 'Tècnic titulat',
+  EMPRESA: 'Empresa instal·ladora',
 }
 
 export const TENSION_OPTIONS = [

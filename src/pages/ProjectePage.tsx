@@ -1,5 +1,6 @@
 // src/pages/ProjectePage.tsx
 import { useEffect, useState } from 'react'
+import JSZip from 'jszip'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Zap, Pencil, Loader2, Activity, FileText, BookOpen, ClipboardCheck, Calculator, Download } from 'lucide-react'
@@ -251,25 +252,37 @@ export function ProjectePage() {
     }
 
     setGenerantTots(true)
+    const zip = new JSZip()
+    const usedNames = new Set<string>()
     let ok = 0
     for (const tasca of tasques) {
       try {
         const blob = await tasca.gen()
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `${tasca.prefix}_${tasca.nom.replace(/\s+/g, '_')}.pdf`
-        document.body.appendChild(a); a.click(); document.body.removeChild(a)
-        URL.revokeObjectURL(url)
+        const base = `${tasca.prefix}_${tasca.nom.replace(/\s+/g, '_')}`
+        let filename = `${base}.pdf`
+        let i = 2
+        while (usedNames.has(filename)) filename = `${base}_${i++}.pdf`
+        usedNames.add(filename)
+        zip.file(filename, blob)
         ok++
-        await new Promise((r) => setTimeout(r, 400))
       } catch (err) {
         console.error(`[ProjectePage] Error generant ${tasca.prefix}:`, err)
       }
     }
+
+    if (ok > 0) {
+      const zipBlob = await zip.generateAsync({ type: 'blob' })
+      const url = URL.createObjectURL(zipBlob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${(projecte.nom || 'projecte').replace(/\s+/g, '_')}_documents.zip`
+      document.body.appendChild(a); a.click(); document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }
+
     setGenerantTots(false)
-    if (ok === tasques.length) toast.success(`${ok} PDF descarregats`)
-    else toast.error(`${ok} de ${tasques.length} PDF descarregats (revisa la consola)`)
+    if (ok === tasques.length) toast.success(`${ok} PDF inclosos al ZIP`)
+    else toast.error(`${ok} de ${tasques.length} PDF inclosos al ZIP (revisa la consola)`)
   }
 
   const handleDeleteMD = async (docId: string) => {
