@@ -63,6 +63,15 @@ export function ProfileSetup() {
   const set = (field: keyof Instalador) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [field]: e.target.value }))
 
+  const formatAdreca = (f: Partial<Instalador>) => {
+    const via = [f.empresa_tipus_via, f.empresa_nom_via].filter(Boolean).join(' ')
+    const pisos = [f.empresa_bloc && `Bloc ${f.empresa_bloc}`, f.empresa_escala && `Esc ${f.empresa_escala}`, f.empresa_pis, f.empresa_porta].filter(Boolean).join(', ')
+    const cpPoblacio = [f.empresa_cp, f.empresa_poblacio].filter(Boolean).join(' ')
+    return [via && f.empresa_numero ? `${via}, ${f.empresa_numero}` : via || f.empresa_numero, pisos, cpPoblacio]
+      .filter(Boolean)
+      .join(', ')
+  }
+
   const handleSaveFirma = () => {
     if (!sigPadRef.current || sigPadRef.current.isEmpty()) return
     setFirmaDataUrl(sigPadRef.current.toDataURL('image/png'))
@@ -96,6 +105,7 @@ export function ProfileSetup() {
         id: user.id,
         firma_url,
         empresa_logo_url,
+        empresa_direccion: formatAdreca(form) || form.empresa_direccion || '',
       }
 
       await upsertInstalador(updated)
@@ -192,7 +202,6 @@ export function ProfileSetup() {
                 <FormInput label="CIF de l'empresa" value={form.empresa_cif ?? ''} onChange={set('empresa_cif')} />
                 <FormInput label="Telèfon" value={form.empresa_telefono ?? ''} onChange={set('empresa_telefono')} />
                 <FormInput label="Correu electrònic" value={form.empresa_email ?? ''} onChange={set('empresa_email')} type="email" />
-                <FormInput label="Adreça" value={form.empresa_direccion ?? ''} onChange={set('empresa_direccion')} className="sm:col-span-2" />
                 <FormInput label="Tipus de via" value={form.empresa_tipus_via ?? ''} onChange={set('empresa_tipus_via')} placeholder="Carrer, Avinguda…" />
                 <FormInput label="Nom del carrer" value={form.empresa_nom_via ?? ''} onChange={set('empresa_nom_via')} />
                 <FormInput label="Núm." value={form.empresa_numero ?? ''} onChange={set('empresa_numero')} />
