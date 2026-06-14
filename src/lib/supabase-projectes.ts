@@ -193,7 +193,7 @@ export function prefillElec1(p: Projecte) {
     calibre_fusibles_cgp_a: p.calibre_fusibles_cgp_a || 0,
     material_conductor: p.material_conductor || 'Coure',
     intensitat_iga_a: p.iga_amperatge || 0,
-    resist_terra_ohm: p.resist_terra_ohm || 0,
+    resist_terra_ohm: p.resist_terra_ohm ? String(p.resist_terra_ohm) : '',
     us_installacio: p.us_installacio || 'Habitatge',
     cups: p.cups || '',
     classificacio: p.classificacio || 'mtd',

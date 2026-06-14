@@ -83,7 +83,7 @@ export function Elec1Editor() {
             if (!c.material_conductor || c.material_conductor === 'Coure')
               if (proj.material_conductor)     patch.material_conductor        = proj.material_conductor
             if (!c.intensitat_iga_a)          patch.intensitat_iga_a          = proj.iga_amperatge || 0
-            if (!c.resist_terra_ohm && proj.resist_terra_ohm) patch.resist_terra_ohm = proj.resist_terra_ohm
+            if (!c.resist_terra_ohm && proj.resist_terra_ohm) patch.resist_terra_ohm = String(proj.resist_terra_ohm)
             if (!c.us_installacio || c.us_installacio === "f) Instal·lacions d'habitatges")
               if (proj.us_installacio)         patch.us_installacio            = proj.us_installacio
             if (!c.cups)                      patch.cups                      = proj.cups || ''
@@ -132,7 +132,7 @@ export function Elec1Editor() {
             calibre_fusibles_cgp_a: c.calibre_fusibles_cgp_a || proj.calibre_fusibles_cgp_a || 0,
             material_conductor:     c.material_conductor     || proj.material_conductor     || c.material_conductor,
             intensitat_iga_a:       c.intensitat_iga_a       || proj.iga_amperatge          || 0,
-            resist_terra_ohm:       c.resist_terra_ohm       ?? proj.resist_terra_ohm       ?? null,
+            resist_terra_ohm:       c.resist_terra_ohm       || (proj.resist_terra_ohm != null ? String(proj.resist_terra_ohm) : ''),
             us_installacio:         c.us_installacio         || proj.us_installacio         || c.us_installacio,
             cups:                   c.cups                   || proj.cups                   || '',
           }
@@ -331,11 +331,11 @@ export function Elec1Editor() {
             {fi('material_conductor', 'Material conductor', 'Coure')}
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <FormInput label="Resist. aïllament amb terra (MΩ)" type="number" step="0.1" value={String(cert.resist_aillament_mt || '')} onChange={(e) => upd('resist_aillament_mt', parseFloat(e.target.value) || 0)} className="font-mono" />
-            <FormInput label="Resist. entre conductors (MΩ)" type="number" step="0.1" value={String(cert.resist_aillament_conductors_mt || '')} onChange={(e) => upd('resist_aillament_conductors_mt', parseFloat(e.target.value) || 0)} className="font-mono" />
+            <FormInput label="Resist. aïllament amb terra (MΩ)" value={cert.resist_aillament_mt ?? ''} onChange={(e) => upd('resist_aillament_mt', e.target.value)} placeholder=">1000 o 1.049" className="font-mono" />
+            <FormInput label="Resist. entre conductors (MΩ)" value={cert.resist_aillament_conductors_mt ?? ''} onChange={(e) => upd('resist_aillament_conductors_mt', e.target.value)} placeholder=">1000" className="font-mono" />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <FormInput label="Resistència a terra (Ω)" type="number" step="0.1" value={String(cert.resist_terra_ohm || '')} onChange={(e) => upd('resist_terra_ohm', parseFloat(e.target.value) || 0)} className="font-mono" />
+            <FormInput label="Resistència a terra (Ω)" value={cert.resist_terra_ohm ?? ''} onChange={(e) => upd('resist_terra_ohm', e.target.value)} placeholder="1,43" className="font-mono" />
             <FormInput label="Intensitat IGA (A)" type="number" value={String(cert.intensitat_iga_a || '')} onChange={(e) => upd('intensitat_iga_a', parseInt(e.target.value) || 0)} className="font-mono" />
           </div>
           <div className="grid grid-cols-2 gap-4">

@@ -78,9 +78,9 @@ function buildXfaData(cert: CertificatElec1, instalador: Instalador): string {
 <TXT_PotenciaMax>${esc(cert.potencia_kw ? String(cert.potencia_kw) : '')}</TXT_PotenciaMax>
 <TXT_Tensio>${esc(cert.tensio_v)}</TXT_Tensio>
 <TXT_Circuits>${esc(cert.num_circuits ? String(cert.num_circuits) : '')}</TXT_Circuits>
-<TXT_ResistenciaConductors>${esc(cert.resist_aillament_conductors_mt ? String(cert.resist_aillament_conductors_mt) : '')}</TXT_ResistenciaConductors>
-<TXT_AillamentTerra>${esc(cert.resist_aillament_mt ? String(cert.resist_aillament_mt) : '')}</TXT_AillamentTerra>
-<TXT_ResistenciaTerra>${esc(cert.resist_terra_ohm ? String(cert.resist_terra_ohm) : '')}</TXT_ResistenciaTerra>
+<TXT_ResistenciaConductors>${esc(cert.resist_aillament_conductors_mt || '')}</TXT_ResistenciaConductors>
+<TXT_AillamentTerra>${esc(cert.resist_aillament_mt || '')}</TXT_AillamentTerra>
+<TXT_ResistenciaTerra>${esc(cert.resist_terra_ohm || '')}</TXT_ResistenciaTerra>
 <TXT_Interruptor>${esc(cert.intensitat_iga_a ? String(cert.intensitat_iga_a) : '')}</TXT_Interruptor>
 <TXT_Calibre>${esc(cert.calibre_fusibles_cgp_a ? String(cert.calibre_fusibles_cgp_a) : '')}</TXT_Calibre>
 <TXT_SeccioLGA>${esc(cert.seccio_lga_mm2)}</TXT_SeccioLGA>

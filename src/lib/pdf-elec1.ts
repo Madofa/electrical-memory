@@ -64,18 +64,18 @@ const P1 = {
 // ── Coordenades pàgina 2 ─────────────────────────────────────────────────────
 
 const P2 = {
-  potencia_max:        { x: 294,   y: 726.7 },
-  calibre_cgp:         { x: 465.3, y: 727.3 },
-  tensio:              { x: 137.3, y: 710    },
-  iga_igm:             { x: 522,   y: 710    },
-  num_circuits:        { x: 244,   y: 692.7  },
-  seccio_lga:          { x: 390,   y: 692.7  },
-  material_conductor:  { x: 518,   y: 691.3  },
-  ubicacio_comptadors: { x: 430,   y: 676    },
-  resist_conductors:   { x: 282,   y: 675.3  },
-  aillament_terra:     { x: 286.7, y: 658.7  },
-  resist_terra:        { x: 285.3, y: 642    },
-  iga:                 { x: 284.7, y: 624.7  },
+  potencia_max:        { x: 294,   y: 718.2  },
+  calibre_cgp:         { x: 465.3, y: 718.8  },
+  tensio:              { x: 137.3, y: 701.5  },
+  iga_igm:             { x: 522,   y: 701.5  },
+  num_circuits:        { x: 244,   y: 684.2  },
+  seccio_lga:          { x: 390,   y: 684.2  },
+  material_conductor:  { x: 518,   y: 682.8  },
+  ubicacio_comptadors: { x: 430,   y: 667.5  },
+  resist_conductors:   { x: 282,   y: 666.8  },
+  aillament_terra:     { x: 286.7, y: 650.2  },
+  resist_terra:        { x: 285.3, y: 633.5  },
+  iga:                 { x: 284.7, y: 616.2  },
   opt_submin_si:       { x: 225.7, y: 603.9  },
   opt_submin_no:       { x: 259.7, y: 603.9  },
   observacions:        { x: 94.7,  y: 457.3  },
@@ -198,9 +198,9 @@ export async function generateElec1PDF(
   d2(P2.seccio_lga,          cert.seccio_lga_mm2 || '')
   d2(P2.material_conductor,  cert.material_conductor || '')
   d2(P2.ubicacio_comptadors, cert.ubicacio_comptadors || '')
-  d2(P2.resist_conductors,   cert.resist_aillament_conductors_mt ? String(cert.resist_aillament_conductors_mt) : '')
-  d2(P2.aillament_terra,     cert.resist_aillament_mt ? String(cert.resist_aillament_mt) : '')
-  d2(P2.resist_terra,        cert.resist_terra_ohm ? String(cert.resist_terra_ohm) : '')
+  d2(P2.resist_conductors,   cert.resist_aillament_conductors_mt || '')
+  d2(P2.aillament_terra,     cert.resist_aillament_mt || '')
+  d2(P2.resist_terra,        cert.resist_terra_ohm || '')
   d2(P2.iga,                 cert.intensitat_iga_a ? String(cert.intensitat_iga_a) : '')
 
   if (cert.te_subministrament_complementari) {
