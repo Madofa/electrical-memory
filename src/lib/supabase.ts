@@ -72,10 +72,11 @@ export async function getInstalador(userId: string): Promise<Instalador | null> 
 }
 
 export async function upsertInstalador(data: Partial<Instalador> & { id: string }) {
-  return supabase.from('instaladores').upsert({
+  const { error } = await supabase.from('instaladores').upsert({
     ...data,
     updated_at: new Date().toISOString(),
   })
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error))
 }
 
 export async function uploadLogo(userId: string, file: File) {
