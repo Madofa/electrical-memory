@@ -7,4 +7,6 @@ ALTER TABLE public.certificats_elec1
   ALTER COLUMN resist_terra_ohm TYPE text
     USING (CASE WHEN resist_terra_ohm = 0 THEN '' ELSE resist_terra_ohm::text END),
   ALTER COLUMN resist_terra_ohm SET DEFAULT '',
-  ADD COLUMN IF NOT EXISTS resist_aillament_conductors_mt text NOT NULL DEFAULT '';
+  ALTER COLUMN resist_aillament_conductors_mt TYPE text
+    USING (CASE WHEN resist_aillament_conductors_mt = 0 THEN '' ELSE resist_aillament_conductors_mt::text END),
+  ALTER COLUMN resist_aillament_conductors_mt SET DEFAULT '';
