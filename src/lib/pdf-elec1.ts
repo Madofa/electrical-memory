@@ -65,9 +65,9 @@ const P1 = {
 
 const P2 = {
   potencia_max:        { x: 294,   y: 721.86 },
-  calibre_cgp:         { x: 421,   y: 721.86 },
+  calibre_cgp:         { x: 492,   y: 722.86 },
   tensio:              { x: 137.3, y: 704.82 },
-  iga_igm:             { x: 519,   y: 704.82 },
+  iga_igm:             { x: 539,   y: 705.82 },
   num_circuits:        { x: 244,   y: 688.02 },
   seccio_lga:          { x: 390,   y: 687.54 },
   material_conductor:  { x: 518,   y: 687.54 },
