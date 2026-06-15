@@ -53,22 +53,58 @@ export async function resendConfirmation(email: string) {
 
 // ── Instalador ────────────────────────────────────────────────────
 
+const STORAGE_BUCKET = 'instaladores'
+// 1 any: les URLs es regeneren a cada càrrega del perfil, però donem marge ampli
+// per a sessions llargues i per a la descàrrega de la imatge dins el PDF.
+const SIGNED_URL_TTL = 60 * 60 * 24 * 365
+
+// Extreu el path dins el bucket a partir d'una URL (pública o signada) o d'un
+// path ja net. Tolera dades antigues (URL pública sencera) i noves (path).
+function storagePathFromUrl(urlOrPath: string): string | null {
+  if (!urlOrPath) return null
+  const marker = `/${STORAGE_BUCKET}/`
+  const i = urlOrPath.indexOf(marker)
+  if (i === -1) return urlOrPath.includes('/') ? urlOrPath.split('?')[0] : null
+  return urlOrPath.slice(i + marker.length).split('?')[0]
+}
+
+// Converteix firma_url i empresa_logo_url en URLs signades fresques. Si alguna
+// cosa falla, deixa el valor original perquè mai es trenqui la generació del PDF.
+async function withSignedAssetUrls(row: Instalador | null): Promise<Instalador | null> {
+  if (!row) return row
+  const sign = async (value?: string): Promise<string | undefined> => {
+    if (!value) return value
+    const path = storagePathFromUrl(value)
+    if (!path) return value
+    try {
+      const { data, error } = await supabase.storage.from(STORAGE_BUCKET).createSignedUrl(path, SIGNED_URL_TTL)
+      return error || !data?.signedUrl ? value : data.signedUrl
+    } catch {
+      return value
+    }
+  }
+  const [firma_url, empresa_logo_url] = await Promise.all([sign(row.firma_url), sign(row.empresa_logo_url)])
+  return { ...row, firma_url, empresa_logo_url }
+}
+
 export async function getInstalador(userId: string): Promise<Instalador | null> {
   const { data } = await supabase
     .from('instaladores')
     .select('*')
     .eq('id', userId)
     .single()
-  if (data) return data
+  if (data) return withSignedAssetUrls(data)
 
-  // Primera vez — crear fila vacía y devolver
-  await supabase.from('instaladores').insert({ id: userId })
+  // Primera vez — crear fila vacía y devolver. Usem upsert amb ignoreDuplicates
+  // perquè App.tsx pot cridar aquesta funció dues vegades quasi alhora
+  // (getSession + onAuthStateChange) i un INSERT normal violaria la PK.
+  await supabase.from('instaladores').upsert({ id: userId }, { onConflict: 'id', ignoreDuplicates: true })
   const { data: fresh } = await supabase
     .from('instaladores')
     .select('*')
     .eq('id', userId)
     .single()
-  return fresh
+  return withSignedAssetUrls(fresh)
 }
 
 export async function upsertInstalador(data: Partial<Instalador> & { id: string }) {
@@ -79,22 +115,38 @@ export async function upsertInstalador(data: Partial<Instalador> & { id: string 
   if (error) throw new Error(error.message || error.details || JSON.stringify(error))
 }
 
+// Valida que el perfil de l'instal·lador tingui les dades imprescindibles per
+// emetre un document oficial. Retorna la llista d'etiquetes de camps que falten
+// (buida = perfil complet).
+export function missingInstaladorFields(i: Instalador | null): string[] {
+  if (!i) return ['Perfil d\'instal·lador']
+  const missing: string[] = []
+  if (!i.nombre_completo?.trim()) missing.push('Nom complet')
+  if (!i.dni_nie?.trim())         missing.push('DNI / NIE')
+  if (!i.numero_carnet?.trim())   missing.push('Núm. de carnet / RASIC')
+  return missing
+}
+
+async function signedUrlOrThrow(path: string): Promise<string> {
+  const { data, error } = await supabase.storage.from(STORAGE_BUCKET).createSignedUrl(path, SIGNED_URL_TTL)
+  if (error || !data?.signedUrl) throw new Error(error?.message || 'No s\'ha pogut signar la URL')
+  return data.signedUrl
+}
+
 export async function uploadLogo(userId: string, file: File) {
   const ext = file.name.split('.').pop()
   const path = `${userId}/logo.${ext}`
-  await supabase.storage.from('instaladores').upload(path, file, { upsert: true })
-  const { data } = supabase.storage.from('instaladores').getPublicUrl(path)
-  return data.publicUrl
+  await supabase.storage.from(STORAGE_BUCKET).upload(path, file, { upsert: true })
+  return signedUrlOrThrow(path)
 }
 
 export async function uploadFirma(userId: string, dataUrl: string): Promise<string> {
   const blob = dataUrlToBlob(dataUrl)
   const path = `${userId}/firma.png`
   await supabase.storage
-    .from('instaladores')
+    .from(STORAGE_BUCKET)
     .upload(path, blob, { upsert: true, contentType: 'image/png' })
-  const { data } = supabase.storage.from('instaladores').getPublicUrl(path)
-  return data.publicUrl
+  return signedUrlOrThrow(path)
 }
 
 // ── Memorias ──────────────────────────────────────────────────────

@@ -147,9 +147,14 @@ export function calculaTrams(trams: Tram[], circuitNoms?: string[]): TramCalcula
       ? (pot * 1000) / (U * cosfi)
       : (pot * 1000) / (Math.sqrt(3) * U * cosfi)
     const moment = pot * t.longitud_m
+    // Caiguda de tensió segons REBT ITC-BT-19, partint de la potència ACTIVA:
+    // mono:  ΔU% = 200000·P·L / (γ·S·U²)   ·   tri: ΔU% = 100000·P·L / (γ·S·U²)
+    // El cosφ NO hi apareix: en partir de potència activa es cancel·la, i la
+    // pròpia Guia-BT-19 indica que la caiguda es calcula amb cosφ=1 (cas més
+    // desfavorable). La intensitat sí que el manté (I = P/(U·cosφ)).
     const dU = isEmpty ? 0 : t.tipus === 'mono'
-      ? (200000 * pot * t.longitud_m) / (gamma * t.seccio_mm2 * U * U * cosfi)
-      : (100000 * pot * t.longitud_m) / (gamma * t.seccio_mm2 * U * U * cosfi)
+      ? (200000 * pot * t.longitud_m) / (gamma * t.seccio_mm2 * U * U)
+      : (100000 * pot * t.longitud_m) / (gamma * t.seccio_mm2 * U * U)
 
     // DI (tram 0): its own drop is the shared drop for all branches
     if (idx === 0) diDrop = dU

@@ -152,10 +152,10 @@ export default function App() {
             </RequireAuth>
           }
         />
-        <Route path="/dev/calibrar-elec3" element={<CalibrateElec3 />} />
-        <Route path="/dev/calibrar-elec1" element={<CalibrateElec1 />} />
-        <Route path="/dev/calibrar-elec2" element={<CalibrateElec2 />} />
-        <Route path="/dev/calibrar-mtd" element={<CalibrateMTD />} />
+        <Route path="/dev/calibrar-elec3" element={<RequireAuth><CalibrateElec3 /></RequireAuth>} />
+        <Route path="/dev/calibrar-elec1" element={<RequireAuth><CalibrateElec1 /></RequireAuth>} />
+        <Route path="/dev/calibrar-elec2" element={<RequireAuth><CalibrateElec2 /></RequireAuth>} />
+        <Route path="/dev/calibrar-mtd" element={<RequireAuth><CalibrateMTD /></RequireAuth>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

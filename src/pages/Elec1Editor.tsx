@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Zap, Cloud, FileDown, Loader2 } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import { getCertificatElec1, updateCertificatElec1, type CertificatElec1 } from '../lib/supabase-elec1'
+import { missingInstaladorFields } from '../lib/supabase'
 import { getProjecte, updateProjecte, mapElec1FieldToProjecte } from '../lib/supabase-projectes'
 import type { Projecte } from '../lib/supabase-projectes'
 import { FormInput } from '../components/ui/FormField'
@@ -38,6 +39,7 @@ export function Elec1Editor() {
   const [loading, setLoading] = useState(true)
   const [dirty, setDirty] = useState(false)
   const [autoSaving, setAutoSaving] = useState(false)
+  const [saveError, setSaveError] = useState(false)
   const [exporting, setExporting] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [projecteId, setProjecteId] = useState<string | null>(null)
@@ -153,13 +155,14 @@ export function Elec1Editor() {
       try {
         await updateCertificatElec1(id, { [field]: value })
         setDirty(false)
+        setSaveError(false)
         // El document és la font prioritària: si el camp ve del projecte, l'actualitzem
         if (projecteId) {
           const projPatch = mapElec1FieldToProjecte(field, value)
-          if (projPatch) updateProjecte(projecteId, projPatch).catch(() => {})
+          if (projPatch) updateProjecte(projecteId, projPatch).catch((e) => console.warn('Sync projecte:', e))
         }
       }
-      catch { toast.error('Error desant') }
+      catch (e) { setSaveError(true); toast.error(`Error desant: ${e instanceof Error ? e.message : String(e)}`) }
       setAutoSaving(false)
     }, 2000)
   }
@@ -171,15 +174,21 @@ export function Elec1Editor() {
     timer.current = setTimeout(async () => {
       if (!id) return
       setAutoSaving(true)
-      try { await updateCertificatElec1(id, { [field]: value }); setDirty(false) }
-      catch { toast.error('Error desant') }
+      try { await updateCertificatElec1(id, { [field]: value }); setDirty(false); setSaveError(false) }
+      catch (e) { setSaveError(true); toast.error(`Error desant: ${e instanceof Error ? e.message : String(e)}`) }
       setAutoSaving(false)
     }, 2000)
   }
 
   const handleExport = async () => {
     if (!cert) return
-    if (!instalador) { toast.error('Cal completar el perfil d\'instal·lador abans d\'exportar'); return }
+    const missing = missingInstaladorFields(instalador)
+    if (missing.length > 0) {
+      toast.error(`Cal completar el perfil abans d'exportar. Falta: ${missing.join(', ')}`)
+      navigate('/perfil')
+      return
+    }
+    if (!instalador) return
     setExporting(true)
     try {
       const { generateElec1PDF } = await import('../lib/pdf-elec1')
@@ -229,7 +238,8 @@ export function Elec1Editor() {
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {autoSaving && <span className="text-[11px] text-slate-500 font-mono flex items-center gap-1"><Cloud className="w-3 h-3 animate-pulse" /> desant…</span>}
-          {!autoSaving && !dirty && <span className="text-[11px] text-slate-600 font-mono flex items-center gap-1"><Cloud className="w-3 h-3" /> desat</span>}
+          {!autoSaving && saveError && <span className="text-[11px] text-red-400 font-mono flex items-center gap-1"><Cloud className="w-3 h-3" /> error en desar</span>}
+          {!autoSaving && !saveError && !dirty && <span className="text-[11px] text-slate-600 font-mono flex items-center gap-1"><Cloud className="w-3 h-3" /> desat</span>}
           <button onClick={handleExport} disabled={exporting} className="btn-primary">
             {exporting ? <><Loader2 className="w-4 h-4 animate-spin" /> Exportant…</> : <><FileDown className="w-4 h-4" /> Exporta PDF</>}
           </button>

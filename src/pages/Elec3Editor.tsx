@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Zap, Cloud, FileDown, Loader2 } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore'
 import { getElec3Doc, updateElec3Doc, type Elec3Doc } from '../lib/supabase-elec3'
+import { missingInstaladorFields } from '../lib/supabase'
 import { getProjecte, updateProjecte, mapElec3FieldToProjecte, type Projecte } from '../lib/supabase-projectes'
 import { getEsquemaByProjecte } from '../lib/supabase-esquemes'
 import type { Diferencial, Circuit } from '../types/esquemaUnifilar'
@@ -34,6 +35,7 @@ export function Elec3Editor() {
   const [doc, setDoc] = useState<Elec3Doc | null>(null)
   const [loading, setLoading] = useState(true)
   const [dirty, setDirty] = useState(false)
+  const [saveError, setSaveError] = useState(false)
   const [numDiferencials, setNumDiferencials] = useState<number | null>(() => {
     if (!id) return null
     const v = localStorage.getItem(`elec3_numdifs_${id}`)
@@ -180,8 +182,8 @@ export function Elec3Editor() {
     timer.current = setTimeout(async () => {
       if (!id) return
       setAutoSaving(true)
-      try { await updateElec3Doc(id, { trams }); setDirty(false) }
-      catch (e) { toast.error(`Error desant trams: ${e instanceof Error ? e.message : String(e)}`) }
+      try { await updateElec3Doc(id, { trams }); setDirty(false); setSaveError(false) }
+      catch (e) { setSaveError(true); toast.error(`Error desant trams: ${e instanceof Error ? e.message : String(e)}`) }
       setAutoSaving(false)
     }, 2000)
   }
@@ -206,13 +208,14 @@ export function Elec3Editor() {
       try {
         await updateElec3Doc(id, { [field]: value as never })
         setDirty(false)
+        setSaveError(false)
         // El document és la font prioritària: si el camp ve del projecte, l'actualitzem
         if (projecteId) {
           const projPatch = mapElec3FieldToProjecte(field, value)
-          if (projPatch) updateProjecte(projecteId, projPatch).catch(() => {})
+          if (projPatch) updateProjecte(projecteId, projPatch).catch((e) => console.warn('Sync projecte:', e))
         }
       }
-      catch (e) { toast.error(`Error desant ${String(field)}: ${e instanceof Error ? e.message : String(e)}`) }
+      catch (e) { setSaveError(true); toast.error(`Error desant ${String(field)}: ${e instanceof Error ? e.message : String(e)}`) }
       setAutoSaving(false)
     }, 2000)
   }
@@ -224,14 +227,21 @@ export function Elec3Editor() {
     timer.current = setTimeout(async () => {
       if (!id) return
       setAutoSaving(true)
-      try { await updateElec3Doc(id, { nom }); setDirty(false) }
-      catch { /* silent */ }
+      try { await updateElec3Doc(id, { nom }); setDirty(false); setSaveError(false) }
+      catch (e) { setSaveError(true); toast.error(`Error desant el nom: ${e instanceof Error ? e.message : String(e)}`) }
       setAutoSaving(false)
     }, 2000)
   }
 
   const handleExport = async () => {
-    if (!doc || !instalador) return
+    if (!doc) return
+    const missing = missingInstaladorFields(instalador)
+    if (missing.length > 0) {
+      toast.error(`Cal completar el perfil abans d'exportar. Falta: ${missing.join(', ')}`)
+      navigate('/perfil')
+      return
+    }
+    if (!instalador) return
     setExporting(true)
     try {
       // Refresh project data to get latest changes
@@ -285,7 +295,8 @@ export function Elec3Editor() {
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {autoSaving && <span className="text-[11px] text-slate-500 font-mono flex items-center gap-1"><Cloud className="w-3 h-3 animate-pulse" /> desant…</span>}
-          {!autoSaving && !dirty && <span className="text-[11px] text-slate-600 font-mono flex items-center gap-1"><Cloud className="w-3 h-3" /> desat</span>}
+          {!autoSaving && saveError && <span className="text-[11px] text-red-400 font-mono flex items-center gap-1"><Cloud className="w-3 h-3" /> error en desar</span>}
+          {!autoSaving && !saveError && !dirty && <span className="text-[11px] text-slate-600 font-mono flex items-center gap-1"><Cloud className="w-3 h-3" /> desat</span>}
           <button onClick={handleExport} disabled={exporting} className="btn-primary">
             {exporting ? <><Loader2 className="w-4 h-4 animate-spin" /> Exportant…</> : <><FileDown className="w-4 h-4" /> Exporta PDF</>}
           </button>
@@ -380,7 +391,7 @@ export function Elec3Editor() {
                 <Tip tip={`Moment = P·càrrega% × L\n= ${t.potencia_kw}×${t.carrega_pct/100} × ${t.longitud_m} m\n= ${t.moment_kwm} kW·m`}>
                   <div className="text-[11px] text-slate-400 font-mono text-right pr-0.5">{t.moment_kwm}</div>
                 </Tip>
-                <Tip tip={`ΔU% = 200000×P×L / (γ×S×U²×cosφ)\nγ(Cu)=56 · S=${t.seccio_mm2}mm² · U=${t.tensio_v ?? 230}V\n= ${t.caiguda_parcial_pct.toFixed(2)}%`}>
+                <Tip tip={`ΔU% = ${t.tipus === 'mono' ? '200000' : '100000'}×P×L / (γ×S×U²)\nγ(Cu)=56 · S=${t.seccio_mm2}mm² · U=${t.tensio_v ?? 230}V (cosφ=1, ITC-BT-19)\n= ${t.caiguda_parcial_pct.toFixed(2)}%`}>
                   <div className="text-[11px] text-slate-400 font-mono text-right pr-0.5">{t.caiguda_parcial_pct.toFixed(2)}%</div>
                 </Tip>
                 <Tip tip={`Total = caig. DI + caig. pròpia\nLímit: ${t.limit_pct}% (${t.limit_pct === 3 ? 'llum' : 'força'})\n${t.ok ? '✓ OK' : `✗ Supera el límit!`}\n= ${t.caiguda_total_pct.toFixed(2)}%`}>
