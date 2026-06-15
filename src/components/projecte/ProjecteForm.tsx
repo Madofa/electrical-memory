@@ -40,6 +40,30 @@ export function ProjecteForm({ initial, onSave, onClose }: Props) {
   const setNumNull = (field: keyof PForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [field]: e.target.value ? parseFloat(e.target.value) : null }))
 
+  // Calcula la potència màxima (kW) = Tensió (V) × IGA (A) / 1000, mentre l'usuari
+  // no l'hagi introduït manualment (és a dir, mentre valgui 0)
+  const calcPotencia = (tensioStr: string, iga: number): number | null => {
+    const tensio = parseFloat(tensioStr.replace(',', '.'))
+    if (!tensio || !iga) return null
+    return Math.round(tensio * iga / 1000 * 100) / 100
+  }
+
+  const setTensio = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const tensio_v = e.target.value
+    setForm((f) => {
+      const auto = f.potencia_kw === 0 ? calcPotencia(tensio_v, f.iga_amperatge) : null
+      return { ...f, tensio_v, ...(auto != null ? { potencia_kw: auto } : {}) }
+    })
+  }
+
+  const setIga = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const iga_amperatge = parseFloat(e.target.value) || 0
+    setForm((f) => {
+      const auto = f.potencia_kw === 0 ? calcPotencia(f.tensio_v, iga_amperatge) : null
+      return { ...f, iga_amperatge, ...(auto != null ? { potencia_kw: auto } : {}) }
+    })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.nom.trim()) { setError('Cal indicar un nom per al projecte.'); return }
@@ -151,18 +175,18 @@ export function ProjecteForm({ initial, onSave, onClose }: Props) {
 
               <div className="grid grid-cols-3 gap-4">
                 <FormInput label="Secció LGA (mm²)" value={form.seccio_lga_mm2} onChange={set('seccio_lga_mm2')} placeholder="10" className="font-mono" />
-                <FormInput label="Tensió (V)" value={form.tensio_v} onChange={set('tensio_v')} placeholder="230" className="font-mono" />
-                <FormInput label="IGA (A)" type="number" value={String(form.iga_amperatge || '')} onChange={setNum('iga_amperatge')} className="font-mono" />
+                <FormInput label="Tensió (V)" value={form.tensio_v} onChange={setTensio} placeholder="230" className="font-mono" />
+                <FormInput label="IGA (A)" type="number" value={String(form.iga_amperatge || '')} onChange={setIga} className="font-mono" />
               </div>
 
               <div className="grid grid-cols-3 gap-4">
-                <FormInput label="Potència màxima (kW)" type="number" step="0.01" value={String(form.potencia_kw || '')} onChange={setNum('potencia_kw')} className="font-mono" />
+                <FormInput label="Potència màxima (kW)" type="number" step="0.01" value={String(form.potencia_kw || '')} onChange={setNum('potencia_kw')} className="font-mono" placeholder="Tensió × IGA / 1000" />
                 <FormInput label="Calibre fusibles CGP (A)" type="number" value={String(form.calibre_fusibles_cgp_a || '')} onChange={setNum('calibre_fusibles_cgp_a')} className="font-mono" />
                 <FormInput label="Material conductor" value={form.material_conductor} onChange={set('material_conductor')} placeholder="Coure" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <FormInput label="Resistència a terra (Ω)" type="number" step="0.1" value={String(form.resist_terra_ohm ?? '')} onChange={setNumNull('resist_terra_ohm')} className="font-mono" />
+                <FormInput label="Resistència a terra (Ω)" value={form.resist_terra_ohm ?? ''} onChange={set('resist_terra_ohm')} placeholder="1,43 o «sense connexió a terra»" className="font-mono" />
                 <FormInput label="Superfície local (m²)" type="number" value={String(form.superficie_local_m2 ?? '')} onChange={setNumNull('superficie_local_m2')} className="font-mono" />
               </div>
 

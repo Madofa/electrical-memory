@@ -83,7 +83,7 @@ export function Elec1Editor() {
             if (!c.material_conductor || c.material_conductor === 'Coure')
               if (proj.material_conductor)     patch.material_conductor        = proj.material_conductor
             if (!c.intensitat_iga_a)          patch.intensitat_iga_a          = proj.iga_amperatge || 0
-            if (!c.resist_terra_ohm && proj.resist_terra_ohm) patch.resist_terra_ohm = String(proj.resist_terra_ohm)
+            if (!c.resist_terra_ohm && proj.resist_terra_ohm) patch.resist_terra_ohm = proj.resist_terra_ohm
             if (!c.us_installacio || c.us_installacio === "f) Instal·lacions d'habitatges")
               if (proj.us_installacio)         patch.us_installacio            = proj.us_installacio
             if (!c.cups)                      patch.cups                      = proj.cups || ''
@@ -132,7 +132,7 @@ export function Elec1Editor() {
             calibre_fusibles_cgp_a: c.calibre_fusibles_cgp_a || proj.calibre_fusibles_cgp_a || 0,
             material_conductor:     c.material_conductor     || proj.material_conductor     || c.material_conductor,
             intensitat_iga_a:       c.intensitat_iga_a       || proj.iga_amperatge          || 0,
-            resist_terra_ohm:       c.resist_terra_ohm       || (proj.resist_terra_ohm != null ? String(proj.resist_terra_ohm) : ''),
+            resist_terra_ohm:       c.resist_terra_ohm       || proj.resist_terra_ohm       || '',
             us_installacio:         c.us_installacio         || proj.us_installacio         || c.us_installacio,
             cups:                   c.cups                   || proj.cups                   || '',
           }

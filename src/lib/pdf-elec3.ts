@@ -138,7 +138,7 @@ export async function generateElec3PDF(
   d2(P2.reforma, ncp==='reforma'?'X':'')
   // Doc values always take priority; project fills blanks
   d2(P2.empresa_distribuidora, doc.empresa_distribuidora || p?.empresa_distribuidora || '')
-  d2(P2.resist_terra,          doc.resist_terra_ohm  ? String(doc.resist_terra_ohm)  : p?.resist_terra_ohm  ? String(p.resist_terra_ohm)  : '')
+  d2(P2.resist_terra,          doc.resist_terra_ohm || p?.resist_terra_ohm || '')
   d2(P2.seccio_di,             trams[0] ? String(trams[0].seccio_mm2) : '')
   d2(P2.tensio,                p?.tensio_v || trams[0]?.tensio_v?.toString() || '230')
   const igaA = doc.intensitat_iga_a ?? esquemaIga ?? p?.iga_amperatge ?? null

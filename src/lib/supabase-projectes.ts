@@ -39,7 +39,7 @@ export interface Projecte {
   potencia_kw: number
   calibre_fusibles_cgp_a: number
   material_conductor: string
-  resist_terra_ohm: number | null
+  resist_terra_ohm: string
   nova_ampliacio_reforma: 'nova' | 'ampliacio' | 'reforma'
   us_installacio: string
   caracteristiques_edifici: string
@@ -70,7 +70,7 @@ export function emptyProjecte(): ProjecteForm {
     potencia_kw: 0,
     calibre_fusibles_cgp_a: 63,
     material_conductor: 'Coure',
-    resist_terra_ohm: null,
+    resist_terra_ohm: '',
     nova_ampliacio_reforma: 'nova',
     us_installacio: 'Habitatge',
     caracteristiques_edifici: '',
@@ -193,7 +193,7 @@ export function prefillElec1(p: Projecte) {
     calibre_fusibles_cgp_a: p.calibre_fusibles_cgp_a || 0,
     material_conductor: p.material_conductor || 'Coure',
     intensitat_iga_a: p.iga_amperatge || 0,
-    resist_terra_ohm: p.resist_terra_ohm ? String(p.resist_terra_ohm) : '',
+    resist_terra_ohm: p.resist_terra_ohm || '',
     us_installacio: p.us_installacio || 'Habitatge',
     cups: p.cups || '',
     classificacio: p.classificacio || 'mtd',
@@ -208,7 +208,7 @@ export function prefillElec3(p: Projecte) {
     us_installacio: p.us_installacio || '',
     empresa_distribuidora: p.empresa_distribuidora || '',
     nova_ampliacio_reforma: p.nova_ampliacio_reforma || 'nova',
-    resist_terra_ohm: p.resist_terra_ohm ?? null,
+    resist_terra_ohm: p.resist_terra_ohm || '',
     potencia_instal_kw: p.potencia_kw || null,
     intensitat_iga_a: p.iga_amperatge || null,
     superficie_local_m2: p.superficie_local_m2 ?? null,

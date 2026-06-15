@@ -16,7 +16,7 @@ export interface Elec3Doc {
   caracteristiques_edifici: string
   empresa_distribuidora: string
   nova_ampliacio_reforma: 'nova' | 'ampliacio' | 'reforma'
-  resist_terra_ohm: number | null
+  resist_terra_ohm: string
   potencia_instal_kw: number | null
   intensitat_iga_a: number | null
   superficie_local_m2: number | null
@@ -49,7 +49,7 @@ export async function createElec3Doc(
       caracteristiques_edifici: '',
       empresa_distribuidora: '',
       nova_ampliacio_reforma: 'nova',
-      resist_terra_ohm: null,
+      resist_terra_ohm: '',
       potencia_instal_kw: null,
       intensitat_iga_a: null,
       superficie_local_m2: null,

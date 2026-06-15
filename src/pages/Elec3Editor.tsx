@@ -161,7 +161,7 @@ export function Elec3Editor() {
           const patch: Partial<Elec3Doc> = {}
           if (!d.us_installacio)        patch.us_installacio        = proj.us_installacio        || ''
           if (!d.empresa_distribuidora) patch.empresa_distribuidora = proj.empresa_distribuidora || ''
-          if (d.resist_terra_ohm == null && proj.resist_terra_ohm != null) patch.resist_terra_ohm = proj.resist_terra_ohm
+          if (!d.resist_terra_ohm && proj.resist_terra_ohm) patch.resist_terra_ohm = proj.resist_terra_ohm
           if (d.potencia_instal_kw == null && proj.potencia_kw)            patch.potencia_instal_kw = proj.potencia_kw
           if (d.intensitat_iga_a == null && proj.iga_amperatge)            patch.intensitat_iga_a   = proj.iga_amperatge
           if (d.superficie_local_m2 == null && proj.superficie_local_m2 != null) patch.superficie_local_m2 = proj.superficie_local_m2
@@ -495,10 +495,9 @@ export function Elec3Editor() {
             <div className="grid grid-cols-4 gap-4">
               <FormInput
                 label="Resistència terra (Ω)"
-                type="number"
-                step="0.1"
-                value={String(doc.resist_terra_ohm ?? '')}
-                onChange={(e) => updDoc('resist_terra_ohm', e.target.value ? parseFloat(e.target.value) : null)}
+                value={doc.resist_terra_ohm ?? ''}
+                onChange={(e) => updDoc('resist_terra_ohm', e.target.value)}
+                placeholder="1,43 o «sense connexió a terra»"
                 className="font-mono"
               />
               <FormInput
