@@ -63,18 +63,17 @@ export function ProjecteForm({ initial, onSave, onClose }: Props) {
   const setNumNull = (field: keyof PForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [field]: e.target.value ? parseFloat(e.target.value) : null }))
 
-  // Calcula la potència màxima (kW) = Tensió (V) × IGA (A) / 1000, mentre l'usuari
-  // no l'hagi introduït manualment (és a dir, mentre valgui 0)
   const calcPotencia = (tensioStr: string, iga: number): number | null => {
     const tensio = parseFloat(tensioStr.replace(',', '.'))
     if (!tensio || !iga) return null
     return Math.round(tensio * iga / 1000 * 100) / 100
   }
 
+  // Tensió o IGA canvien → recalcula sempre la potència màxima
   const setTensio = (e: React.ChangeEvent<HTMLInputElement>) => {
     const tensio_v = e.target.value
     setForm((f) => {
-      const auto = f.potencia_kw === 0 ? calcPotencia(tensio_v, f.iga_amperatge) : null
+      const auto = calcPotencia(tensio_v, f.iga_amperatge)
       return { ...f, tensio_v, ...(auto != null ? { potencia_kw: auto } : {}) }
     })
   }
@@ -82,7 +81,7 @@ export function ProjecteForm({ initial, onSave, onClose }: Props) {
   const setIga = (e: React.ChangeEvent<HTMLInputElement>) => {
     const iga_amperatge = parseFloat(e.target.value) || 0
     setForm((f) => {
-      const auto = f.potencia_kw === 0 ? calcPotencia(f.tensio_v, iga_amperatge) : null
+      const auto = calcPotencia(f.tensio_v, iga_amperatge)
       return { ...f, iga_amperatge, ...(auto != null ? { potencia_kw: auto } : {}) }
     })
   }
@@ -212,7 +211,7 @@ export function ProjecteForm({ initial, onSave, onClose }: Props) {
               </div>
 
               <div className="grid grid-cols-3 gap-4">
-                <FormInput label="Potència màxima (kW)" type="number" step="0.01" value={String(form.potencia_kw || '')} onChange={setNum('potencia_kw')} className="font-mono" placeholder="Tensió × IGA / 1000" />
+                <FormInput label="Potència màxima (kW)" type="number" step="0.01" value={String(form.potencia_kw || '')} onChange={setNum('potencia_kw')} className="font-mono" placeholder="Auto" />
                 <FormInput label="Calibre fusibles CGP (A)" type="number" value={String(form.calibre_fusibles_cgp_a || '')} onChange={setNum('calibre_fusibles_cgp_a')} className="font-mono" />
                 <FormInput label="Material conductor" value={form.material_conductor} onChange={set('material_conductor')} placeholder="Coure" />
               </div>
