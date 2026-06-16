@@ -98,7 +98,7 @@ export function Step4Receptores({ onNext: _onNext }: Props) {
       <div className="card border-amber-500/20 flex items-center justify-between">
         <div>
           <p className="text-[11px] font-display font-semibold tracking-widest uppercase text-amber-500/60 mb-0.5">
-            Potència total sol·licitada
+            Potència màxima contractada
           </p>
           <p className="font-mono font-semibold text-2xl text-amber-400">
             {potenciaTotal.toFixed(2).replace('.', ',')} kW

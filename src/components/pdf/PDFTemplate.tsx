@@ -119,7 +119,7 @@ export function PDFTemplate({ data, instalador }: Props) {
         <Row label="Tipus de sol·licitud" value={u.tipo_solicitud ? LABELS_TIPO_SOLICITUD[u.tipo_solicitud] : null} />
         <Row label="Ús de la finca" value={u.uso_finca ? LABELS_USO_FINCA[u.uso_finca] : null} />
         <Row label="Nivell de tensió sol·licitat" value={potenciaTotal > 15 ? '3×230/400 V (trifàsic amb neutre)' : '230 V (monofàsic)'} />
-        <Row label="Potència total sol·licitada" value={`${potenciaTotal.toFixed(2).replace('.', ',')} kW`} />
+        <Row label="Potència màxima contractada" value={`${potenciaTotal.toFixed(2).replace('.', ',')} kW`} />
 
         {/* SECCIÓ 2 */}
         <SectionTitle>2. Dades del sol·licitant</SectionTitle>
