@@ -5,6 +5,7 @@ import { X, Save } from 'lucide-react'
 import { FormInput, FormSelect } from '../ui/FormField'
 import type { Projecte, ProjecteForm as PForm } from '../../lib/supabase-projectes'
 import { emptyProjecte } from '../../lib/supabase-projectes'
+import { useAuthStore } from '../../stores/authStore'
 
 interface Props {
   initial?: Partial<Projecte>
@@ -27,9 +28,31 @@ const CLASSIF_OPTIONS = [
 ]
 
 export function ProjecteForm({ initial, onSave, onClose }: Props) {
+  const instalador = useAuthStore((s) => s.instalador)
   const [form, setForm] = useState<PForm>({ ...emptyProjecte(), ...initial })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [sameAsInstalador, setSameAsInstalador] = useState(false)
+
+  const hasInstaladorAddress = !!(instalador?.empresa_nom_via || instalador?.empresa_cp || instalador?.empresa_poblacio)
+
+  const toggleSameAsInstalador = (checked: boolean) => {
+    setSameAsInstalador(checked)
+    if (checked && instalador) {
+      setForm((f) => ({
+        ...f,
+        inst_tipus_via: instalador.empresa_tipus_via ?? '',
+        inst_nom_via:   instalador.empresa_nom_via   ?? '',
+        inst_numero:    instalador.empresa_numero     ?? '',
+        inst_bloc:      instalador.empresa_bloc       ?? '',
+        inst_escala:    instalador.empresa_escala     ?? '',
+        inst_pis:       instalador.empresa_pis        ?? '',
+        inst_porta:     instalador.empresa_porta      ?? '',
+        inst_cp:        instalador.empresa_cp         ?? '',
+        inst_poblacio:  instalador.empresa_poblacio   ?? '',
+      }))
+    }
+  }
 
   const set = (field: keyof PForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [field]: e.target.value }))
@@ -106,12 +129,6 @@ export function ProjecteForm({ initial, onSave, onClose }: Props) {
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <FormInput label="Nom del projecte" value={form.nom} onChange={set('nom')} placeholder="Ex: Can Manel" required autoFocus />
-            <FormInput
-              label="Característiques de l'edifici (descripció física)"
-              value={form.caracteristiques_edifici}
-              onChange={set('caracteristiques_edifici')}
-              placeholder="ex: Nau industrial PB. Estructura metàl·lica. 350 m²."
-            />
 
             {/* Titular */}
             <div className="space-y-3">
@@ -143,21 +160,36 @@ export function ProjecteForm({ initial, onSave, onClose }: Props) {
 
             {/* Adreça instal·lació */}
             <div className="space-y-3">
-              {section('Adreça de la instal·lació')}
-              <div className="grid grid-cols-4 gap-3">
-                <FormInput label="Tipus via" value={form.inst_tipus_via} onChange={set('inst_tipus_via')} placeholder="Carrer" />
-                <div className="col-span-2"><FormInput label="Nom de la via" value={form.inst_nom_via} onChange={set('inst_nom_via')} /></div>
-                <FormInput label="Núm." value={form.inst_numero} onChange={set('inst_numero')} />
+              <div className="flex items-center justify-between">
+                {section('Adreça de la instal·lació')}
+                {hasInstaladorAddress && (
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={sameAsInstalador}
+                      onChange={(e) => toggleSameAsInstalador(e.target.checked)}
+                      className="w-3.5 h-3.5 rounded accent-amber-500"
+                    />
+                    <span className="text-xs text-slate-400">Mateixa que l'empresa instal·ladora</span>
+                  </label>
+                )}
               </div>
-              <div className="grid grid-cols-5 gap-3">
-                <FormInput label="Bloc" value={form.inst_bloc} onChange={set('inst_bloc')} />
-                <FormInput label="Escala" value={form.inst_escala} onChange={set('inst_escala')} />
-                <FormInput label="Pis" value={form.inst_pis} onChange={set('inst_pis')} />
-                <FormInput label="Porta" value={form.inst_porta} onChange={set('inst_porta')} />
-                <FormInput label="C.P." value={form.inst_cp} onChange={set('inst_cp')} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <FormInput label="Municipi" value={form.inst_poblacio} onChange={set('inst_poblacio')} />
+              <div className={`space-y-3 ${sameAsInstalador ? 'opacity-50 pointer-events-none' : ''}`}>
+                <div className="grid grid-cols-4 gap-3">
+                  <FormInput label="Tipus via" value={form.inst_tipus_via} onChange={set('inst_tipus_via')} placeholder="Carrer" />
+                  <div className="col-span-2"><FormInput label="Nom de la via" value={form.inst_nom_via} onChange={set('inst_nom_via')} /></div>
+                  <FormInput label="Núm." value={form.inst_numero} onChange={set('inst_numero')} />
+                </div>
+                <div className="grid grid-cols-5 gap-3">
+                  <FormInput label="Bloc" value={form.inst_bloc} onChange={set('inst_bloc')} />
+                  <FormInput label="Escala" value={form.inst_escala} onChange={set('inst_escala')} />
+                  <FormInput label="Pis" value={form.inst_pis} onChange={set('inst_pis')} />
+                  <FormInput label="Porta" value={form.inst_porta} onChange={set('inst_porta')} />
+                  <FormInput label="C.P." value={form.inst_cp} onChange={set('inst_cp')} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormInput label="Municipi" value={form.inst_poblacio} onChange={set('inst_poblacio')} />
+                </div>
               </div>
             </div>
 
