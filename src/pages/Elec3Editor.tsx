@@ -345,6 +345,10 @@ export function Elec3Editor() {
                 style={{ gridTemplateColumns: '2fr 0.5fr 0.7fr 0.5fr 0.7fr 0.8fr 0.7fr 0.8fr 0.8fr 0.8fr 0.5fr 0.8fr 0.5fr 0.5fr 0.5fr 0.6fr 0.6fr 0.6fr' }}
               >
                 <div className="text-[11px] text-slate-300 px-1 truncate">{t.nom}</div>
+                {t.isEmpty ? (
+                  // Fila buida: 17 cel·les en blanc, sense inputs ni valors
+                  Array.from({ length: 17 }).map((_, i) => <div key={i} />)
+                ) : (<>
                 <input
                   type="number"
                   className="bg-ink-800/50 text-[11px] text-right font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
@@ -455,6 +459,7 @@ export function Elec3Editor() {
                   value={t.conduc_protec_mm2 ?? ''}
                   onChange={(e) => updTram(t.id, 'conduc_protec_mm2', e.target.value ? parseFloat(e.target.value) : null)}
                 />
+                </>)}
               </div>
             ))}
           </div>

@@ -27,6 +27,7 @@ export interface Tram {
 }
 
 export interface TramCalculat extends Tram {
+  isEmpty: boolean
   potencia_demanada_kw: number
   intensitat_a: number
   moment_kwm: number
@@ -167,6 +168,7 @@ export function calculaTrams(trams: Tram[], circuitNoms?: string[]): TramCalcula
 
     return {
       ...t,
+      isEmpty,
       potencia_demanada_kw: round2(pot),
       intensitat_a: round2(I),
       moment_kwm: round2(moment),
