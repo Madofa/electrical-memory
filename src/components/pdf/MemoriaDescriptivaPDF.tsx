@@ -1,6 +1,7 @@
 import { Document, Page, View, Text, Image, StyleSheet } from '@react-pdf/renderer'
 import type { MemoriaDescriptiva } from '../../lib/supabase-memoria-descriptiva'
 import type { Instalador } from '../../types'
+import type { Projecte } from '../../lib/supabase-projectes'
 import { LABELS_TIPO_INSTALADOR } from '../../types'
 import { formatDate } from '../../lib/supabase'
 
@@ -19,9 +20,13 @@ const s = StyleSheet.create({
   signBox: { borderWidth: 1, borderColor: '#000', borderStyle: 'solid', height: 70, width: 160, marginTop: 4 },
   sigImg: { height: 60, objectFit: 'contain', marginTop: 4 },
   logo: { maxHeight: 45, maxWidth: 130, objectFit: 'contain' },
+  infoGrid: { flexDirection: 'row', gap: 16, marginBottom: 4 },
+  infoCol: { flex: 1 },
+  infoLabel: { fontSize: 8, color: '#777', fontFamily: 'Helvetica-Bold', textTransform: 'uppercase', marginBottom: 1 },
+  infoVal: { fontSize: 10 },
 })
 
-interface Props { doc: MemoriaDescriptiva; instalador: Instalador }
+interface Props { doc: MemoriaDescriptiva; instalador: Instalador; projecte?: Projecte | null }
 
 const SECCIONS = [
   { key: 'seccio_immoble' as const, title: "Descripció de l'immoble" },
@@ -31,7 +36,16 @@ const SECCIONS = [
   { key: 'seccio_justificacio' as const, title: "Justificació tècnica" },
 ]
 
-export function MemoriaDescriptivaPDF({ doc, instalador }: Props) {
+function instAdresa(p: Projecte): string {
+  const parts = [
+    [p.inst_tipus_via, p.inst_nom_via, p.inst_numero].filter(Boolean).join(' '),
+    [p.inst_bloc && `Bl. ${p.inst_bloc}`, p.inst_escala && `Esc. ${p.inst_escala}`, p.inst_pis, p.inst_porta].filter(Boolean).join(' '),
+    [p.inst_cp, p.inst_poblacio].filter(Boolean).join(' '),
+  ].filter(Boolean)
+  return parts.join(', ')
+}
+
+export function MemoriaDescriptivaPDF({ doc, instalador, projecte }: Props) {
   return (
     <Document>
       <Page size="A4" style={s.page}>
@@ -47,6 +61,53 @@ export function MemoriaDescriptivaPDF({ doc, instalador }: Props) {
             <Text style={s.subtitle}>{formatDate(doc.data_signatura)}</Text>
           </View>
         </View>
+
+        {/* Dades del titular i de la instal·lació (del projecte) */}
+        {projecte && (projecte.titular_nom || projecte.titular_nif || projecte.titular_correu || projecte.inst_nom_via) && (
+          <View style={{ marginBottom: 6 }}>
+            <Text style={s.sectionTitle}>Dades de la instal·lació</Text>
+            <View style={s.infoGrid}>
+              {projecte.titular_nom ? (
+                <View style={s.infoCol}>
+                  <Text style={s.infoLabel}>Titular</Text>
+                  <Text style={s.infoVal}>{projecte.titular_nom}</Text>
+                </View>
+              ) : null}
+              {projecte.titular_nif ? (
+                <View style={s.infoCol}>
+                  <Text style={s.infoLabel}>NIF / DNI</Text>
+                  <Text style={s.infoVal}>{projecte.titular_nif}</Text>
+                </View>
+              ) : null}
+            </View>
+            <View style={s.infoGrid}>
+              {projecte.titular_telefon ? (
+                <View style={s.infoCol}>
+                  <Text style={s.infoLabel}>Telèfon</Text>
+                  <Text style={s.infoVal}>{projecte.titular_telefon}</Text>
+                </View>
+              ) : null}
+              {projecte.titular_correu ? (
+                <View style={s.infoCol}>
+                  <Text style={s.infoLabel}>Correu electrònic</Text>
+                  <Text style={s.infoVal}>{projecte.titular_correu}</Text>
+                </View>
+              ) : null}
+            </View>
+            {instAdresa(projecte) ? (
+              <View style={{ marginTop: 2 }}>
+                <Text style={s.infoLabel}>Adreça de la instal·lació</Text>
+                <Text style={s.infoVal}>{instAdresa(projecte)}</Text>
+              </View>
+            ) : null}
+            {projecte.cups ? (
+              <View style={{ marginTop: 4 }}>
+                <Text style={s.infoLabel}>CUPS</Text>
+                <Text style={{ fontSize: 10, fontFamily: 'Helvetica' }}>{projecte.cups}</Text>
+              </View>
+            ) : null}
+          </View>
+        )}
 
         {SECCIONS.map(({ key, title }, i) => (
           doc[key] ? (

@@ -58,6 +58,7 @@ export function MemoriaDescriptivaEditor() {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [projecteId, setProjecteId] = useState<string | null>(null)
   const [projecteNom, setProjecteNom] = useState('')
+  const [projecte, setProjecte] = useState<Projecte | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -71,7 +72,11 @@ export function MemoriaDescriptivaEditor() {
       setProjecteId(pid)
       if (pid) {
         getProjecte(pid).then(({ data: p }) => {
-          if (p && mounted) setProjecteNom((p as Projecte).nom)
+          if (p && mounted) {
+            const proj = p as Projecte
+            setProjecteNom(proj.nom)
+            setProjecte(proj)
+          }
         })
       }
     })
@@ -97,7 +102,7 @@ export function MemoriaDescriptivaEditor() {
     if (!doc || !instalador) return
     setExporting(true)
     try {
-      const blob = await pdf(<MemoriaDescriptivaPDF doc={doc} instalador={instalador} />).toBlob()
+      const blob = await pdf(<MemoriaDescriptivaPDF doc={doc} instalador={instalador} projecte={projecte} />).toBlob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
