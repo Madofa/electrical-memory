@@ -91,8 +91,9 @@ export async function generateElec3PDF(
     draw(12, t.canal_tub_encastat_mm ?? '')
     draw(13, t.canal_tub_sense_encas_mm ?? '')
     draw(14, t.canal_enterrat_prof_m ?? '')
-    // Aïllament instal·lació: si no s'ha mesurat, mínim REBT ITC-BT-19 = 500 kΩ (0.5 MΩ)
-    draw(15, t.aillament_instal_kohm ?? 500)
+    // Aïllament instal·lació en MΩ (mínim REBT ITC-BT-19: 0,5 MΩ). Valor guardat en kΩ → ÷1000.
+    const aillMohm = t.aillament_instal_kohm != null ? t.aillament_instal_kohm / 1000 : 0.5
+    draw(15, Number.isInteger(aillMohm) ? aillMohm : parseFloat(aillMohm.toFixed(3)))
     // Default neutre/protec = seccio_mm2 if not set (use || to also catch 0)
     draw(16, t.conduc_neutre_mm2 || t.seccio_mm2)
     draw(17, t.conduc_protec_mm2 || t.seccio_mm2)
