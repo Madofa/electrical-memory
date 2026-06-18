@@ -438,13 +438,17 @@ export function Elec3Editor() {
                   value={t.canal_enterrat_prof_m ?? ''}
                   onChange={(e) => updTram(t.id, 'canal_enterrat_prof_m', e.target.value ? parseFloat(e.target.value) : null)}
                 />
-                <input
-                  type="number"
-                  step="0.1"
-                  className="bg-ink-800/50 text-[11px] text-right font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
-                  value={t.aillament_instal_kohm ?? ''}
-                  onChange={(e) => updTram(t.id, 'aillament_instal_kohm', e.target.value ? parseFloat(e.target.value) : null)}
-                />
+                <Tip tip={`Aïllament de la instal·lació\nMínim REBT ITC-BT-19: 500 kΩ\nDeixa buit per usar el mínim.\nIntrodueix el valor mesurat si vols personalitzar-lo.`}>
+                  <input
+                    type="number"
+                    step="1"
+                    min="0"
+                    placeholder="500"
+                    className="bg-ink-800/50 text-[11px] text-right font-mono rounded px-0.5 py-0.5 w-full focus:outline-none"
+                    value={t.aillament_instal_kohm ?? ''}
+                    onChange={(e) => updTram(t.id, 'aillament_instal_kohm', e.target.value ? parseFloat(e.target.value) : null)}
+                  />
+                </Tip>
                 <input
                   type="number"
                   step="0.5"
