@@ -31,7 +31,7 @@ export function Wizard() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const { data, memoriaId, projecteId, setPasoActual, isDirty, markClean } = useWizardStore()
-  const [step, setStep] = useState(data.paso_actual ?? 0)
+  const [step, setStep] = useState(Math.min(data.paso_actual ?? 0, STEPS.length - 1))
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set())
   const [saving, setSaving] = useState(false)
   const [direction, setDirection] = useState(1)

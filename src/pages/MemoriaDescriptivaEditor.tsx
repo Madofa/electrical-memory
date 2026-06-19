@@ -65,7 +65,12 @@ export function MemoriaDescriptivaEditor() {
     let mounted = true
     getMemoriaDescriptiva(id).then(({ data, error }) => {
       if (!mounted) return
-      if (error || !data) { toast.error('Document no trobat'); navigate('/memoria-descriptiva'); return }
+      if (error || !data) {
+        const msg = error ? `${error.code}: ${error.message}` : 'Sense dades'
+        toast.error(`Document no trobat — ${msg}`, { duration: 10000 })
+        navigate('/memoria-descriptiva')
+        return
+      }
       setDoc(data as MemoriaDescriptiva)
       setLoading(false)
       const pid = (data as typeof data & { projecte_id?: string }).projecte_id ?? null

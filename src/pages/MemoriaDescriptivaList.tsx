@@ -20,7 +20,8 @@ export function MemoriaDescriptivaList() {
 
   useEffect(() => {
     if (!user) return
-    getMemoriesDescriptives(user.id).then(({ data }) => {
+    getMemoriesDescriptives(user.id).then(({ data, error }) => {
+      if (error) toast.error(`Error carregant documents: ${error.code} ${error.message}`, { duration: 10000 })
       setDocs((data as MemoriaDescriptiva[]) ?? [])
       setLoading(false)
     })
