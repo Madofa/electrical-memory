@@ -11,10 +11,13 @@ export function Step6Calculos({ onNext: _onNext }: Props) {
 
   const potenciaTotal = getPotenciaTotal()
 
-  // Auto-calcular intensidad cuando cambia potencia demanda
+  // Auto-calcular intensitat. Monofàsic (V ≤ 250): I = P/V. Trifàsic (V > 250): I = P/(√3·V)
   useEffect(() => {
     if (!c.potencia_demanda_kw || !c.tension_nominal_v) return
-    const I = (c.potencia_demanda_kw * 1000) / (Math.sqrt(3) * c.tension_nominal_v)
+    const esTrifasic = c.tension_nominal_v > 250
+    const I = esTrifasic
+      ? (c.potencia_demanda_kw * 1000) / (Math.sqrt(3) * c.tension_nominal_v)
+      : (c.potencia_demanda_kw * 1000) / c.tension_nominal_v
     setCalculos({ intensidad_nominal_a: Math.round(I * 10) / 10 })
   }, [c.potencia_demanda_kw, c.tension_nominal_v])
 
