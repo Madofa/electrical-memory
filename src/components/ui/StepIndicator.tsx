@@ -6,9 +6,8 @@ export const WIZARD_STEPS = [
   { label: 'Ubicació', short: '02' },
   { label: 'Receptors', short: '03' },
   { label: 'Pt. mesura', short: '04' },
-  { label: 'Càlculs', short: '05' },
-  { label: 'Declaració', short: '06' },
-  { label: 'Instal·lador', short: '07' },
+  { label: 'Declaració', short: '05' },
+  { label: 'Instal·lador', short: '06' },
 ]
 
 interface StepIndicatorProps {

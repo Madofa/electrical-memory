@@ -10,9 +10,11 @@ import { Step2Solicitante } from '../components/wizard/Step2Solicitante'
 import { Step3Ubicacion } from '../components/wizard/Step3Ubicacion'
 import { Step4Receptores } from '../components/wizard/Step4Receptores'
 import { Step5CGP } from '../components/wizard/Step5CGP'
-import { Step6Calculos } from '../components/wizard/Step6Calculos'
 import { Step7Declaracion } from '../components/wizard/Step7Declaracion'
 import { Step8Redactor } from '../components/wizard/Step8Redactor'
+// Step6Calculos preservat però no s'usa: la secció de càlculs NO és requerida per
+// e-distribució per a subministres BT ≤100 kW (Circular 1/2024 CNMC, Annex I.f).
+// Per reactivar: afegir Step6Calculos a STEPS i 'Càlculs' a WIZARD_STEPS.
 import { MiniPreview } from '../components/wizard/MiniPreview'
 import toast from 'react-hot-toast'
 
@@ -21,14 +23,9 @@ const STEPS = [
   Step3Ubicacion,
   Step4Receptores,
   Step5CGP,
-  Step6Calculos,
   Step7Declaracion,
   Step8Redactor,
 ]
-
-// Índice del Step6 (cálculos) dentro de STEPS — se salta cuando la instalación
-// ya está legalizada (alta de suministro vía simplificada con RITSIC/CIE).
-const STEP_CALCULOS_IDX = 4
 
 export function Wizard() {
   const navigate = useNavigate()
@@ -86,25 +83,15 @@ export function Wizard() {
     else navigate('/dashboard')
   }
 
-  const skipCalculos = data.ubicacion.instalacion_legalizada
-
   const goNext = () => {
     setCompletedSteps((prev) => new Set([...prev, step]))
     setDirection(1)
-    setStep((s) => {
-      let next = Math.min(s + 1, STEPS.length - 1)
-      if (skipCalculos && next === STEP_CALCULOS_IDX) next = Math.min(next + 1, STEPS.length - 1)
-      return next
-    })
+    setStep((s) => Math.min(s + 1, STEPS.length - 1))
   }
 
   const goPrev = () => {
     setDirection(-1)
-    setStep((s) => {
-      let prev = Math.max(s - 1, 0)
-      if (skipCalculos && prev === STEP_CALCULOS_IDX) prev = Math.max(prev - 1, 0)
-      return prev
-    })
+    setStep((s) => Math.max(s - 1, 0))
   }
 
   const handleSave = async (finalizar = false) => {

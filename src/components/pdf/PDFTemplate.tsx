@@ -91,7 +91,7 @@ interface Props {
 }
 
 export function PDFTemplate({ data, instalador }: Props) {
-  const { solicitante: sol, ubicacion: u, receptores, elementoFrontera: ef, calculos: c } = data
+  const { solicitante: sol, ubicacion: u, receptores, elementoFrontera: ef } = data
   const potenciaTotal = receptores.reduce((sum, r) => sum + (r.potencia_kw || 0), 0)
   const fotos = ef.fotos?.filter((f) => f.base64) ?? []
 
@@ -194,40 +194,9 @@ export function PDFTemplate({ data, instalador }: Props) {
             : "* Les fotografies i el croquis adjunts mostren la proposta d'ubicació de l'element frontera (CGP/CGPM) a l'emplaçament indicat."}
         </Text>
 
-        {/* SECCIÓ 6 — Càlculs (opcional) */}
-        {data.incluir_calculos && c.seccion_normalizada_mm2 && (
-          <View>
-            <SectionTitle>6. Càlculs justificatius (REBT)</SectionTitle>
-            <Text style={s.calcSubtitle}>DADES DE CÀLCUL</Text>
-            <Row label="Potència total instal·lada" value={`${potenciaTotal.toFixed(2).replace('.', ',')} kW`} />
-            <Row label="Coeficient de simultaneïtat" value={String(c.coef_simultaneidad)} />
-            <Row label="Potència de demanda" value={`${c.potencia_demanda_kw?.toFixed(2).replace('.', ',')} kW`} />
-            <Row label="Nombre de fases" value={potenciaTotal > 15 ? 'Trifàsic (3F+N)' : 'Monofàsic (1F+N)'} />
-            <Row label="Tensió nominal" value={`${c.tension_nominal_v} V`} />
-            <Row label="Intensitat nominal" value={`${c.intensidad_nominal_a} A`} />
-            <Text style={s.calcSubtitle}>LÍNIA GENERAL D'ALIMENTACIÓ (LGA)</Text>
-            <Row label="Material conductor" value={c.material_conductor as string} />
-            <Row label="Tipus de conductor" value={c.tipo_conductor as string} />
-            <Row label="Tipus d'instal·lació" value={c.tipo_instalacion as string} />
-            <Row label="Longitud estimada" value={`${c.longitud_m} m`} />
-            <Row label="Secció normalitzada adoptada" value={`${c.seccion_normalizada_mm2} mm²`} />
-            <Row label="Caiguda de tensió" value={`${c.caida_tension_pct?.toFixed(2).replace('.', ',')} % (límit: 1,5%)`} />
-            <Text style={s.cumple}>✓ Compleix amb ITC-BT-14</Text>
-            <Text style={s.calcSubtitle}>PROTECCIONS</Text>
-            <Row label="ICP recomanat" value={`${c.icp_a} A`} />
-            <Row label="Interruptor diferencial" value={`ID ${c.diferencial_a} A  ${c.diferencial_ma} mA  Classe AC`} />
-            {c.puesta_tierra_desc && (
-              <View>
-                <Text style={s.calcSubtitle}>POSADA A TERRA</Text>
-                <Text style={{ fontSize: 11 }}>{c.puesta_tierra_desc as string}</Text>
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* SECCIÓ 7 — Declaració */}
+        {/* SECCIÓ 6 — Declaració */}
         <View wrap={false}>
-          <SectionTitle>7. Declaració responsable de qualitat d'ona</SectionTitle>
+          <SectionTitle>6. Declaració responsable de qualitat d'ona</SectionTitle>
           <Text style={s.declaracion}>
             En qualitat de sol·licitant del subministrament descrit en la present memòria, declaro sota la meva
             responsabilitat que la instal·lació elèctrica objecte de la sol·licitud d'accés i connexió complirà amb
@@ -237,9 +206,9 @@ export function PDFTemplate({ data, instalador }: Props) {
           <View style={s.signatureBox} />
         </View>
 
-        {/* SECCIÓ 8 — Instal·lador */}
+        {/* SECCIÓ 7 — Instal·lador */}
         <View wrap={false}>
-          <SectionTitle>8. Dades de l'instal·lador</SectionTitle>
+          <SectionTitle>7. Dades de l'instal·lador</SectionTitle>
           <Row label="Nom i cognoms" value={instalador.nombre_completo} blank />
           <Row label="DNI / NIE" value={instalador.dni_nie} blank />
           <Row label="Tipus / Categoria" value={instalador.tipo ? LABELS_TIPO_INSTALADOR[instalador.tipo] : null} blank />
