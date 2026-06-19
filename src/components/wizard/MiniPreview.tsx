@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { WizardData } from '../../types'
 import { LABELS_TIPO_SOLICITUD, LABELS_USO_FINCA } from '../../types'
 import { formatDate } from '../../lib/supabase'
+import { WIZARD_STEPS } from '../ui/StepIndicator'
 
 interface Props {
   data: WizardData
@@ -137,7 +138,7 @@ export function MiniPreview({ data, currentStep }: Props) {
             ))}
           </PreviewSection>
 
-          <PreviewSection title="§7 Declaració" show={hasFirma}>
+          <PreviewSection title="§6 Declaració" show={hasFirma}>
             <PreviewRow label="Lloc i data" value={`${data.lugarFirma}, a ${formatDate(data.fechaFirma)}`} />
           </PreviewSection>
         </div>
@@ -147,12 +148,12 @@ export function MiniPreview({ data, currentStep }: Props) {
       <div className="mt-4 pt-3 border-t border-[#1e2d47]">
         <div className="flex justify-between text-[9px] font-mono text-slate-600 mb-1">
           <span>Completat</span>
-          <span>{Math.round(currentStep / 7 * 100)}%</span>
+          <span>{Math.round(currentStep / (WIZARD_STEPS.length - 1) * 100)}%</span>
         </div>
         <div className="h-1 rounded-full bg-ink-600 overflow-hidden">
           <motion.div
             className="h-full rounded-full bg-amber-500"
-            animate={{ width: `${(currentStep / 7) * 100}%` }}
+            animate={{ width: `${(currentStep / (WIZARD_STEPS.length - 1)) * 100}%` }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
           />
         </div>
