@@ -36,3 +36,7 @@ Open http://localhost:5173
 ## Build & deploy
 
 `git push origin main` desplega automàticament a memoria.sinilos.com (via GitHub Actions). Es pot disparar manualment amb `npm run deploy` (requereix accés SSH al servidor).
+
+## Operacions
+
+- [Supabase keep-alive](docs/OPS_SUPABASE_KEEPALIVE.md): per què el projecte de Supabase es pot pausar i com reactivar-lo.
