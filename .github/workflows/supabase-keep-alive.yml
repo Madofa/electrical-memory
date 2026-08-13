@@ -1,19 +1,41 @@
 name: Supabase keep-alive
 
+# El ping de solo-lectura diario (1 GET/día devolviendo []) NO evitaba el
+# auto-pause: Supabase avisó de "actividad insuficiente" aun corriendo el cron
+# a diario y con éxito. Ahora hacemos actividad de ESCRITURA real (RPC
+# keep_alive_ping -> UPDATE sobre public.keep_alive) varias veces al día.
+
 on:
   schedule:
-    - cron: '0 8 * * *'
+    - cron: '17 */6 * * *'
   workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase REST API
+      - name: Heartbeat de escritura en Supabase
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
-          curl -sf "${VITE_SUPABASE_URL}/rest/v1/memorias?select=id&limit=1" \
+          set -euo pipefail
+
+          # 1) Escritura: incrementa el contador y sella la hora.
+          RESP=$(curl -sf -X POST "${VITE_SUPABASE_URL}/rest/v1/rpc/keep_alive_ping" \
             -H "apikey: ${VITE_SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${VITE_SUPABASE_ANON_KEY}"
+            -H "Authorization: Bearer ${VITE_SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "keep_alive_ping -> ${RESP}"
+          case "${RESP}" in
+            *20[0-9][0-9]-*) ;;
+            *) echo "Respuesta inesperada del heartbeat"; exit 1 ;;
+          esac
+
+          # 2) Lectura sobre una tabla real de la app, para que el tráfico se
+          #    parezca al de un uso normal y no a un ping sintético.
+          curl -sf "${VITE_SUPABASE_URL}/rest/v1/projectes?select=id&limit=1" \
+            -H "apikey: ${VITE_SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${VITE_SUPABASE_ANON_KEY}" > /dev/null
+          echo "lectura de projectes OK"
