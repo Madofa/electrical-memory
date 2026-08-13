@@ -39,4 +39,4 @@ Open http://localhost:5173
 
 ## Operacions
 
-- [Supabase keep-alive](docs/OPS_SUPABASE_KEEPALIVE.md): per què el projecte de Supabase es pot pausar i com reactivar-lo.
+- [Supabase keep-alive](docs/OPS_SUPABASE_KEEPALIVE.md): per què el projecte de Supabase es pot pausar, el heartbeat d'escriptura que ho evita (`supabase/schema-keep-alive.sql`) i com diagnosticar-ho des del terminal.
