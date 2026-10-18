@@ -32,6 +32,8 @@ Fa dues coses a cada execució:
 
 Es pot disparar a mà des de la pestanya *Actions* (`workflow_dispatch`).
 
+3. Últim pas del workflow: es **re-habilita a si mateix** (`gh api -X PUT .../actions/workflows/supabase-keep-alive.yml/enable`, amb `permissions: actions: write`). Vegeu l'incident del 2026-10-18: sense això, GitHub desactiva el cron als 60 dies sense commits.
+
 ## Historial d'incidents
 
 - **2026-07-17**: primer incident. Es crea el workflow amb cron **setmanal** (`0 8 * * 1`).
@@ -39,6 +41,12 @@ Es pot disparar a mà des de la pestanya *Actions* (`workflow_dispatch`).
 - **2026-08-13**: arriba avís de Supabase per "activitat insuficient en més de 7 dies". **El cron no estava trencat**: havia corregut cada dia i en verd del 25/07 al 12/08, sense cap fallada, i les peticions arribaven al projecte correcte (verificat als logs). El projecte no va arribar a pausar-se (`ACTIVE_HEALTHY`).
 
   **Causa arrel**: un sol `GET` diari que a més retornava `[]` (la taula `memorias` és buida) no mou el detector d'auto-pausa de Supabase. És el senyal més feble possible: una lectura, sense escriptura, un cop cada 24 h. D'aquí el canvi a heartbeat d'escriptura cada 6 h.
+
+- **2026-10-18**: el projecte es va **pausar de debò** (`INACTIVE`). Cap relació amb Supabase ni amb el heartbeat: GitHub va posar el workflow en estat `disabled_inactivity` el 2026-10-12 (60 dies sense commits al repo; l'últim era del 2026-08-13). L'última execució del cron va ser el 12/10 i 7 dies després Supabase va pausar.
+
+  **Resolució**: `gh workflow enable 315018329`; reactivació per API (`POST /v1/projects/{ref}/restore`, ~3 min fins a `ACTIVE_HEALTHY`, dades intactes); i el pas d'auto-reactivació al workflow (commit `c8bacf7`).
+
+  **Lliçó**: el primer que cal mirar és `gh workflow list --all` (¿`disabled_inactivity`?), no el codi del cron.
 
 ## Diagnòstic sense navegador (Management API)
 
@@ -72,7 +80,7 @@ Sense IP (NXDOMAIN) → pausat. Amb IPs → actiu.
 
 ## Com reactivar-lo manualment
 
-El ping automàtic **no** pot reactivar un projecte ja pausat (una BD pausada no respon a la REST API). Cal entrar al dashboard:
+El ping automàtic **no** pot reactivar un projecte ja pausat (una BD pausada no respon a la REST API). Es pot fer **sense navegador** per la Management API (`POST /v1/projects/$SUPABASE_PROJECT_REF/restore` amb el mateix token; sondejar `GET /v1/projects` fins a `ACTIVE_HEALTHY`), o bé des del dashboard:
 
 1. https://supabase.com/dashboard/project/moctmdicimxivthkrzhs
 2. Al banner "El proyecto está en pausa", clicar **"Proyecto de currículum"** — és una traducció trencada de Supabase per a "Resume project" (no té res a veure amb un currículum).
@@ -84,6 +92,7 @@ El ping automàtic **no** pot reactivar un projecte ja pausat (una BD pausada no
 Comprovar en aquest ordre, **abans** d'especular:
 
 ```bash
+gh workflow list --all                                      # 0. està 'disabled_inactivity'?
 gh run list --workflow=supabase-keep-alive.yml --limit 15   # 1. corre el cron?
 # 2. escriu de veritat? -> select * from keep_alive (veure Management API a dalt);
 #    'pings' ha de pujar 4 cops al dia
