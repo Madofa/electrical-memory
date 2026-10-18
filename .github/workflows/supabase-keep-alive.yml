@@ -4,11 +4,18 @@ name: Supabase keep-alive
 # auto-pause: Supabase avisó de "actividad insuficiente" aun corriendo el cron
 # a diario y con éxito. Ahora hacemos actividad de ESCRITURA real (RPC
 # keep_alive_ping -> UPDATE sobre public.keep_alive) varias veces al día.
+#
+# GitHub desactiva los crons de un repo sin commits en 60 días
+# (disabled_inactivity): pasó el 2026-10-12 y el proyecto se pausó el 18/10.
+# El último paso se re-habilita a sí mismo en cada ejecución para evitarlo.
 
 on:
   schedule:
     - cron: '17 */6 * * *'
   workflow_dispatch:
+
+permissions:
+  actions: write
 
 jobs:
   ping:
@@ -39,3 +46,8 @@ jobs:
             -H "apikey: ${VITE_SUPABASE_ANON_KEY}" \
             -H "Authorization: Bearer ${VITE_SUPABASE_ANON_KEY}" > /dev/null
           echo "lectura de projectes OK"
+
+      - name: Evitar que GitHub desactive este workflow por inactividad
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/supabase-keep-alive.yml/enable"
